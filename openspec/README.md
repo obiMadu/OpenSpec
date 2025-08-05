@@ -109,7 +109,7 @@ patches/
 
 1. **Propose** → Create change directory with all documentation
 2. **Review** → User reviews and approves the proposal
-3. **Implement** → Follow the approved tasks.md
+3. **Implement** → Follow the approved tasks.md (can be multiple PRs)
 4. **Deploy** → User confirms deployment
 5. **Update Specs** → Sync specs/ with new reality (IF the change affects system capabilities)
 6. **Archive** → Move to `changes/archive/YYYY-MM-DD-[name]/`
@@ -118,15 +118,25 @@ patches/
 
 When implementing an approved change:
 1. Follow the tasks.md checklist exactly
-2. Ensure code matches the proposed behavior
-3. Update any affected tests
+2. **Mark completed tasks** in tasks.md as you finish them (e.g., `- [x] 1.1 Task completed`)
+3. Ensure code matches the proposed behavior
+4. Update any affected tests
+5. **Keep change in `changes/` directory** - do NOT archive in implementation PR
 
-### 6. Updating Specs After Deployment
+**Multiple Implementation PRs:**
+- Changes can be implemented across multiple PRs
+- Each PR should update tasks.md to mark what was completed
+- Different developers can work on different task groups
+- Example: PR #1 completes tasks 1.1-1.3, PR #2 completes tasks 2.1-2.4
 
-Once a change is deployed:
-1. Update relevant files in `specs/` to reflect new reality
-2. If design.md exists, move proven patterns to `specs/[capability]/design.md`
-3. Archive the change directory with date prefix
+### 6. Updating Specs and Archiving After Deployment
+
+**Create a separate PR after deployment** that:
+1. Moves change to `changes/archive/YYYY-MM-DD-[name]/`
+2. Updates relevant files in `specs/` to reflect new reality (if needed)
+3. If design.md exists, incorporates proven patterns into `specs/[capability]/design.md`
+
+This ensures changes are only archived when truly complete and deployed.
 
 ### 7. Types of Changes That Don't Require Specs
 
@@ -201,9 +211,10 @@ User: "Initialize TypeScript project"
 
 You should:
 1. Create change proposal for TypeScript setup
-2. Implement configuration files
-3. Mark tasks complete
-4. Archive (no specs needed - this is tooling, not a capability)
+2. Implement configuration files (PR #1)
+3. Mark tasks complete in tasks.md
+4. After deployment, create separate PR to archive
+   (no specs update needed - this is tooling, not a capability)
 ```
 
 ## Summary Workflow
@@ -212,9 +223,53 @@ You should:
 2. **Read current state** → Check specs and pending changes
 3. **Create proposal** → Generate complete change documentation
 4. **Get approval** → User reviews the proposal
-5. **Implement** → Follow approved tasks
-6. **Update specs** → Sync with deployed reality
-7. **Archive** → Move completed changes to archive
+5. **Implement** → Follow approved tasks, mark completed items in tasks.md
+6. **Deploy** → User deploys the implementation
+7. **Archive PR** → Create separate PR to:
+   - Move change to archive
+   - Update specs if needed
+   - Mark change as complete
+
+## PR Workflow Examples
+
+### Single Developer, Simple Change
+```
+PR #1: Implementation
+- Implement all tasks
+- Update tasks.md marking items complete
+- Get merged and deployed
+
+PR #2: Archive (after deployment)
+- Move changes/feature-x/ → changes/archive/2025-01-15-feature-x/
+- Update specs if needed
+```
+
+### Multiple Developers, Complex Change
+```
+PR #1: Alice implements auth components
+- Complete tasks 1.1, 1.2, 1.3
+- Update tasks.md marking these complete
+
+PR #2: Bob implements UI components  
+- Complete tasks 2.1, 2.2
+- Update tasks.md marking these complete
+
+PR #3: Alice fixes integration issues
+- Complete remaining task 1.4
+- Update tasks.md
+
+[Deploy all changes]
+
+PR #4: Archive
+- Move to archive with deployment date
+- Update specs to reflect new auth flow
+```
+
+### Key Rules
+- **Never archive in implementation PRs** - changes aren't done until deployed
+- **Always update tasks.md** - shows accurate progress
+- **One archive PR per change** - clear completion boundary
+- **Archive PR includes spec updates** - keeps specs current
 
 ## Capability Organization Best Practices
 
