@@ -111,7 +111,7 @@ patches/
 2. **Review** → User reviews and approves the proposal
 3. **Implement** → Follow the approved tasks.md
 4. **Deploy** → User confirms deployment
-5. **Update Specs** → Sync specs/ with new reality
+5. **Update Specs** → Sync specs/ with new reality (IF the change affects system capabilities)
 6. **Archive** → Move to `changes/archive/YYYY-MM-DD-[name]/`
 
 ### 5. Implementing Changes
@@ -127,6 +127,27 @@ Once a change is deployed:
 1. Update relevant files in `specs/` to reflect new reality
 2. If design.md exists, move proven patterns to `specs/[capability]/design.md`
 3. Archive the change directory with date prefix
+
+### 7. Types of Changes That Don't Require Specs
+
+Some changes only affect development infrastructure and don't need specs:
+- Initial project setup (package.json, tsconfig.json, etc.)
+- Development tooling changes (linters, formatters, build tools)
+- CI/CD configuration
+- Development dependencies
+
+For these changes:
+1. Implement → Deploy → Mark tasks complete → Archive
+2. Skip the "Update Specs" step entirely
+
+### What Deserves a Spec?
+
+Ask yourself:
+- Is this a system capability that users or other systems interact with?
+- Does it have ongoing behavior that needs documentation?
+- Would a new developer need to understand this to work with the system?
+
+If NO to all → No spec needed (likely just tooling/infrastructure)
 
 ## Understanding Specs vs Code
 
@@ -172,6 +193,17 @@ You should:
 1. Check if spec says bios are optional
 2. If yes → Fix directly (it's a bug)
 3. If no → Create change proposal (it's a behavior change)
+```
+
+### Infrastructure Setup
+```
+User: "Initialize TypeScript project"
+
+You should:
+1. Create change proposal for TypeScript setup
+2. Implement configuration files
+3. Mark tasks complete
+4. Archive (no specs needed - this is tooling, not a capability)
 ```
 
 ## Summary Workflow
