@@ -1,0 +1,25 @@
+# Add Init Command for OpenSpec
+
+## Why
+
+Projects need a simple way to adopt OpenSpec conventions. Currently, users must manually create the directory structure and understand all the conventions, which creates friction for adoption. An init command would enable instant OpenSpec setup with proper structure and guidance.
+
+## What Changes
+
+- Add `openspec init` CLI command that creates the complete OpenSpec directory structure
+- Generate template files (README.md with AI instructions, project.md template)
+- Interactive prompts to gather project-specific information
+- Validation to prevent overwriting existing OpenSpec structures
+- Clear success/error messages to guide users
+
+### Breaking Changes
+- None - this is a new feature
+
+## Impact
+
+- Affected specs: None (new feature)
+- Affected code: 
+  - src/cli/index.ts (add init command)
+  - src/core/init.ts (new - initialization logic)
+  - src/core/templates/ (new - template files)
+  - src/utils/file-system.ts (new - file operations)
