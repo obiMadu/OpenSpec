@@ -1,0 +1,357 @@
+# OpenSpec Instructions
+
+This document provides instructions for AI coding assistants on how to use OpenSpec conventions for spec-driven development. Follow these rules precisely when working on OpenSpec-enabled projects.
+
+## Core Principle
+
+OpenSpec is an AI-native system for change-driven development where:
+- **Specs** (`specs/`) reflect what IS currently built and deployed
+- **Changes** (`changes/`) contain proposals for what SHOULD be changed
+- **AI drives the process** - You generate proposals, humans review and approve
+- **Specs are living documentation** - Always kept in sync with deployed code
+
+## Directory Structure
+
+```
+openspec/
+├── project.md              # Project-specific context (tech stack, conventions)
+├── README.md               # This file - OpenSpec instructions
+├── specs/                  # Current truth - what IS built
+│   ├── [capability]/       # Single, focused capability
+│   │   ├── spec.md         # WHAT the capability does and WHY
+│   │   └── design.md       # HOW it's built (established patterns)
+│   └── ...
+├── changes/                # Proposed changes - what we're CHANGING
+│   ├── [change-name]/
+│   │   ├── proposal.md     # Why, what, impact (consolidated)
+│   │   ├── tasks.md        # Implementation checklist
+│   │   ├── design.md       # Technical decisions (optional, for complex changes)
+│   │   └── patches/        # Spec intent changes
+│   │       └── [capability]/
+│   │           └── spec.md.diff
+│   └── archive/            # Completed changes (dated)
+```
+
+### Capability Organization
+
+**Use capabilities, not features** - Each directory under `specs/` represents a single, focused responsibility:
+- **Verb-noun naming**: `user-auth`, `payment-capture`, `order-checkout`
+- **10-minute rule**: Each capability should be understandable in <10 minutes
+- **Single purpose**: If it needs "AND" to describe it, split it
+
+Examples:
+```
+✅ GOOD: user-auth, user-sessions, payment-capture, payment-refunds
+❌ BAD: users, payments, core, misc
+```
+
+## Key Behavioral Rules
+
+### 1. Always Start by Reading
+
+Before any task:
+1. **Read relevant specs** in `specs/[capability]/spec.md` to understand current state
+2. **Check pending changes** in `changes/` directory for potential conflicts
+3. **Read project.md** for project-specific conventions
+
+### 2. When to Create Change Proposals
+
+**ALWAYS create a change proposal for:**
+- New features or functionality
+- Breaking changes (API changes, schema updates)
+- Architecture changes or new patterns
+- Performance optimizations that change behavior
+- Security updates affecting auth/access patterns
+- Any change requiring multiple steps or affecting multiple systems
+
+**SKIP proposals for:**
+- Bug fixes that restore intended behavior
+- Typos, formatting, or comment updates
+- Dependency updates (unless breaking)
+- Configuration or environment variable changes
+- Adding tests for existing behavior
+- Documentation fixes
+
+### 3. Creating a Change Proposal
+
+When a user requests a significant change:
+
+```bash
+# 1. Create the change directory
+openspec/changes/[descriptive-name]/
+
+# 2. Generate proposal.md with all context
+## Why
+[1-2 sentences on the problem/opportunity]
+
+## What Changes  
+[Bullet list of changes, including breaking changes]
+
+## Impact
+- Affected specs: [list capabilities that will change]
+- Affected code: [list key files/systems]
+
+# 3. Create patches showing spec changes
+patches/
+└── [capability]/
+    └── spec.md.diff
+
+# 4. Create tasks.md with implementation steps
+## 1. [Task Group]
+- [ ] 1.1 [Specific task]
+- [ ] 1.2 [Specific task]
+
+# 5. For complex changes, add design.md
+[Technical decisions and trade-offs]
+```
+
+### 4. The Change Lifecycle
+
+1. **Propose** → Create change directory with all documentation
+2. **Review** → User reviews and approves the proposal
+3. **Implement** → Follow the approved tasks.md
+4. **Deploy** → User confirms deployment
+5. **Update Specs** → Sync specs/ with new reality
+6. **Archive** → Move to `changes/archive/YYYY-MM-DD-[name]/`
+
+### 5. Implementing Changes
+
+When implementing an approved change:
+1. Follow the tasks.md checklist exactly
+2. Ensure code matches the proposed behavior
+3. Update any affected tests
+
+### 6. Updating Specs After Deployment
+
+Once a change is deployed:
+1. Update relevant files in `specs/` to reflect new reality
+2. If design.md exists, move proven patterns to `specs/[capability]/design.md`
+3. Archive the change directory with date prefix
+
+## Understanding Specs vs Code
+
+### Specs Document WHAT and WHY
+```markdown
+# Authentication Spec
+
+Users SHALL authenticate with email and password.
+
+WHEN credentials are valid THEN issue JWT token.
+WHEN credentials are invalid THEN return generic error.
+
+WHY: Prevent user enumeration attacks.
+```
+
+### Code Documents HOW
+```javascript
+// Implementation details
+const user = await db.users.findOne({ email });
+const valid = await bcrypt.compare(password, user.hashedPassword);
+```
+
+**Key Distinction**: Specs capture intent, constraints, and decisions that aren't obvious from code.
+
+## Common Scenarios
+
+### New Feature Request
+```
+User: "Add password reset functionality"
+
+You should:
+1. Read specs/user-auth/spec.md
+2. Check changes/ for pending auth changes
+3. Create changes/add-password-reset/ with proposal
+4. Wait for approval before implementing
+```
+
+### Bug Fix
+```
+User: "Getting null pointer error when bio is empty"
+
+You should:
+1. Check if spec says bios are optional
+2. If yes → Fix directly (it's a bug)
+3. If no → Create change proposal (it's a behavior change)
+```
+
+## Summary Workflow
+
+1. **Receive request** → Determine if it needs a change proposal
+2. **Read current state** → Check specs and pending changes
+3. **Create proposal** → Generate complete change documentation
+4. **Get approval** → User reviews the proposal
+5. **Implement** → Follow approved tasks
+6. **Update specs** → Sync with deployed reality
+7. **Archive** → Move completed changes to archive
+
+## Capability Organization Best Practices
+
+### Naming Capabilities
+- Use **verb-noun** patterns: `user-auth`, `payment-capture`, `order-checkout`
+- Be specific: `payment-capture` not just `payments`
+- Keep flat: Avoid nesting capabilities within capabilities
+- Singular focus: If you need "AND" to describe it, split it
+
+### When to Split Capabilities
+Split when you have:
+- Multiple unrelated API endpoints
+- Different user personas or actors
+- Separate deployment considerations
+- Independent evolution paths
+
+#### Capability Boundary Guidelines
+- Would you import these separately? → Separate capabilities
+- Different deployment cadence? → Separate capabilities
+- Different teams own them? → Separate capabilities
+- Shared data models are OK, shared business logic means combine
+
+Examples:
+- user-auth (login/logout) vs user-sessions (token management) → SEPARATE
+- payment-capture vs payment-refunds → SEPARATE (different workflows)
+- user-profile vs user-settings → COMBINE (same data model, same owner)
+
+### Cross-Cutting Concerns
+For system-wide policies (rate limiting, error handling, security), document them in:
+- `project.md` for project-wide conventions
+- Within relevant capability specs where they apply
+- Or create a dedicated capability if complex enough (e.g., `api-rate-limiting/`)
+
+### Examples of Well-Organized Capabilities
+```
+specs/
+├── user-auth/              # Login, logout, password reset
+├── user-sessions/          # Token management, refresh
+├── user-profile/           # Profile CRUD operations
+├── payment-capture/        # Processing payments
+├── payment-refunds/        # Handling refunds
+└── order-checkout/         # Checkout workflow
+```
+
+For detailed guidance, see the [Capability Organization Guide](../docs/capability-organization.md).
+
+## Common Scenarios and Clarifications
+
+### Decision Ambiguity: Bug vs Behavior Change
+
+When specs are missing or ambiguous:
+- If NO spec exists → Treat current code behavior as implicit spec, require proposal
+- If spec is VAGUE → Require proposal to clarify spec alongside fix
+- If code and spec DISAGREE → Spec is truth, code is buggy (fix without proposal)
+- If unsure → Default to creating a proposal (safer option)
+
+Example:
+```
+User: "The API returns 404 for missing users but should return 400"
+AI: Is this a bug (spec says 400) or behavior change (spec says 404)?
+```
+
+### When You Don't Know the Scope
+It's OK to explore first! Tell the user you need to investigate, then create an informed proposal.
+
+### Exploration Phase (When Needed)
+
+BEFORE creating proposal, you may need exploration when:
+- User request is vague or high-level
+- Multiple implementation approaches exist
+- Scope is unclear without seeing code
+
+Exploration checklist:
+1. Tell user you need to explore first
+2. Use Grep/Read to understand current state
+3. Create initial proposal based on findings
+4. Refine with user feedback
+
+Example:
+```
+User: "Add caching to improve performance"
+AI: "Let me explore the codebase to understand the current architecture and identify caching opportunities."
+[After exploration]
+AI: "Based on my analysis, I've identified three areas where caching would help. Here's my proposal..."
+```
+
+### When No Specs Exist
+Treat current code as implicit spec. Your proposal should document current state AND proposed changes.
+
+### When in Doubt
+Default to creating a proposal. It's easier to skip an unnecessary proposal than fix an undocumented change.
+
+### AI Workflow Adaptations
+
+Task tracking with OpenSpec:
+- Track exploration tasks separately from implementation
+- Document proposal creation steps as you go
+- Keep implementation tasks separate until proposal approved
+
+Parallel operations encouraged:
+- Read multiple specs simultaneously
+- Check multiple pending changes at once
+- Batch related searches for efficiency
+
+Progress communication:
+- "Exploring codebase to understand scope..."
+- "Creating proposal based on findings..."
+- "Implementing approved changes..."
+
+### For AI Assistants
+- Use your exploration tools liberally before proposing
+- Batch operations for efficiency
+- Communicate your progress
+- It's OK to revise proposals based on discoveries
+
+## Edge Case Handling
+
+### Multi-Capability Changes
+Create ONE proposal that:
+- Lists all affected capabilities
+- Shows changes per capability
+- Has unified task list
+- Gets approved as a whole
+
+### Outdated Specs
+If specs clearly outdated:
+1. Create proposal to update specs to match reality
+2. Implement new feature in separate proposal
+3. OR combine both in one proposal with clear sections
+
+### Emergency Hotfixes
+For critical production issues:
+1. Announce: "This is an emergency fix"
+2. Implement fix immediately
+3. Create retroactive proposal
+4. Update specs after deployment
+5. Tag with [EMERGENCY] in archive
+
+### Pure Refactoring
+No proposal needed for:
+- Code formatting/style
+- Internal refactoring (same API)
+- Performance optimization (same behavior)
+- Adding types to untyped code
+
+Proposal REQUIRED for:
+- API changes (even if compatible)
+- Database schema changes
+- Architecture changes
+- New dependencies
+
+### Observability Additions
+No proposal needed for:
+- Adding log statements
+- New metrics/traces
+- Debugging additions
+- Error tracking
+
+Proposal REQUIRED if:
+- Changes log format/structure
+- Adds new monitoring service
+- Changes what's logged (privacy)
+
+## Remember
+
+- You are the process driver - automate documentation burden
+- Specs must always reflect deployed reality
+- Changes are proposed, not imposed
+- Impact analysis prevents surprises
+- The simplicity is the power - just markdown files
+
+By following these conventions, you enable true spec-driven development where documentation stays current, changes are traceable, and evolution is intentional.
