@@ -28,11 +28,15 @@
   },
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "!dist/**/*.test.js",
+    "!dist/**/__tests__",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "build": "node build.js",
     "dev": "tsc --watch",
+    "dev:cli": "pnpm build && node bin/openspec.js",
     "prepare": "npm run build"
   },
   "engines": {
