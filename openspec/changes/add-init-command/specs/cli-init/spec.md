@@ -1,0 +1,66 @@
+# CLI Init Specification
+
+## Purpose
+
+The `openspec init` command SHALL create a complete OpenSpec directory structure in any project, enabling immediate adoption of OpenSpec conventions.
+
+## Behavior
+
+### Directory Creation
+
+WHEN `openspec init` is executed
+THEN create the following directory structure:
+```
+openspec/
+├── project.md
+├── README.md
+├── specs/
+└── changes/
+    └── archive/
+```
+
+### File Generation
+
+The command SHALL generate:
+- `README.md` containing complete OpenSpec instructions for AI assistants
+- `project.md` with customizable project context template
+
+### Interactive Mode (Default)
+
+WHEN run without flags
+THEN prompt user for:
+- Project name
+- Project description
+- Technology stack
+- Key conventions
+
+### Non-Interactive Mode
+
+WHEN run with `--yes` flag
+THEN use sensible defaults for all prompts
+
+WHEN run with `--no-input` flag
+THEN skip all prompts and use minimal defaults
+
+### Safety Checks
+
+WHEN `openspec/` directory already exists
+THEN exit with error unless `--force` flag is provided
+
+WHEN `--force` flag is provided
+THEN backup existing directory before overwriting
+
+### Exit Codes
+
+- 0: Success
+- 1: OpenSpec directory already exists
+- 2: Insufficient permissions
+- 3: User cancelled operation
+
+## Why
+
+Manual creation of OpenSpec structure is error-prone and creates adoption friction. A standardized init command ensures:
+- Consistent structure across all projects
+- Proper AI instruction files are always included
+- Quick onboarding for new projects
+- Clear conventions from the start
