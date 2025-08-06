@@ -1,6 +1,3 @@
---- /dev/null
-+++ b/openspec/specs/cli-init/spec.md
-@@ -0,0 +1,66 @@
 +# CLI Init Specification
 +
 +## Purpose
