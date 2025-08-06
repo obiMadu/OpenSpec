@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `openspec init` command SHALL create a complete OpenSpec directory structure in any project, enabling immediate adoption of OpenSpec conventions.
+The `openspec init` command SHALL create a complete OpenSpec directory structure in any project, enabling immediate adoption of OpenSpec conventions with support for multiple AI coding assistants.
 
 ## Behavior
 
@@ -19,36 +19,54 @@ openspec/
     └── archive/
 ```
 
+WHEN `--dir <name>` flag is provided
+THEN use custom directory name instead of "openspec"
+
 ### File Generation
 
 The command SHALL generate:
 - `README.md` containing complete OpenSpec instructions for AI assistants
 - `project.md` with customizable project context template
 
-### Interactive Mode (Default)
+### AI Tool Configuration
 
-WHEN run without flags
-THEN prompt user for:
-- Project name
-- Project description
-- Technology stack
-- Key conventions
+WHEN run interactively
+THEN prompt user to select AI tools to configure:
+- Claude Code (updates/creates CLAUDE.md with OpenSpec markers)
+- Cursor (future)
+- Aider (future)
 
-### Non-Interactive Mode
+WHEN updating existing AI configuration files
+THEN preserve existing content using markers:
+- Insert OpenSpec content between `<!-- OPENSPEC:START -->` and `<!-- OPENSPEC:END -->`
+- Preserve all content outside markers
 
-WHEN run with `--yes` flag
-THEN use sensible defaults for all prompts
+### Interactive Mode
 
-WHEN run with `--no-input` flag
-THEN skip all prompts and use minimal defaults
+WHEN run
+THEN prompt user to select AI tools to configure (multiple choice):
+- Claude Code (available)
+- Cursor (coming soon)
+- Aider (coming soon)
+- Continue (coming soon)
 
 ### Safety Checks
 
 WHEN `openspec/` directory already exists
-THEN exit with error unless `--force` flag is provided
+THEN exit with error message: "OpenSpec seems to already be initialized. Use 'openspec update' to update the structure."
 
-WHEN `--force` flag is provided
-THEN backup existing directory before overwriting
+### Success Output
+
+WHEN initialization completes successfully
+THEN display next steps:
+```
+✅ OpenSpec initialized successfully!
+
+Next steps:
+1. Edit openspec/project.md to add your project-specific guidelines
+2. Create your first change with: openspec change create <change-name>
+3. Start building with spec-driven development!
+```
 
 ### Exit Codes
 
