@@ -2,23 +2,18 @@
 
 ## Why
 
-Developers need visibility into the state of their OpenSpec changes to know what needs attention. Currently, there's no easy way to see which changes are ready for archiving, which are in progress, or which have incomplete tasks. A status command would provide immediate visibility and guide developers on next actions.
+Developers need to know which changes have all tasks completed and are ready to archive.
 
 ## What Changes
 
-- Add `openspec status` command to show the state of all changes
-- Display changes categorized as: ready to archive, in progress, and recently archived
-- Parse `tasks.md` files to detect task completion status (supports `[x]`, `[X]`, `[ ]` patterns)
-- Show actionable information: task counts, age of changes, suggested next steps
-- Support both summary and detailed views with `--detailed` flag
-- Include smart detection of common task format variations for robustness
-- Skip false positives in code blocks and example sections
+- Add `openspec status` command that scans the changes/ directory
+- Parse each tasks.md file to count `[x]` (complete) and `[ ]` (incomplete) tasks
+- Display each change with its completion status (e.g., "auth-feature: 5/5" or "auth-feature: ✓")
+- Skip the archive/ subdirectory
 
 ## Impact
 
 - Affected specs: New capability `cli-status` will be added
 - Affected code:
-  - `src/cli/index.ts` - Add status command registration
-  - `src/core/status.ts` - New file with status detection logic
-  - `src/utils/task-parser.ts` - New file for robust task parsing
-  - `src/utils/file-system.ts` - Extend with directory scanning utilities
+  - `src/cli/index.ts` - Add status command
+  - `src/core/status.ts` - New file with simple scanning and parsing logic (~50 lines)
