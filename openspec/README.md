@@ -26,9 +26,9 @@ openspec/
 │   │   ├── proposal.md     # Why, what, impact (consolidated)
 │   │   ├── tasks.md        # Implementation checklist
 │   │   ├── design.md       # Technical decisions (optional, for complex changes)
-│   │   └── patches/        # Spec intent changes
+│   │   └── specs/          # Future state of affected specs
 │   │       └── [capability]/
-│   │           └── spec.md.diff
+│   │           └── spec.md # Clean markdown (no diff syntax)
 │   └── archive/            # Completed changes (dated)
 ```
 
@@ -91,12 +91,13 @@ openspec/changes/[descriptive-name]/
 - Affected specs: [list capabilities that will change]
 - Affected code: [list key files/systems]
 
-# 3. Create patches for ALL spec changes
-# - For EXISTING capabilities: show what changes (+ for additions, - for removals)
-# - For NEW capabilities: show entire new spec with + prefix on every line
-patches/
+# 3. Create future state specs for ALL affected capabilities
+# - Store complete spec files as they will exist after the change
+# - Use clean markdown without diff syntax (+/- prefixes)
+# - Include all formatting and structure of the final intended state
+specs/
 └── [capability]/
-    └── spec.md.diff
+    └── spec.md
 
 # 4. Create tasks.md with implementation steps
 ## 1. [Task Group]
