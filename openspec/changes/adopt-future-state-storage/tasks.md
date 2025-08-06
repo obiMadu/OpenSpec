@@ -4,16 +4,11 @@
 - [ ] 1.1 Update openspec/README.md section on "Creating a Change Proposal"
   - [ ] Replace `patches/` with `specs/` in directory structure
   - [ ] Update step 3 to show storing complete future state
-  - [ ] Add note about explicit proposal requirements
-- [ ] 1.2 Update enhanced proposal format example
-  - [ ] Show before/after comparisons
-  - [ ] Include breaking change indicators
-  - [ ] Add impact analysis requirements
+  - [ ] Remove diff syntax instructions (+/- prefixes)
 
 ## 2. Migrate Existing Change
 - [ ] 2.1 Convert add-init-command change to new format
   - [ ] Create `specs/cli-init/spec.md` with clean content (no diff markers)
-  - [ ] Update proposal.md to be explicit about new capability
   - [ ] Delete old `patches/` directory
 - [ ] 2.2 Test that the migrated change is clear and reviewable
 
@@ -24,7 +19,6 @@
   - [ ] Ensure consistency throughout
 - [ ] 3.2 Update docs/openspec-walkthrough.md
   - [ ] Replace diff examples with future state examples
-  - [ ] Update the proposal format shown
   - [ ] Ensure the walkthrough reflects new approach
 
 ## 4. Create New Spec
