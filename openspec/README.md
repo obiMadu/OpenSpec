@@ -91,7 +91,9 @@ openspec/changes/[descriptive-name]/
 - Affected specs: [list capabilities that will change]
 - Affected code: [list key files/systems]
 
-# 3. Create patches showing spec changes
+# 3. Create patches for ALL spec changes
+# - For EXISTING capabilities: show what changes (+ for additions, - for removals)
+# - For NEW capabilities: show entire new spec with + prefix on every line
 patches/
 └── [capability]/
     └── spec.md.diff
