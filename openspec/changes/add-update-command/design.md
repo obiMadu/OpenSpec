@@ -2,106 +2,79 @@
 
 ## Architecture Decisions
 
-### Template Storage Strategy
-- Templates remain embedded as TypeScript functions in `src/core/templates.ts`
-- Templates support dynamic parameters (directory name, version)
-- No network access required - templates bundled with package
+### Simplicity First
+- No version tracking - always update when commanded
+- Complete file replacement - no content merging
+- Templates bundled with package - no network required
+- Minimal error handling - only check prerequisites
 
-### Version Management
-- Package version read from `package.json` at runtime
-- Project version stored as plain text in `.openspec/version`
-- Simple string comparison for version checking
-- Force flag bypasses all version checks
-
-### Content Preservation Strategy
-- **openspec/README.md**: Full replacement with latest template
-- **CLAUDE.md**: Surgical update using markers
-  - Content between `<!-- OPENSPEC:START -->` and `<!-- OPENSPEC:END -->` gets replaced
-  - All other content preserved exactly
-  - If markers don't exist, append new section with markers
+### Template Strategy
+- Use existing template functions from `src/core/templates.ts`
+- `getOpenSpecReadmeTemplate()` for README.md
+- `getClaudeMdTemplate()` for CLAUDE.md
+- Pass directory name parameter from config
 
 ### File Operations
-- Use Node.js `fs.promises` for async operations
-- Atomic writes via write-then-rename pattern
-- Check file existence before operations
-- Clear error messages for missing prerequisites
+- Simple synchronous writes using `fs.writeFileSync`
+- No atomic operations needed - users have git
+- Check directory existence before proceeding
 
-## Implementation Details
+## Implementation
 
-### Version Utilities (`src/utils/version.ts`)
+### Update Command (`src/cli/update.ts`)
 ```typescript
-export async function getPackageVersion(): Promise<string>
-export async function getProjectVersion(): Promise<string | null>
-export async function saveProjectVersion(version: string): Promise<void>
-export async function compareVersions(v1: string, v2: string): boolean
-```
-
-### Update Command Flow
-```typescript
-class UpdateCommand {
-  async execute(options: { force?: boolean }) {
-    // 1. Verify openspec directory exists
-    // 2. Get package and project versions
-    // 3. Check if update needed (or forced)
-    // 4. Update openspec/README.md
-    // 5. Update CLAUDE.md if it exists
-    // 6. Save new version to .openspec/version
-    // 7. Report success with version info
+export class UpdateCommand {
+  async execute(): Promise<void> {
+    // 1. Get config (directory name)
+    const config = await getConfig();
+    const openspecDir = path.join(process.cwd(), config.directoryName);
+    
+    // 2. Check openspec directory exists
+    if (!fs.existsSync(openspecDir)) {
+      console.error(`No OpenSpec directory found. Run 'openspec init' first.`);
+      process.exit(1);
+    }
+    
+    // 3. Update README.md
+    const readmePath = path.join(openspecDir, 'README.md');
+    const readmeContent = getOpenSpecReadmeTemplate(config.directoryName);
+    fs.writeFileSync(readmePath, readmeContent);
+    
+    // 4. Update CLAUDE.md
+    const claudePath = path.join(process.cwd(), 'CLAUDE.md');
+    const claudeContent = getClaudeMdTemplate(config.directoryName);
+    fs.writeFileSync(claudePath, claudeContent);
+    
+    // 5. Success message
+    console.log('✓ Updated OpenSpec instructions');
   }
 }
 ```
 
-### CLAUDE.md Update Logic
-```typescript
-function updateClaudeMd(content: string, newTemplate: string): string {
-  const START = '<!-- OPENSPEC:START -->';
-  const END = '<!-- OPENSPEC:END -->';
-  
-  if (content.includes(START)) {
-    // Replace existing section
-    const regex = new RegExp(`${START}[\\s\\S]*?${END}`, 'g');
-    return content.replace(regex, `${START}\n${newTemplate}\n${END}`);
-  } else {
-    // Append new section
-    return content + `\n\n${START}\n${newTemplate}\n${END}`;
-  }
-}
-```
+## Why This Approach
 
-## Trade-offs
+### Benefits
+- **Dead simple**: ~30 lines of code total
+- **Fast**: No version checks, no parsing, just write
+- **Predictable**: Same result every time
+- **Maintainable**: Almost nothing to break
 
-### Simplicity vs Features
-- No diff preview (users have git for comparison)
-- No selective updates (all-or-nothing approach)
-- No rollback mechanism (users rely on git)
-- No network updates (must upgrade package first)
-
-### Backward Compatibility
-- Gracefully handle missing `.openspec/version` (treat as v0.0.0)
-- Support projects without CLAUDE.md (skip that update)
-- Preserve all user content outside managed sections
+### Trade-offs Accepted
+- No content preservation (users should not customize these files)
+- No version tracking (unnecessary complexity)
+- Always overwrites (idempotent operation)
 
 ## Error Handling
 
-### Expected Errors
-- No openspec directory → "Run 'openspec init' first"
-- File permission issues → Include file path in error
-- Invalid version format → Treat as needing update
-
-### Recovery Strategy
-- Never partially update files
-- Verify all preconditions before any writes
-- Use try-catch at command level, not in utilities
+Only handle critical errors:
+- Missing openspec directory → Tell user to run init first
+- File write failures → Let Node.js error bubble up
 
 ## Testing Strategy
 
-### Unit Tests
-- Mock file system for version utilities
-- Test marker-based content replacement
-- Test version comparison logic
-
-### Integration Tests
-- Create temp directories for real file operations
-- Test full update flow with various scenarios
-- Verify content preservation in CLAUDE.md
-- Test force flag behavior
+Manual testing is sufficient:
+1. Run `openspec init` in test project
+2. Modify both files
+3. Run `openspec update`
+4. Verify files replaced
+5. Test with missing openspec directory
