@@ -10,7 +10,10 @@ export class FileSystemUtils {
     try {
       await fs.access(filePath);
       return true;
-    } catch {
+    } catch (error: any) {
+      if (error.code !== 'ENOENT') {
+        console.debug(`Unable to check if file exists at ${filePath}: ${error.message}`);
+      }
       return false;
     }
   }
@@ -19,7 +22,10 @@ export class FileSystemUtils {
     try {
       const stats = await fs.stat(dirPath);
       return stats.isDirectory();
-    } catch {
+    } catch (error: any) {
+      if (error.code !== 'ENOENT') {
+        console.debug(`Unable to check if directory exists at ${dirPath}: ${error.message}`);
+      }
       return false;
     }
   }
@@ -79,7 +85,8 @@ export class FileSystemUtils {
       await fs.writeFile(testFile, '');
       await fs.unlink(testFile);
       return true;
-    } catch {
+    } catch (error: any) {
+      console.debug(`Insufficient permissions to write to ${dirPath}: ${error.message}`);
       return false;
     }
   }

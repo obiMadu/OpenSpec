@@ -30,7 +30,7 @@ export class InitCommand {
     toolSpinner.succeed('AI tools configured');
 
     // Success message
-    this.displaySuccessMessage(openspecDir);
+    this.displaySuccessMessage(openspecDir, config);
   }
 
   private async validate(projectPath: string, openspecPath: string): Promise<void> {
@@ -108,11 +108,16 @@ export class InitCommand {
     }
   }
 
-  private displaySuccessMessage(openspecDir: string): void {
+  private displaySuccessMessage(openspecDir: string, config: OpenSpecConfig): void {
     console.log(); // Empty line for spacing
     ora().succeed('OpenSpec initialized successfully!');
     
-    console.log('\nNext steps - Copy these prompts to Claude:\n');
+    // Get the selected tool name for display
+    const selectedToolId = config.aiTools[0];
+    const selectedTool = AI_TOOLS.find(t => t.value === selectedToolId);
+    const toolName = selectedTool ? selectedTool.name : 'your AI assistant';
+    
+    console.log(`\nNext steps - Copy these prompts to ${toolName}:\n`);
     console.log('────────────────────────────────────────────────────────────');
     console.log('1. Populate your project context:');
     console.log('   "Please read openspec/project.md and help me fill it out');
