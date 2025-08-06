@@ -33,6 +33,6 @@
 - [x] 5.3 Ensure GitHub PR view shows diffs clearly
 
 ## 6. Deployment
-- [ ] 6.1 Get approval for this change
-- [ ] 6.2 Implement all tasks above
-- [ ] 6.3 After deployment, archive this change with completion date
+- [x] 6.1 Get approval for this change
+- [x] 6.2 Implement all tasks above
+- [x] 6.3 After deployment, archive this change with completion date
