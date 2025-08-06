@@ -31,8 +31,8 @@
 - [x] 5.4 Add error handling with helpful messages
 
 ## 6. Testing and Documentation
-- [ ] 6.1 Add unit tests for file system utilities
-- [ ] 6.2 Add unit tests for marker-based file updates
-- [ ] 6.3 Add integration tests for init command
+- [x] 6.1 Add unit tests for file system utilities
+- [x] 6.2 Add unit tests for marker-based file updates
+- [x] 6.3 Add integration tests for init command
 - [x] 6.4 Update package.json with proper bin configuration
 - [x] 6.5 Test the built CLI command end-to-end
