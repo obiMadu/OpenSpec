@@ -8,29 +8,32 @@ As a developer using OpenSpec, I want to update the OpenSpec instructions in my 
 
 ### Update Behavior
 
-The update command SHALL replace OpenSpec instruction files with the latest templates.
+The update command SHALL update OpenSpec instruction files to the latest templates.
 
 WHEN a user runs `openspec update` THEN the command SHALL:
-- Check if the openspec directory exists
-- Replace `openspec/README.md` with the latest template
-- Replace `CLAUDE.md` with the latest template
-- Display success message: "✓ Updated OpenSpec instructions"
+- Check if the `openspec` directory exists
+- Replace `openspec/README.md` with the latest template (complete replacement)
+- Update the OpenSpec-managed block in `CLAUDE.md` using markers
+  - Preserve user content outside markers
+  - Create `CLAUDE.md` if missing
+- Display ASCII-safe success message: "Updated OpenSpec instructions"
 
 ### Prerequisites
 
 The command SHALL require:
-- An existing openspec directory (created by `openspec init`)
+- An existing `openspec` directory (created by `openspec init`)
 
-IF the openspec directory does not exist THEN:
+IF the `openspec` directory does not exist THEN:
 - Display error: "No OpenSpec directory found. Run 'openspec init' first."
 - Exit with code 1
 
 ### File Handling
 
 The update command SHALL:
-- Completely replace both files with latest templates
-- Use the configured directory name in templates
-- Not preserve any existing content (clean replacement)
+- Completely replace `openspec/README.md` with the latest template
+- Update only the OpenSpec-managed block in `CLAUDE.md` using markers
+- Use the default directory name `openspec`
+- Be idempotent (repeated runs have no additional effect)
 
 ## Edge Cases
 
@@ -41,7 +44,7 @@ IF file write fails THEN let the error bubble up naturally with file path.
 IF CLAUDE.md doesn't exist THEN create it with the template content.
 
 ### Custom Directory Name
-The command SHALL use the directory name from `.openspec/config.json` if it exists.
+Not supported in this change. The default directory name `openspec` SHALL be used.
 
 ## Success Criteria
 
