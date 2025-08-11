@@ -3,6 +3,7 @@ import ora from 'ora';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { InitCommand } from '../core/init.js';
+import { UpdateCommand } from '../core/update.js';
 
 const program = new Command();
 
@@ -37,6 +38,21 @@ program
       
       const initCommand = new InitCommand();
       await initCommand.execute(targetPath);
+    } catch (error) {
+      console.log(); // Empty line for spacing
+      ora().fail(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('update [path]')
+  .description('Update OpenSpec instruction files')
+  .action(async (targetPath = '.') => {
+    try {
+      const resolvedPath = path.resolve(targetPath);
+      const updateCommand = new UpdateCommand();
+      await updateCommand.execute(resolvedPath);
     } catch (error) {
       console.log(); // Empty line for spacing
       ora().fail(`Error: ${(error as Error).message}`);
