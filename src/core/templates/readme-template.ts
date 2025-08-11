@@ -10,6 +10,23 @@ OpenSpec is an AI-native system for change-driven development where:
 - **AI drives the process** - You generate proposals, humans review and approve
 - **Specs are living documentation** - Always kept in sync with deployed code
 
+## Start Simple
+
+**Default to minimal implementations:**
+- New features should be <100 lines of code initially
+- Use the simplest solution that works
+- Avoid premature optimization (no caching, parallelization, or complex patterns without proven need)
+- Choose boring technology over cutting-edge solutions
+
+**Complexity triggers** - Only add complexity when you have:
+- **Performance data** showing current solution is too slow
+- **Scale requirements** with specific numbers (>1000 users, >100MB data)
+- **Multiple use cases** requiring the same abstraction
+- **Regulatory compliance** mandating specific patterns
+- **Security threats** that simple solutions cannot address
+
+When triggered, document the specific justification in your change proposal.
+
 ## Directory Structure
 
 \`\`\`
@@ -71,6 +88,11 @@ Before any task:
 - Configuration or environment variable changes
 - Adding tests for existing behavior
 - Documentation fixes
+
+**Complexity assessment:**
+- If your solution requires >100 lines of new code, justify the complexity
+- If adding dependencies, frameworks, or architectural patterns, document why simpler alternatives won't work
+- Default to single-file implementations until proven insufficient
 
 ### 3. Creating a Change Proposal
 
@@ -383,10 +405,12 @@ Progress communication:
 - "Implementing approved changes..."
 
 ### For AI Assistants
+- **Bias toward simplicity** - Propose the minimal solution that works
 - Use your exploration tools liberally before proposing
 - Batch operations for efficiency
 - Communicate your progress
 - It's OK to revise proposals based on discoveries
+- **Question complexity** - If your solution feels complex, simplify first
 
 ## Edge Case Handling
 
@@ -442,7 +466,8 @@ Proposal REQUIRED if:
 - Specs must always reflect deployed reality
 - Changes are proposed, not imposed
 - Impact analysis prevents surprises
-- The simplicity is the power - just markdown files
+- Simplicity is the power - just markdown files, minimal solutions
+- Start simple, add complexity only when justified
 
 By following these conventions, you enable true spec-driven development where documentation stays current, changes are traceable, and evolution is intentional.
 `;
