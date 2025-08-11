@@ -47,13 +47,17 @@
   },
   "devDependencies": {
     "@types/node": "^24.2.0",
+    "@types/prompts": "^2.4.9",
     "@vitest/ui": "^3.2.4",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.8.0",
+    "chalk": "^5.5.0",
     "commander": "^14.0.0",
-    "ora": "^8.2.0"
+    "diff": "^8.0.2",
+    "ora": "^8.2.0",
+    "prompts": "^2.4.2"
   }
 }
