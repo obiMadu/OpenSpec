@@ -2,11 +2,18 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { diffLines } from 'diff';
-import prompts from 'prompts';
+import { select } from '@inquirer/prompts';
+
+// Constants
+const ARCHIVE_DIR = 'archive';
+const MARKDOWN_EXT = '.md';
+const OPENSPEC_DIR = 'openspec';
+const CHANGES_DIR = 'changes';
+const SPECS_DIR = 'specs';
 
 export class DiffCommand {
   async execute(changeName?: string): Promise<void> {
-    const changesDir = path.join(process.cwd(), 'openspec', 'changes');
+    const changesDir = path.join(process.cwd(), OPENSPEC_DIR, CHANGES_DIR);
     
     try {
       await fs.access(changesDir);
@@ -27,7 +34,7 @@ export class DiffCommand {
       throw new Error(`Change '${changeName}' not found`);
     }
 
-    const changeSpecsDir = path.join(changeDir, 'specs');
+    const changeSpecsDir = path.join(changeDir, SPECS_DIR);
     
     try {
       await fs.access(changeSpecsDir);
@@ -42,7 +49,7 @@ export class DiffCommand {
   private async selectChange(changesDir: string): Promise<string | undefined> {
     const entries = await fs.readdir(changesDir, { withFileTypes: true });
     const changes = entries
-      .filter(entry => entry.isDirectory() && entry.name !== 'archive')
+      .filter(entry => entry.isDirectory() && entry.name !== ARCHIVE_DIR)
       .map(entry => entry.name);
 
     if (changes.length === 0) {
@@ -51,23 +58,21 @@ export class DiffCommand {
     }
 
     console.log('Available changes:');
-    const choices = changes.map((name, index) => ({
-      title: `${index + 1}. ${name}`,
+    const choices = changes.map((name) => ({
+      name: name,
       value: name
     }));
 
-    const response = await prompts({
-      type: 'select',
-      name: 'change',
+    const answer = await select({
       message: 'Select a change',
       choices
     });
 
-    return response.change;
+    return answer;
   }
 
   private async showDiffs(changeSpecsDir: string): Promise<void> {
-    const currentSpecsDir = path.join(process.cwd(), 'openspec', 'specs');
+    const currentSpecsDir = path.join(process.cwd(), OPENSPEC_DIR, SPECS_DIR);
     await this.walkAndDiff(changeSpecsDir, currentSpecsDir, '');
   }
 
@@ -79,7 +84,7 @@ export class DiffCommand {
       
       if (entry.isDirectory()) {
         await this.walkAndDiff(changeDir, currentDir, entryPath);
-      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+      } else if (entry.isFile() && entry.name.endsWith(MARKDOWN_EXT)) {
         await this.diffFile(
           path.join(changeDir, entryPath),
           path.join(currentDir, entryPath),
@@ -115,7 +120,13 @@ export class DiffCommand {
     const diff = diffLines(currentContent, changeContent);
     
     diff.forEach(part => {
-      const lines = part.value.split('\n').filter(line => line !== '');
+      // Split by newline but keep empty lines
+      const lines = part.value.split('\n');
+      
+      // Remove the last empty string if the part ends with a newline
+      if (lines[lines.length - 1] === '') {
+        lines.pop();
+      }
       
       lines.forEach(line => {
         if (part.added) {

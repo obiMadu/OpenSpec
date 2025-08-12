@@ -12,7 +12,7 @@
 - [x] 2.3 Add error handling for missing changes
 
 ## 3. Testing
-- [x] 3.1 Test diff generation for modified files
-- [x] 3.2 Test handling of new files
-- [x] 3.3 Test handling of deleted files
-- [x] 3.4 Test interactive mode
+- [ ] 3.1 Test diff generation for modified files
+- [ ] 3.2 Test handling of new files
+- [ ] 3.3 Test handling of deleted files
+- [ ] 3.4 Test interactive mode
