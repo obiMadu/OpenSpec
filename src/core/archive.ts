@@ -10,7 +10,7 @@ interface SpecUpdate {
 }
 
 export class ArchiveCommand {
-  async execute(changeName?: string, options: { yes?: boolean } = {}): Promise<void> {
+  async execute(changeName?: string, options: { yes?: boolean; skipSpecs?: boolean } = {}): Promise<void> {
     const targetPath = '.';
     const changesDir = path.join(targetPath, 'openspec', 'changes');
     const archiveDir = path.join(changesDir, 'archive');
@@ -64,33 +64,40 @@ export class ArchiveCommand {
       }
     }
 
-    // Find specs to update
-    const specUpdates = await this.findSpecUpdates(changeDir, mainSpecsDir);
-    
-    if (specUpdates.length > 0) {
-      console.log('\nSpecs to update:');
-      for (const update of specUpdates) {
-        const status = update.exists ? 'update' : 'create';
-        const capability = path.basename(path.dirname(update.target));
-        console.log(`  ${capability}: ${status}`);
-      }
+    // Handle spec updates unless skipSpecs flag is set
+    if (options.skipSpecs) {
+      console.log('Skipping spec updates (--skip-specs flag provided).');
+    } else {
+      // Find specs to update
+      const specUpdates = await this.findSpecUpdates(changeDir, mainSpecsDir);
+      
+      if (specUpdates.length > 0) {
+        console.log('\nSpecs to update:');
+        for (const update of specUpdates) {
+          const status = update.exists ? 'update' : 'create';
+          const capability = path.basename(path.dirname(update.target));
+          console.log(`  ${capability}: ${status}`);
+        }
 
-      if (!options.yes) {
-        const proceed = await confirm({
-          message: 'Proceed with spec updates?',
-          default: true
-        });
-        if (!proceed) {
-          console.log('Archive cancelled.');
-          return;
+        let shouldUpdateSpecs = true;
+        if (!options.yes) {
+          shouldUpdateSpecs = await confirm({
+            message: 'Proceed with spec updates?',
+            default: true
+          });
+          if (!shouldUpdateSpecs) {
+            console.log('Skipping spec updates. Proceeding with archive.');
+          }
+        }
+
+        if (shouldUpdateSpecs) {
+          // Update specs
+          for (const update of specUpdates) {
+            await this.updateSpec(update);
+          }
+          console.log('Specs updated successfully.');
         }
       }
-
-      // Update specs
-      for (const update of specUpdates) {
-        await this.updateSpec(update);
-      }
-      console.log('Specs updated successfully.');
     }
 
     // Create archive directory with date prefix

@@ -171,6 +171,76 @@ describe('ArchiveCommand', () => {
       const archives = await fs.readdir(archiveDir);
       expect(archives.length).toBe(1);
     });
+
+    it('should skip spec updates when --skip-specs flag is used', async () => {
+      const changeName = 'skip-specs-feature';
+      const changeDir = path.join(tempDir, 'openspec', 'changes', changeName);
+      const changeSpecDir = path.join(changeDir, 'specs', 'test-capability');
+      await fs.mkdir(changeSpecDir, { recursive: true });
+      
+      // Create spec in change
+      const specContent = '# Test Capability Spec\n\nTest content';
+      await fs.writeFile(path.join(changeSpecDir, 'spec.md'), specContent);
+      
+      // Execute archive with --skip-specs flag
+      await archiveCommand.execute(changeName, { yes: true, skipSpecs: true });
+      
+      // Verify skip message was logged
+      expect(console.log).toHaveBeenCalledWith(
+        'Skipping spec updates (--skip-specs flag provided).'
+      );
+      
+      // Verify spec was NOT copied to main specs
+      const mainSpecPath = path.join(tempDir, 'openspec', 'specs', 'test-capability', 'spec.md');
+      await expect(fs.access(mainSpecPath)).rejects.toThrow();
+      
+      // Verify change was still archived
+      const archiveDir = path.join(tempDir, 'openspec', 'changes', 'archive');
+      const archives = await fs.readdir(archiveDir);
+      expect(archives.length).toBe(1);
+      expect(archives[0]).toMatch(new RegExp(`\\d{4}-\\d{2}-\\d{2}-${changeName}`));
+    });
+
+    it('should proceed with archive when user declines spec updates', async () => {
+      const { confirm } = await import('@inquirer/prompts');
+      const mockConfirm = confirm as unknown as ReturnType<typeof vi.fn>;
+      
+      const changeName = 'decline-specs-feature';
+      const changeDir = path.join(tempDir, 'openspec', 'changes', changeName);
+      const changeSpecDir = path.join(changeDir, 'specs', 'test-capability');
+      await fs.mkdir(changeSpecDir, { recursive: true });
+      
+      // Create spec in change
+      const specContent = '# Test Capability Spec\n\nTest content';
+      await fs.writeFile(path.join(changeSpecDir, 'spec.md'), specContent);
+      
+      // Mock confirm to return false (decline spec updates)
+      mockConfirm.mockResolvedValueOnce(false);
+      
+      // Execute archive without --yes flag
+      await archiveCommand.execute(changeName);
+      
+      // Verify user was prompted about specs
+      expect(mockConfirm).toHaveBeenCalledWith({
+        message: 'Proceed with spec updates?',
+        default: true
+      });
+      
+      // Verify skip message was logged
+      expect(console.log).toHaveBeenCalledWith(
+        'Skipping spec updates. Proceeding with archive.'
+      );
+      
+      // Verify spec was NOT copied to main specs
+      const mainSpecPath = path.join(tempDir, 'openspec', 'specs', 'test-capability', 'spec.md');
+      await expect(fs.access(mainSpecPath)).rejects.toThrow();
+      
+      // Verify change was still archived
+      const archiveDir = path.join(tempDir, 'openspec', 'changes', 'archive');
+      const archives = await fs.readdir(archiveDir);
+      expect(archives.length).toBe(1);
+      expect(archives[0]).toMatch(new RegExp(`\\d{4}-\\d{2}-\\d{2}-${changeName}`));
+    });
   });
 
   describe('error handling', () => {

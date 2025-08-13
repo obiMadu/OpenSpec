@@ -95,7 +95,8 @@ program
   .command('archive [change-name]')
   .description('Archive a completed change and update main specs')
   .option('-y, --yes', 'Skip confirmation prompts')
-  .action(async (changeName?: string, options?: { yes?: boolean }) => {
+  .option('--skip-specs', 'Skip spec update operations')
+  .action(async (changeName?: string, options?: { yes?: boolean; skipSpecs?: boolean }) => {
     try {
       const archiveCommand = new ArchiveCommand();
       await archiveCommand.execute(changeName, options);
