@@ -73,28 +73,6 @@ Behavioral specifications SHALL use a structured format with consistent section 
   - Sub-bullets provide examples or specifics
   - Keep sub-bullets concise
 
-### Requirement: Format Flexibility
-
-The structured format SHALL be the default for behavioral specifications, but alternative formats MAY be used when more appropriate for the content type.
-
-#### Scenario: Documenting API specifications
-
-- **WHEN** documenting REST API endpoints or GraphQL schemas
-- **THEN** OpenAPI, GraphQL SDL, or similar formats MAY be used
-- **AND** the spec SHALL clearly indicate the format being used
-- **AND** behavioral aspects SHALL still follow the structured format
-
-#### Scenario: Documenting data schemas
-
-- **WHEN** documenting data structures, database schemas, or configurations
-- **THEN** JSON Schema, SQL DDL, or similar formats MAY be used
-- **AND** include the structured format for behavioral rules and constraints
-
-#### Scenario: Using simplified format
-
-- **WHEN** documenting simple capabilities without complex scenarios
-- **THEN** a simplified WHEN/THEN format without full structure MAY be used
-- **AND** this should be consistent within the capability
 
 ## Change Storage Convention
 
@@ -196,5 +174,4 @@ Clean future state storage provides:
 The structured format adds:
 - **Visual Consistency**: Requirement and Scenario prefixes make sections instantly recognizable
 - **Parseability**: Consistent structure enables tooling and automation
-- **Flexibility**: Alternative formats supported where appropriate
 - **Gradual Adoption**: Existing specs can migrate incrementally
