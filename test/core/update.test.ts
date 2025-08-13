@@ -41,6 +41,8 @@ Old OpenSpec content
 More content after.`;
     await fs.writeFile(claudePath, initialContent);
 
+    const consoleSpy = vi.spyOn(console, 'log');
+    
     // Execute update command
     await updateCommand.execute(testDir);
 
@@ -51,6 +53,12 @@ More content after.`;
     expect(updatedContent).toContain('This project uses OpenSpec');
     expect(updatedContent).toContain('Some existing content here');
     expect(updatedContent).toContain('More content after');
+    
+    // Check console output
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Updated OpenSpec instructions (README.md)\nUpdated AI tool files: CLAUDE.md'
+    );
+    consoleSpy.mockRestore();
   });
 
   it('should not create CLAUDE.md if it does not exist', async () => {
@@ -71,21 +79,25 @@ More content after.`;
     await updateCommand.execute(testDir);
 
     // Should only update OpenSpec instructions
-    expect(consoleSpy).toHaveBeenCalledWith('Updated OpenSpec instructions');
+    expect(consoleSpy).toHaveBeenCalledWith('Updated OpenSpec instructions (README.md)');
     consoleSpy.mockRestore();
   });
 
   it('should update multiple AI tool files if present', async () => {
-    // For this test, we'll need to register a second configurator
-    // Since we only have Claude right now, we'll mock this scenario
+    // TODO: When additional configurators are added (Cursor, Aider, etc.),
+    // enhance this test to create multiple AI tool files and verify
+    // that all existing files are updated in a single operation.
+    // For now, we test with just CLAUDE.md.
     const claudePath = path.join(testDir, 'CLAUDE.md');
     await fs.writeFile(claudePath, '<!-- OPENSPEC:START -->\nOld\n<!-- OPENSPEC:END -->');
 
     const consoleSpy = vi.spyOn(console, 'log');
     await updateCommand.execute(testDir);
 
-    // Should report updating CLAUDE.md
-    expect(consoleSpy).toHaveBeenCalledWith('Updated OpenSpec instructions and CLAUDE.md');
+    // Should report updating with new format
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Updated OpenSpec instructions (README.md)\nUpdated AI tool files: CLAUDE.md'
+    );
     consoleSpy.mockRestore();
   });
 
@@ -125,5 +137,29 @@ More content after.`;
     await expect(updateCommand.execute(testDir)).rejects.toThrow(
       "No OpenSpec directory found. Run 'openspec init' first."
     );
+  });
+
+  it('should handle configurator errors gracefully', async () => {
+    // Create CLAUDE.md file but make it read-only to cause an error
+    const claudePath = path.join(testDir, 'CLAUDE.md');
+    await fs.writeFile(claudePath, '<!-- OPENSPEC:START -->\nOld\n<!-- OPENSPEC:END -->');
+    await fs.chmod(claudePath, 0o444); // Read-only
+    
+    const consoleSpy = vi.spyOn(console, 'log');
+    const errorSpy = vi.spyOn(console, 'error');
+    
+    // Execute update command - should not throw
+    await updateCommand.execute(testDir);
+    
+    // Should report the failure
+    expect(errorSpy).toHaveBeenCalled();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Updated OpenSpec instructions (README.md)\nFailed to update: CLAUDE.md'
+    );
+    
+    // Restore permissions for cleanup
+    await fs.chmod(claudePath, 0o644);
+    consoleSpy.mockRestore();
+    errorSpy.mockRestore();
   });
 });
