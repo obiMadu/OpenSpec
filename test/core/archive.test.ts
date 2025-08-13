@@ -4,14 +4,10 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 
-// Mock readline
-vi.mock('readline', () => ({
-  default: {
-    createInterface: vi.fn(() => ({
-      question: vi.fn(),
-      close: vi.fn()
-    }))
-  }
+// Mock @inquirer/prompts
+vi.mock('@inquirer/prompts', () => ({
+  select: vi.fn(),
+  confirm: vi.fn()
 }));
 
 describe('ArchiveCommand', () => {
@@ -42,6 +38,9 @@ describe('ArchiveCommand', () => {
   afterEach(async () => {
     // Restore console.log
     console.log = originalConsoleLog;
+    
+    // Clear mocks
+    vi.clearAllMocks();
     
     // Clean up temp directory
     try {
@@ -182,6 +181,89 @@ describe('ArchiveCommand', () => {
       await expect(
         archiveCommand.execute('any-change', { yes: true })
       ).rejects.toThrow("No OpenSpec changes directory found. Run 'openspec init' first.");
+    });
+  });
+
+  describe('interactive mode', () => {
+    it('should use select prompt for change selection', async () => {
+      const { select } = await import('@inquirer/prompts');
+      const mockSelect = select as unknown as ReturnType<typeof vi.fn>;
+      
+      // Create test changes
+      const change1 = 'feature-a';
+      const change2 = 'feature-b';
+      await fs.mkdir(path.join(tempDir, 'openspec', 'changes', change1), { recursive: true });
+      await fs.mkdir(path.join(tempDir, 'openspec', 'changes', change2), { recursive: true });
+      
+      // Mock select to return first change
+      mockSelect.mockResolvedValueOnce(change1);
+      
+      // Execute without change name
+      await archiveCommand.execute(undefined, { yes: true });
+      
+      // Verify select was called with correct options
+      expect(mockSelect).toHaveBeenCalledWith({
+        message: 'Select a change to archive',
+        choices: [
+          { name: change1, value: change1 },
+          { name: change2, value: change2 }
+        ]
+      });
+      
+      // Verify the selected change was archived
+      const archiveDir = path.join(tempDir, 'openspec', 'changes', 'archive');
+      const archives = await fs.readdir(archiveDir);
+      expect(archives[0]).toContain(change1);
+    });
+
+    it('should use confirm prompt for task warnings', async () => {
+      const { confirm } = await import('@inquirer/prompts');
+      const mockConfirm = confirm as unknown as ReturnType<typeof vi.fn>;
+      
+      const changeName = 'incomplete-interactive';
+      const changeDir = path.join(tempDir, 'openspec', 'changes', changeName);
+      await fs.mkdir(changeDir, { recursive: true });
+      
+      // Create tasks.md with incomplete tasks
+      const tasksContent = '- [ ] Task 1';
+      await fs.writeFile(path.join(changeDir, 'tasks.md'), tasksContent);
+      
+      // Mock confirm to return true (proceed)
+      mockConfirm.mockResolvedValueOnce(true);
+      
+      // Execute without --yes flag
+      await archiveCommand.execute(changeName);
+      
+      // Verify confirm was called
+      expect(mockConfirm).toHaveBeenCalledWith({
+        message: 'Warning: 1 incomplete task(s) found. Continue?',
+        default: false
+      });
+    });
+
+    it('should cancel when user declines task warning', async () => {
+      const { confirm } = await import('@inquirer/prompts');
+      const mockConfirm = confirm as unknown as ReturnType<typeof vi.fn>;
+      
+      const changeName = 'cancel-test';
+      const changeDir = path.join(tempDir, 'openspec', 'changes', changeName);
+      await fs.mkdir(changeDir, { recursive: true });
+      
+      // Create tasks.md with incomplete tasks
+      const tasksContent = '- [ ] Task 1';
+      await fs.writeFile(path.join(changeDir, 'tasks.md'), tasksContent);
+      
+      // Mock confirm to return false (cancel)
+      mockConfirm.mockResolvedValueOnce(false);
+      
+      // Execute without --yes flag
+      await archiveCommand.execute(changeName);
+      
+      // Verify archive was cancelled
+      expect(console.log).toHaveBeenCalledWith('Archive cancelled.');
+      
+      // Verify change was not archived
+      await expect(fs.access(changeDir)).resolves.not.toThrow();
     });
   });
 });
