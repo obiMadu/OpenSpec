@@ -164,25 +164,6 @@ A proposal is NOT required for:
 - Adding tests for existing behavior
 - Documentation clarifications
 
-## Migration to Structured Format
-
-### Requirement: Gradual Migration
-
-Existing specifications SHALL be migrated to the structured format gradually as they are modified.
-
-#### Scenario: Updating an existing spec
-
-- **WHEN** making changes to a specification not using the structured format
-- **THEN** update the affected sections to follow the structured format
-- **AND** ensure all requirements in the modified section are converted
-- **AND** document the partial conversion status if not fully migrated
-
-#### Scenario: Creating new specifications
-
-- **WHEN** creating a new capability specification
-- **THEN** use the structured format from the beginning
-- **AND** follow the format appropriate for the content type
-
 ## Why This Approach
 
 Clean future state storage provides:
