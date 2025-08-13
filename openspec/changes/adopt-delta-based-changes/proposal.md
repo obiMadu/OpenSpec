@@ -6,61 +6,26 @@ The current approach of storing complete future states in change proposals creat
 
 ## What Changes
 
-**Change Storage Convention**
-- From: Store complete future state specifications in `changes/[name]/specs/`
-- To: Store only ADDED, MODIFIED, or REMOVED requirements/scenarios
-- Reason: GitHub diffs become readable, showing only actual changes
-- Impact: Breaking change for existing tooling, but improves human review experience
+Store only the requirements that actually change, not complete future states:
 
-**Change File Format**
-- From: Clean markdown files matching future spec structure
-- To: Structured sections clearly marking changes:
-  - `## ADDED Requirements` - New capabilities
-  - `## MODIFIED Requirements` - Changed behaviors  
-  - `## REMOVED Requirements` - Deprecated capabilities
-  - `## RENAMED Requirements` - Explicit requirement renames
-- Reason: Explicit about what's changing vs what stays the same
-- Impact: Non-breaking for manual processes, requires tooling updates
+- **ADDED Requirements**: New capabilities being introduced
+- **MODIFIED Requirements**: Existing requirements being changed (must match current header)
+- **REMOVED Requirements**: Deprecated capabilities
+- **RENAMED Requirements**: Explicit header changes (e.g., `FROM: Old Name` → `TO: New Name`)
 
-**Headers as Unique Identifiers**
-- From: Headers are just formatting elements
-- To: Headers (`### Requirement: [Name]`) serve as unique IDs for programmatic matching
-- Reason: Enables reliable automated application of changes
-- Impact: MODIFIED sections must use exact header text from current spec
-- Key rules:
-  - Exact character-for-character matching required
-  - Renames must be explicit in RENAMED section
-  - Validation ensures no duplicate headers within a spec
-
-**Complex Changes Handling**
-- From: No special handling for structural changes
-- To: Support `## RESTRUCTURED Specification` marker for complete reorganizations
-- Reason: Some changes genuinely need full state visibility
-- Impact: Provides escape hatch for complex changes
-
-**Archive Process**
-- From: Manually copy future state to specs/ after deployment
-- To: Programmatically apply ADDED/MODIFIED/REMOVED sections to current specs
-- Reason: Less error-prone, automatable
-- Impact: Requires enhancement to archive tooling
+The archive command will programmatically apply these deltas using header matching (with whitespace normalization) instead of manually copying entire files.
 
 ## Impact
 
-- Affected specs: 
-  - openspec-conventions: Core change to how changes are stored
-  - cli-archive: Must parse and apply deltas instead of copying full states
-  - cli-diff: Displays delta sections directly instead of comparing full states
-- Affected code: 
-  - Archive command implementation (critical - applies deltas programmatically)
-  - Diff command implementation (shows delta format)
-  - Other CLI commands may need minor updates (init, update, list)
-  - Any automation that expects full future states
-- Migration: Existing changes can remain as-is; new convention applies to new changes
-- Benefits:
-  - GitHub PRs show only actual changes (25 lines vs 100+)
-  - Reviewers immediately understand what's changing
-  - Conflicts are more apparent and easier to resolve
-  - Enables better automation for applying changes
+**Affected specs**: openspec-conventions, cli-archive, cli-diff
+
+**Benefits**:
+- GitHub diffs show only actual changes (25 lines instead of 150+)
+- Reviewers immediately see what's being added, modified, or removed
+- Conflicts are more apparent when two changes modify the same requirement
+- Archive command can programmatically apply changes
+
+**Compatibility**: Both formats supported - existing full-state changes remain valid.
 
 ## Example
 
@@ -81,7 +46,7 @@ Users SHALL authenticate via OAuth providers including Google and GitHub.
 
 ## MODIFIED Requirements
 
-### Requirement: Session Management    # ← Must match current spec header EXACTLY
+### Requirement: Session Management
 Sessions SHALL expire after 30 minutes of inactivity.
 
 #### Scenario: Inactive session timeout  
@@ -98,16 +63,4 @@ This makes reviews focused and changes explicit. The archive command can program
 
 ## Conflict Resolution
 
-Conflicts are naturally handled by Git's existing merge mechanisms:
-
-**Scenario 1**: Two PRs modify the same requirement
-- Both PRs have `### Requirement: Session Management` in their MODIFIED sections
-- Git shows conflict in the delta file
-- Developer resolves by choosing or combining the modifications
-
-**Scenario 2**: One PR removes, another modifies
-- PR A has requirement in REMOVED section
-- PR B has same requirement in MODIFIED section
-- Git shows conflict, human judgment required
-
-This is actually BETTER than full-state storage where Git might silently merge incompatible changes.
+Git naturally detects conflicts when two changes modify the same requirement header. This is actually better than full-state storage where Git might silently merge incompatible changes.
