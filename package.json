@@ -55,7 +55,7 @@
     "@inquirer/prompts": "^7.8.0",
     "chalk": "^5.5.0",
     "commander": "^14.0.0",
-    "diff": "^8.0.2",
+    "jest-diff": "^30.0.5",
     "ora": "^8.2.0"
   }
 }

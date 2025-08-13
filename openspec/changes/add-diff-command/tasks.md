@@ -12,7 +12,7 @@
 - [x] 2.3 Add error handling for missing changes
 
 ## 3. Enhancements
-- [x] 3.1 Add word-level diff highlighting for better readability
+- [x] 3.1 Replace with jest-diff for professional diff output
 - [x] 3.2 Improve file headers with status and statistics
 - [x] 3.3 Add summary view with file counts and line changes
 

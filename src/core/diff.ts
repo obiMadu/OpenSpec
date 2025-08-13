@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
-import { diffLines, diffWords } from 'diff';
+import { diffStringsUnified } from 'jest-diff';
 import { select } from '@inquirer/prompts';
 
 // Constants
@@ -112,6 +112,7 @@ export class DiffCommand {
     let changeContent = '';
     let currentContent = '';
     let isNewFile = false;
+    let isDeleted = false;
     
     try {
       changeContent = await fs.readFile(changePath, 'utf-8');
@@ -130,100 +131,49 @@ export class DiffCommand {
       return;
     }
 
+    if (changeContent === '' && currentContent !== '') {
+      isDeleted = true;
+    }
+
     // Enhanced header with file status
     console.log(chalk.bold.cyan(`\n${'═'.repeat(60)}`));
     console.log(chalk.bold.cyan(`📄 ${displayPath}`));
     
     if (isNewFile) {
       console.log(chalk.green(`   Status: NEW FILE`));
-    } else if (changeContent === '') {
+    } else if (isDeleted) {
       console.log(chalk.red(`   Status: DELETED`));
     } else {
       console.log(chalk.yellow(`   Status: MODIFIED`));
     }
     
-    const diff = diffLines(currentContent, changeContent);
+    // Use jest-diff for the actual diff with custom options
+    const diffOptions = {
+      aAnnotation: 'Current',
+      bAnnotation: 'Proposed',
+      aColor: chalk.red,
+      bColor: chalk.green,
+      commonColor: chalk.gray,
+      contextLines: 3,
+      expand: false,
+      includeChangeCounts: true,
+    };
+
+    const diff = diffStringsUnified(currentContent, changeContent, diffOptions);
     
-    // Count changes for summary
-    let localLinesAdded = 0;
-    let localLinesRemoved = 0;
+    // Count lines for statistics (approximate)
+    const addedLines = (diff.match(/^\+[^+]/gm) || []).length;
+    const removedLines = (diff.match(/^-[^-]/gm) || []).length;
     
-    // Build pairs of removed/added lines for word-level diff
-    const linePairs: Array<{removed?: string, added?: string, unchanged?: string}> = [];
-    
-    diff.forEach(part => {
-      const lines = part.value.split('\n');
-      if (lines[lines.length - 1] === '') {
-        lines.pop();
-      }
-      
-      if (part.removed) {
-        localLinesRemoved += lines.length;
-        lines.forEach(line => {
-          linePairs.push({ removed: line });
-        });
-      } else if (part.added) {
-        localLinesAdded += lines.length;
-        let addIndex = linePairs.length - localLinesRemoved;
-        lines.forEach((line, i) => {
-          if (addIndex + i < linePairs.length && linePairs[addIndex + i].removed !== undefined) {
-            linePairs[addIndex + i].added = line;
-          } else {
-            linePairs.push({ added: line });
-          }
-        });
-      } else {
-        lines.forEach(line => {
-          linePairs.push({ removed: undefined, added: undefined, unchanged: line });
-        });
-      }
-    });
-    
-    console.log(chalk.gray(`   Lines: ${chalk.green(`+${localLinesAdded}`)} ${chalk.red(`-${localLinesRemoved}`)}`));
+    console.log(chalk.gray(`   Lines: ${chalk.green(`+${addedLines}`)} ${chalk.red(`-${removedLines}`)}`));
     console.log(chalk.bold.cyan(`${'─'.repeat(60)}\n`));
     
-    // Display the diff with word-level highlighting for changed lines
-    linePairs.forEach(pair => {
-      if (pair.unchanged !== undefined) {
-        console.log(` ${pair.unchanged}`);
-      } else if (pair.removed !== undefined && pair.added !== undefined) {
-        // Both removed and added - show word-level diff
-        this.displayWordDiff(pair.removed, pair.added);
-      } else if (pair.removed !== undefined) {
-        console.log(chalk.red(`-${pair.removed}`));
-      } else if (pair.added !== undefined) {
-        console.log(chalk.green(`+${pair.added}`));
-      }
-    });
+    // Display the diff
+    console.log(diff);
     
+    // Update counters
     this.filesChanged++;
-    this.linesAdded += localLinesAdded;
-    this.linesRemoved += localLinesRemoved;
-  }
-
-  private displayWordDiff(oldLine: string, newLine: string): void {
-    // Show word-level differences within the line
-    const wordDiff = diffWords(oldLine, newLine);
-    
-    // Build the removed line with highlighting
-    let removedLine = '-';
-    let addedLine = '+';
-    
-    wordDiff.forEach(part => {
-      if (part.removed) {
-        removedLine += chalk.bgRed.white(part.value);
-      } else if (!part.added) {
-        removedLine += chalk.red(part.value);
-      }
-      
-      if (part.added) {
-        addedLine += chalk.bgGreen.black(part.value);
-      } else if (!part.removed) {
-        addedLine += chalk.green(part.value);
-      }
-    });
-    
-    console.log(removedLine);
-    console.log(addedLine);
+    this.linesAdded += addedLines;
+    this.linesRemoved += removedLines;
   }
 }
