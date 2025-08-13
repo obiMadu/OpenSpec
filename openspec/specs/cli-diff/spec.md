@@ -12,45 +12,88 @@ openspec diff [change-name]
 
 ## Behavior
 
-### Without Arguments
+### Requirement: Without Arguments
 
-WHEN running `openspec diff` without arguments
-THEN list all available changes in the `changes/` directory (excluding archive)
-AND prompt user to select a change
+The command SHALL provide an interactive selection when no change is specified.
 
-### With Change Name
+#### Scenario: Running without arguments
 
-WHEN running `openspec diff <change-name>`
-THEN compare all spec files in `changes/<change-name>/specs/` with corresponding files in `specs/`
+- **WHEN** running `openspec diff` without arguments
+- **THEN** list all available changes in the `changes/` directory (excluding archive)
+- **AND** prompt user to select a change
 
-### Diff Output
+### Requirement: With Change Name
 
-FOR each spec file in the change:
-- IF file exists in both locations THEN show unified diff
-- IF file only exists in change THEN show as new file (all lines with +)
-- IF file only exists in current specs THEN show as deleted (all lines with -)
+The command SHALL compare specs when a specific change is provided.
 
-### Display Format
+#### Scenario: Running with change name
 
-The diff SHALL use standard unified diff format:
-- Lines prefixed with `-` for removed content
-- Lines prefixed with `+` for added content
-- Lines without prefix for unchanged context
-- File headers showing the paths being compared
+- **WHEN** running `openspec diff <change-name>`
+- **THEN** compare all spec files in `changes/<change-name>/specs/` with corresponding files in `specs/`
 
-### Color Support
+### Requirement: Diff Output
 
-WHEN terminal supports colors:
-- Removed lines displayed in red
-- Added lines displayed in green
-- File headers displayed in bold
-- Context lines in default color
+The command SHALL generate appropriate diff output for all spec changes.
 
-### Error Handling
+#### Scenario: Comparing existing files
 
-WHEN specified change doesn't exist THEN display error "Change '<name>' not found"
-WHEN no specs directory in change THEN display "No spec changes found for '<name>'"
-WHEN changes directory doesn't exist THEN display "No OpenSpec changes directory found"
+- **WHEN** file exists in both locations
+- **THEN** show unified diff
+
+#### Scenario: New files
+
+- **WHEN** file only exists in change
+- **THEN** show as new file (all lines with +)
+
+#### Scenario: Deleted files
+
+- **WHEN** file only exists in current specs
+- **THEN** show as deleted (all lines with -)
+
+### Requirement: Display Format
+
+The command SHALL use standard unified diff format for consistency with existing tools.
+
+#### Scenario: Formatting diff output
+
+- **WHEN** displaying diff output
+- **THEN** use standard unified diff format:
+  - Lines prefixed with `-` for removed content
+  - Lines prefixed with `+` for added content
+  - Lines without prefix for unchanged context
+  - File headers showing the paths being compared
+
+### Requirement: Color Support
+
+The command SHALL enhance readability with colors when supported.
+
+#### Scenario: Terminal with color support
+
+- **WHEN** terminal supports colors
+- **THEN** display:
+  - Removed lines in red
+  - Added lines in green
+  - File headers in bold
+  - Context lines in default color
+
+### Requirement: Error Handling
+
+The command SHALL provide clear error messages for various failure conditions.
+
+#### Scenario: Change not found
+
+- **WHEN** specified change doesn't exist
+- **THEN** display error "Change '<name>' not found"
+
+#### Scenario: No specs in change
+
+- **WHEN** no specs directory in change
+- **THEN** display "No spec changes found for '<name>'"
+
+#### Scenario: Missing changes directory
+
+- **WHEN** changes directory doesn't exist
+- **THEN** display "No OpenSpec changes directory found"
 
 ## Examples
 

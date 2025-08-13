@@ -6,28 +6,40 @@ The `openspec list` command SHALL provide developers with a quick overview of al
 
 ## Behavior
 
-### Command Execution
+### Requirement: Command Execution
 
-WHEN `openspec list` is executed
-THEN scan the `openspec/changes/` directory for change directories
-AND exclude the `archive/` subdirectory from results
-AND parse each change's `tasks.md` file to count task completion
+The command SHALL scan and analyze all active changes to provide a comprehensive overview.
 
-### Task Counting
+#### Scenario: Scanning for changes
 
-WHEN parsing a `tasks.md` file
-THEN count tasks matching these patterns:
-- Completed: Lines containing `- [x]`
-- Incomplete: Lines containing `- [ ]`
-AND calculate total tasks as the sum of completed and incomplete
+- **WHEN** `openspec list` is executed
+- **THEN** scan the `openspec/changes/` directory for change directories
+- **AND** exclude the `archive/` subdirectory from results
+- **AND** parse each change's `tasks.md` file to count task completion
 
-### Output Format
+### Requirement: Task Counting
 
-WHEN displaying the list
-THEN show a table with columns:
-- Change name (directory name)
-- Task progress (e.g., "3/5 tasks" or "✓ Complete")
-- Status indicator:
+The command SHALL accurately count task completion status using standard markdown checkbox patterns.
+
+#### Scenario: Counting tasks in tasks.md
+
+- **WHEN** parsing a `tasks.md` file
+- **THEN** count tasks matching these patterns:
+  - Completed: Lines containing `- [x]`
+  - Incomplete: Lines containing `- [ ]`
+- **AND** calculate total tasks as the sum of completed and incomplete
+
+### Requirement: Output Format
+
+The command SHALL display changes in a clear, readable table format with progress indicators.
+
+#### Scenario: Displaying change list
+
+- **WHEN** displaying the list
+- **THEN** show a table with columns:
+  - Change name (directory name)
+  - Task progress (e.g., "3/5 tasks" or "✓ Complete")
+- **AND** use status indicators:
   - `✓` for fully completed changes (all tasks done)
   - Progress fraction for partial completion
 
@@ -40,23 +52,38 @@ Changes:
   add-list-command     1/4 tasks
 ```
 
-### Empty State
+### Requirement: Empty State
 
-WHEN no active changes exist (only archive/ or empty changes/)
-THEN display: "No active changes found."
+The command SHALL provide clear feedback when no active changes are present.
 
-### Error Handling
+#### Scenario: Handling empty state
 
-IF a change directory has no `tasks.md` file
-THEN display the change with "No tasks" status
+- **WHEN** no active changes exist (only archive/ or empty changes/)
+- **THEN** display: "No active changes found."
 
-IF `openspec/changes/` directory doesn't exist
-THEN display error: "No OpenSpec changes directory found. Run 'openspec init' first."
-AND exit with code 1
+### Requirement: Error Handling
 
-### Sorting
+The command SHALL gracefully handle missing files and directories with appropriate messages.
 
-Changes SHALL be displayed in alphabetical order by change name for consistency.
+#### Scenario: Missing tasks.md file
+
+- **WHEN** a change directory has no `tasks.md` file
+- **THEN** display the change with "No tasks" status
+
+#### Scenario: Missing changes directory
+
+- **WHEN** `openspec/changes/` directory doesn't exist
+- **THEN** display error: "No OpenSpec changes directory found. Run 'openspec init' first."
+- **AND** exit with code 1
+
+### Requirement: Sorting
+
+The command SHALL maintain consistent ordering of changes for predictable output.
+
+#### Scenario: Ordering changes
+
+- **WHEN** displaying multiple changes
+- **THEN** sort them in alphabetical order by change name
 
 ## Why
 

@@ -13,66 +13,98 @@ Options:
 
 ## Behavior
 
-### Change Selection
-WHEN no change-name is provided
-THEN display interactive list of available changes (excluding archive/)
-AND allow user to select one
+### Requirement: Change Selection
 
-WHEN change-name is provided
-THEN use that change directly
-AND validate it exists
+The command SHALL support both interactive and direct change selection methods.
 
-### Task Completion Check
-The command SHALL scan the change's tasks.md file for incomplete tasks (marked with `- [ ]`)
+#### Scenario: Interactive selection
 
-WHEN incomplete tasks are found
-THEN display all incomplete tasks to the user
-AND prompt for confirmation to continue
-AND default to "No" for safety
+- **WHEN** no change-name is provided
+- **THEN** display interactive list of available changes (excluding archive/)
+- **AND** allow user to select one
 
-WHEN all tasks are complete OR no tasks.md exists
-THEN proceed with archiving without prompting
+#### Scenario: Direct selection
 
-### Archive Process
-The archive operation SHALL:
-1. Create archive/ directory if it doesn't exist
-2. Generate target name as `YYYY-MM-DD-[change-name]` using current date
-3. Check if target directory already exists
-4. Update main specs from the change's future state specs (see Spec Update Process below)
-5. Move the entire change directory to the archive location
+- **WHEN** change-name is provided
+- **THEN** use that change directly
+- **AND** validate it exists
 
-WHEN target archive already exists
-THEN fail with error message
-AND do not overwrite existing archive
+### Requirement: Task Completion Check
 
-WHEN move succeeds
-THEN display success message with archived name and list of updated specs
+The command SHALL verify task completion status before archiving to prevent premature archival.
 
-### Spec Update Process
-Before moving the change to archive, the command SHALL update main specs to reflect the deployed reality:
+#### Scenario: Incomplete tasks found
 
-WHEN the change contains specs in `changes/[name]/specs/`
-THEN:
-1. Analyze which specs will be affected by comparing with existing specs
-2. Display a summary of spec updates to the user (see Confirmation Behavior below)
-3. Prompt for confirmation unless `--yes` flag is provided
-4. If confirmed, for each capability spec in the change directory:
-   - Copy the spec from `changes/[name]/specs/[capability]/spec.md` to `openspec/specs/[capability]/spec.md`
-   - Create the target directory structure if it doesn't exist
-   - Overwrite existing spec files (specs represent current reality, change specs are the new reality)
-   - Track which specs were updated for the success message
+- **WHEN** incomplete tasks are found (marked with `- [ ]`)
+- **THEN** display all incomplete tasks to the user
+- **AND** prompt for confirmation to continue
+- **AND** default to "No" for safety
 
-WHEN no specs exist in the change
-THEN skip the spec update step
-AND proceed with archiving
+#### Scenario: All tasks complete
 
-### Confirmation Behavior
-The spec update confirmation SHALL:
-- Display a clear summary showing:
+- **WHEN** all tasks are complete OR no tasks.md exists
+- **THEN** proceed with archiving without prompting
+
+### Requirement: Archive Process
+
+The archive operation SHALL follow a structured process to safely move changes to the archive.
+
+#### Scenario: Performing archive
+
+- **WHEN** archiving a change
+- **THEN** execute these steps:
+  1. Create archive/ directory if it doesn't exist
+  2. Generate target name as `YYYY-MM-DD-[change-name]` using current date
+  3. Check if target directory already exists
+  4. Update main specs from the change's future state specs (see Spec Update Process below)
+  5. Move the entire change directory to the archive location
+
+#### Scenario: Archive already exists
+
+- **WHEN** target archive already exists
+- **THEN** fail with error message
+- **AND** do not overwrite existing archive
+
+#### Scenario: Successful archive
+
+- **WHEN** move succeeds
+- **THEN** display success message with archived name and list of updated specs
+
+### Requirement: Spec Update Process
+
+Before moving the change to archive, the command SHALL update main specs to reflect the deployed reality.
+
+#### Scenario: Updating specs from change
+
+- **WHEN** the change contains specs in `changes/[name]/specs/`
+- **THEN** execute these steps:
+  1. Analyze which specs will be affected by comparing with existing specs
+  2. Display a summary of spec updates to the user (see Confirmation Behavior below)
+  3. Prompt for confirmation unless `--yes` flag is provided
+  4. If confirmed, for each capability spec in the change directory:
+     - Copy the spec from `changes/[name]/specs/[capability]/spec.md` to `openspec/specs/[capability]/spec.md`
+     - Create the target directory structure if it doesn't exist
+     - Overwrite existing spec files (specs represent current reality, change specs are the new reality)
+     - Track which specs were updated for the success message
+
+#### Scenario: No specs in change
+
+- **WHEN** no specs exist in the change
+- **THEN** skip the spec update step
+- **AND** proceed with archiving
+
+### Requirement: Confirmation Behavior
+
+The spec update confirmation SHALL provide clear visibility into changes before they are applied.
+
+#### Scenario: Displaying confirmation
+
+- **WHEN** prompting for confirmation
+- **THEN** display a clear summary showing:
   - Which specs will be created (new capabilities)
   - Which specs will be updated (existing capabilities)
   - The source path for each spec
-- Format the confirmation prompt as:
+- **AND** format the confirmation prompt as:
   ```
   The following specs will be updated:
   
@@ -84,21 +116,33 @@ The spec update confirmation SHALL:
   
   Update 2 specs and archive 'add-archive-command'? [y/N]:
   ```
-- Default to "No" for safety (require explicit "y" or "yes")
-- Skip confirmation when `--yes` or `-y` flag is provided
+#### Scenario: Handling confirmation response
 
-WHEN user declines the confirmation
-THEN abort the entire archive operation
-AND display message: "Archive cancelled. No changes were made."
-AND exit with non-zero status code
+- **WHEN** waiting for user confirmation
+- **THEN** default to "No" for safety (require explicit "y" or "yes")
+- **AND** skip confirmation when `--yes` or `-y` flag is provided
+
+#### Scenario: User declines confirmation
+
+- **WHEN** user declines the confirmation
+- **THEN** abort the entire archive operation
+- **AND** display message: "Archive cancelled. No changes were made."
+- **AND** exit with non-zero status code
 
 ## Error Handling
 
-SHALL handle the following error conditions:
-- Missing openspec/changes/ directory
-- Change not found
-- Archive target already exists
-- File system permissions issues
+### Requirement: Error Conditions
+
+The command SHALL handle various error conditions gracefully.
+
+#### Scenario: Handling errors
+
+- **WHEN** errors occur
+- **THEN** handle the following conditions:
+  - Missing openspec/changes/ directory
+  - Change not found
+  - Archive target already exists
+  - File system permissions issues
 
 ## Why These Decisions
 

@@ -6,20 +6,28 @@ The `openspec init` command SHALL create a complete OpenSpec directory structure
 
 ## Behavior
 
-### Progress Indicators
+### Requirement: Progress Indicators
 
-WHEN executing initialization steps
-THEN validate environment silently in background (no output unless error)
-AND display progress with ora spinners:
-- Show spinner: "⠋ Creating OpenSpec structure..."
-- Then success: "✔ OpenSpec structure created"
-- Show spinner: "⠋ Configuring AI tools..."
-- Then success: "✔ AI tools configured"
+The command SHALL display progress indicators during initialization to provide clear feedback about each step.
 
-### Directory Creation
+#### Scenario: Displaying initialization progress
 
-WHEN `openspec init` is executed
-THEN create the following directory structure:
+- **WHEN** executing initialization steps
+- **THEN** validate environment silently in background (no output unless error)
+- **AND** display progress with ora spinners:
+  - Show spinner: "⠋ Creating OpenSpec structure..."
+  - Then success: "✔ OpenSpec structure created"
+  - Show spinner: "⠋ Configuring AI tools..."
+  - Then success: "✔ AI tools configured"
+
+### Requirement: Directory Creation
+
+The command SHALL create the complete OpenSpec directory structure with all required directories and files.
+
+#### Scenario: Creating OpenSpec structure
+
+- **WHEN** `openspec init` is executed
+- **THEN** create the following directory structure:
 ```
 openspec/
 ├── project.md
@@ -29,27 +37,41 @@ openspec/
     └── archive/
 ```
 
-### File Generation
+### Requirement: File Generation
 
-The command SHALL generate:
-- `README.md` containing complete OpenSpec instructions for AI assistants
-- `project.md` with project context template
+The command SHALL generate required template files with appropriate content for immediate use.
 
-### AI Tool Configuration
+#### Scenario: Generating template files
 
-WHEN run interactively
-THEN prompt user to select AI tools to configure:
-- Claude Code (updates/creates CLAUDE.md with OpenSpec markers)
-- Cursor (future)
-- Aider (future)
+- **WHEN** initializing OpenSpec
+- **THEN** generate `README.md` containing complete OpenSpec instructions for AI assistants
+- **AND** generate `project.md` with project context template
 
-### AI Tool Configuration Details
+### Requirement: AI Tool Configuration
 
-WHEN Claude Code is selected
-THEN create or update `CLAUDE.md` in the project root directory (not inside openspec/)
+The command SHALL configure AI coding assistants with OpenSpec instructions based on user selection.
 
-WHEN CLAUDE.md does not exist
-THEN create new file with OpenSpec content wrapped in markers:
+#### Scenario: Prompting for AI tool selection
+
+- **WHEN** run interactively
+- **THEN** prompt user to select AI tools to configure:
+  - Claude Code (updates/creates CLAUDE.md with OpenSpec markers)
+  - Cursor (future)
+  - Aider (future)
+
+### Requirement: AI Tool Configuration Details
+
+The command SHALL properly configure selected AI tools with OpenSpec-specific instructions using a marker system.
+
+#### Scenario: Configuring Claude Code
+
+- **WHEN** Claude Code is selected
+- **THEN** create or update `CLAUDE.md` in the project root directory (not inside openspec/)
+
+#### Scenario: Creating new CLAUDE.md
+
+- **WHEN** CLAUDE.md does not exist
+- **THEN** create new file with OpenSpec content wrapped in markers:
 ```markdown
 <!-- OPENSPEC:START -->
 # OpenSpec Project
@@ -62,51 +84,71 @@ See @openspec/README.md for detailed conventions and guidelines.
 <!-- OPENSPEC:END -->
 ```
 
-WHEN CLAUDE.md already exists
-THEN preserve all existing content
-AND insert OpenSpec content at the beginning of the file using markers
-AND ensure markers don't duplicate if they already exist
+#### Scenario: Updating existing CLAUDE.md
 
-The marker system SHALL:
-- Use `<!-- OPENSPEC:START -->` to mark the beginning of managed content
-- Use `<!-- OPENSPEC:END -->` to mark the end of managed content
-- Allow OpenSpec to update its content without affecting user customizations
-- Preserve all content outside the markers intact
+- **WHEN** CLAUDE.md already exists
+- **THEN** preserve all existing content
+- **AND** insert OpenSpec content at the beginning of the file using markers
+- **AND** ensure markers don't duplicate if they already exist
+
+#### Scenario: Managing content with markers
+
+- **WHEN** using the marker system
+- **THEN** use `<!-- OPENSPEC:START -->` to mark the beginning of managed content
+- **AND** use `<!-- OPENSPEC:END -->` to mark the end of managed content
+- **AND** allow OpenSpec to update its content without affecting user customizations
+- **AND** preserve all content outside the markers intact
 
 WHY use markers:
 - Users may have existing CLAUDE.md instructions they want to keep
 - OpenSpec can update its instructions in future versions
 - Clear boundary between OpenSpec-managed and user-managed content
 
-### Interactive Mode
+### Requirement: Interactive Mode
 
-WHEN run
-THEN prompt user with: "Which AI tool do you use?"
-AND show single-select menu with available tools:
-- Claude Code
-AND show disabled options as "coming soon" (not selectable):
-- Cursor (coming soon)
-- Aider (coming soon)  
-- Continue (coming soon)
+The command SHALL provide an interactive menu for AI tool selection with clear navigation instructions.
 
-User navigation:
-- Use arrow keys to move between options
-- Press Enter to select the highlighted option
+#### Scenario: Displaying interactive menu
 
-### Safety Checks
+- **WHEN** run
+- **THEN** prompt user with: "Which AI tool do you use?"
+- **AND** show single-select menu with available tools:
+  - Claude Code
+- **AND** show disabled options as "coming soon" (not selectable):
+  - Cursor (coming soon)
+  - Aider (coming soon)  
+  - Continue (coming soon)
 
-WHEN `openspec/` directory already exists
-THEN display error with ora fail indicator:
-"✖ Error: OpenSpec seems to already be initialized. Use 'openspec update' to update the structure."
+#### Scenario: Navigating the menu
 
-WHEN checking initialization feasibility
-THEN verify write permissions in the target directory silently
-AND only display error if permissions are insufficient
+- **WHEN** user is in the menu
+- **THEN** allow arrow keys to move between options
+- **AND** allow Enter key to select the highlighted option
 
-### Success Output
+### Requirement: Safety Checks
 
-WHEN initialization completes successfully
-THEN display actionable prompts for AI-driven workflow:
+The command SHALL perform safety checks to prevent overwriting existing structures and ensure proper permissions.
+
+#### Scenario: Detecting existing initialization
+
+- **WHEN** `openspec/` directory already exists
+- **THEN** display error with ora fail indicator:
+  - "✖ Error: OpenSpec seems to already be initialized. Use 'openspec update' to update the structure."
+
+#### Scenario: Checking write permissions
+
+- **WHEN** checking initialization feasibility
+- **THEN** verify write permissions in the target directory silently
+- **AND** only display error if permissions are insufficient
+
+### Requirement: Success Output
+
+The command SHALL provide clear, actionable next steps upon successful initialization.
+
+#### Scenario: Displaying success message
+
+- **WHEN** initialization completes successfully
+- **THEN** display actionable prompts for AI-driven workflow:
 ```
 ✔ OpenSpec initialized successfully!
 
@@ -132,12 +174,18 @@ The prompts SHALL:
 - Guide users through the AI-driven workflow
 - Replace placeholder text ([YOUR FEATURE HERE]) with actual features
 
-### Exit Codes
+### Requirement: Exit Codes
 
-- 0: Success
-- 1: General error (including when OpenSpec directory already exists)
-- 2: Insufficient permissions (reserved for future use)
-- 3: User cancelled operation (reserved for future use)
+The command SHALL use consistent exit codes to indicate different failure modes.
+
+#### Scenario: Returning exit codes
+
+- **WHEN** the command completes
+- **THEN** return appropriate exit code:
+  - 0: Success
+  - 1: General error (including when OpenSpec directory already exists)
+  - 2: Insufficient permissions (reserved for future use)
+  - 3: User cancelled operation (reserved for future use)
 
 ## Why
 
