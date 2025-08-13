@@ -10,7 +10,8 @@ Requirement headers SHALL serve as unique identifiers for programmatic matching 
 
 - **WHEN** processing delta changes
 - **THEN** use the `### Requirement: [Name]` header as the unique identifier
-- **AND** match requirements by exact header text comparison
+- **AND** normalize headers by trimming leading/trailing whitespace
+- **AND** match requirements by exact text comparison (after normalization)
 - **AND** treat headers as case-sensitive identifiers
 
 #### Scenario: Handling requirement renames
@@ -41,14 +42,14 @@ Change proposals SHALL store only the additions, modifications, and removals to 
 
 - **WHEN** creating a change proposal that adds new requirements
 - **THEN** include only the new requirements under `## ADDED Requirements`
-- **AND** each requirement SHALL be complete and self-contained
+- **AND** each requirement SHALL include its complete content
 - **AND** use the standard structured format for requirements and scenarios
 
 #### Scenario: Creating change proposals with modifications  
 
 - **WHEN** creating a change proposal that modifies existing requirements
 - **THEN** include the modified requirements under `## MODIFIED Requirements`
-- **AND** use the EXACT same header text as in the current spec
+- **AND** use the same header text as in the current spec (whitespace-normalized)
 - **AND** include the complete modified requirement (not a diff)
 - **AND** optionally annotate what changed with inline comments like `← (was X)`
 
@@ -70,8 +71,8 @@ Change proposals SHALL store only the additions, modifications, and removals to 
 The `changes/[name]/specs/` directory SHALL contain:
 - Delta files showing only what changes
 - Sections for ADDED, MODIFIED, REMOVED, and RENAMED requirements
-- Exact header matching for requirement identification
-- Self-contained requirements using the structured format
+- Header matching with whitespace normalization
+- Complete requirements using the structured format
 - Clear indication of change type for each requirement
 
 ### Requirement: Archive Process Enhancement
@@ -83,8 +84,8 @@ The archive process SHALL programmatically apply delta changes to current specif
 - **WHEN** archiving a completed change
 - **THEN** the archive command SHALL:
   1. Parse RENAMED sections first and apply renames
-  2. Parse REMOVED sections and remove by exact header match
-  3. Parse MODIFIED sections and replace by exact header match
+  2. Parse REMOVED sections and remove by normalized header match
+  3. Parse MODIFIED sections and replace by normalized header match
   4. Parse ADDED sections and append new requirements
 - **AND** validate that all MODIFIED/REMOVED headers exist in current spec
 - **AND** validate that ADDED headers don't already exist
