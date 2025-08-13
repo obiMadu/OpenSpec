@@ -5,6 +5,7 @@ import { promises as fs } from 'fs';
 import { InitCommand } from '../core/init.js';
 import { UpdateCommand } from '../core/update.js';
 import { DiffCommand } from '../core/diff.js';
+import { ListCommand } from '../core/list.js';
 
 const program = new Command();
 
@@ -68,6 +69,20 @@ program
     try {
       const diffCommand = new DiffCommand();
       await diffCommand.execute(changeName);
+    } catch (error) {
+      console.log(); // Empty line for spacing
+      ora().fail(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('list')
+  .description('List all active changes with their task status')
+  .action(async () => {
+    try {
+      const listCommand = new ListCommand();
+      await listCommand.execute();
     } catch (error) {
       console.log(); // Empty line for spacing
       ora().fail(`Error: ${(error as Error).message}`);
