@@ -3,8 +3,7 @@
 - [ ] 1.1 Add "Specification Format" section to openspec-conventions
 - [ ] 1.2 Document structured format with Requirement/Scenario headers
 - [ ] 1.3 Define bold keyword usage (WHEN/THEN/AND) for scenarios
-- [ ] 1.4 Add "Format Flexibility" requirement for non-behavioral specs
-- [ ] 1.5 Include examples demonstrating the format within the spec itself
+- [ ] 1.4 Include examples demonstrating the format within the spec itself
 
 ## 2. Update Documentation
 
