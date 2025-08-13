@@ -6,6 +6,7 @@ import { InitCommand } from '../core/init.js';
 import { UpdateCommand } from '../core/update.js';
 import { DiffCommand } from '../core/diff.js';
 import { ListCommand } from '../core/list.js';
+import { ArchiveCommand } from '../core/archive.js';
 
 const program = new Command();
 
@@ -83,6 +84,21 @@ program
     try {
       const listCommand = new ListCommand();
       await listCommand.execute();
+    } catch (error) {
+      console.log(); // Empty line for spacing
+      ora().fail(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('archive [change-name]')
+  .description('Archive a completed change and update main specs')
+  .option('-y, --yes', 'Skip confirmation prompts')
+  .action(async (changeName?: string, options?: { yes?: boolean }) => {
+    try {
+      const archiveCommand = new ArchiveCommand();
+      await archiveCommand.execute(changeName, options);
     } catch (error) {
       console.log(); // Empty line for spacing
       ora().fail(`Error: ${(error as Error).message}`);

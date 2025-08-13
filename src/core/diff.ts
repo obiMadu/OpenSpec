@@ -82,7 +82,7 @@ export class DiffCommand {
       choices
     });
 
-    return answer;
+    return answer as string;
   }
 
   private async showDiffs(changeSpecsDir: string): Promise<void> {
