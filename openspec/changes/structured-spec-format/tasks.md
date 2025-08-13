@@ -9,3 +9,11 @@
 
 - [ ] 2.1 Update the "Why This Approach" section with structured format benefits
 - [ ] 2.2 Ensure spec follows its own format as a demonstration
+
+## 3. Update Existing Specs
+
+- [ ] 3.1 Update cli-init spec to use structured format in Behavior section
+- [ ] 3.2 Update cli-list spec to use structured format in Behavior section
+- [ ] 3.3 Update cli-update spec to use structured format in Behavior section
+- [ ] 3.4 Update cli-diff spec to use structured format in Behavior section
+- [ ] 3.5 Update cli-archive spec to use structured format in Behavior section
