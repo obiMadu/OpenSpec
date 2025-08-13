@@ -11,8 +11,13 @@
 - [x] 2.2 Implement interactive change selection when no argument provided
 - [x] 2.3 Add error handling for missing changes
 
-## 3. Testing
-- [ ] 3.1 Test diff generation for modified files
-- [ ] 3.2 Test handling of new files
-- [ ] 3.3 Test handling of deleted files
-- [ ] 3.4 Test interactive mode
+## 3. Enhancements
+- [x] 3.1 Add word-level diff highlighting for better readability
+- [x] 3.2 Improve file headers with status and statistics
+- [x] 3.3 Add summary view with file counts and line changes
+
+## 4. Testing
+- [ ] 4.1 Test diff generation for modified files
+- [ ] 4.2 Test handling of new files
+- [ ] 4.3 Test handling of deleted files
+- [ ] 4.4 Test interactive mode
