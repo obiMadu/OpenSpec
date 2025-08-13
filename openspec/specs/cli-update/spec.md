@@ -8,7 +8,7 @@ As a developer using OpenSpec, I want to update the OpenSpec instructions in my 
 
 ### Requirement: Update Behavior
 
-The update command SHALL update OpenSpec instruction files to the latest templates.
+The update command SHALL update OpenSpec instruction files to the latest templates in a team-friendly manner.
 
 #### Scenario: Running update command
 
@@ -16,10 +16,13 @@ The update command SHALL update OpenSpec instruction files to the latest templat
 - **THEN** the command SHALL:
   - Check if the `openspec` directory exists
   - Replace `openspec/README.md` with the latest template (complete replacement)
-  - Update the OpenSpec-managed block in `CLAUDE.md` using markers
+  - Update **only existing** AI tool configuration files (e.g., CLAUDE.md)
+    - Check each registered AI tool configurator
+    - For each configurator, check if its file exists
+    - Update only files that already exist using their markers
     - Preserve user content outside markers
-    - Create `CLAUDE.md` if missing
-  - Display ASCII-safe success message: "Updated OpenSpec instructions"
+    - **Never create new AI tool configuration files**
+  - Display success message listing updated files
 
 ### Requirement: Prerequisites
 
@@ -40,9 +43,10 @@ The update command SHALL handle file updates in a predictable and safe manner.
 
 - **WHEN** updating files
 - **THEN** completely replace `openspec/README.md` with the latest template
-- **AND** update only the OpenSpec-managed block in `CLAUDE.md` using markers
+- **AND** update only the OpenSpec-managed blocks in **existing** AI tool files using markers
 - **AND** use the default directory name `openspec`
 - **AND** be idempotent (repeated runs have no additional effect)
+- **AND** respect team members' AI tool choices by not creating unwanted files
 
 ## Edge Cases
 
@@ -55,10 +59,11 @@ The command SHALL handle edge cases gracefully.
 - **WHEN** file write fails
 - **THEN** let the error bubble up naturally with file path
 
-#### Scenario: Missing CLAUDE.md
+#### Scenario: Missing AI tool files
 
-- **WHEN** CLAUDE.md doesn't exist
-- **THEN** create it with the template content
+- **WHEN** an AI tool configuration file doesn't exist
+- **THEN** skip updating that file
+- **AND** do not create it
 
 #### Scenario: Custom directory names
 
