@@ -46,9 +46,14 @@ The current approach of storing complete future states in change proposals creat
 
 ## Impact
 
-- Affected specs: openspec-conventions (core change to how changes are stored)
+- Affected specs: 
+  - openspec-conventions: Core change to how changes are stored
+  - cli-archive: Must parse and apply deltas instead of copying full states
+  - cli-diff: Displays delta sections directly instead of comparing full states
 - Affected code: 
-  - CLI commands that read/write changes (init, update, diff, archive)
+  - Archive command implementation (critical - applies deltas programmatically)
+  - Diff command implementation (shows delta format)
+  - Other CLI commands may need minor updates (init, update, list)
   - Any automation that expects full future states
 - Migration: Existing changes can remain as-is; new convention applies to new changes
 - Benefits:
