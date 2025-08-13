@@ -64,7 +64,7 @@ export class InitCommand {
       }))
     });
     
-    config.aiTools = [selectedTool];
+    config.aiTools = [selectedTool as string];
 
     return config;
   }
