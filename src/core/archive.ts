@@ -20,110 +20,109 @@ export class ArchiveCommand {
   }
 
   async execute(changeName?: string, options: { yes?: boolean } = {}): Promise<void> {
-    const targetPath = '.';
-    const changesDir = path.join(targetPath, 'openspec', 'changes');
-    const archiveDir = path.join(changesDir, 'archive');
-    const mainSpecsDir = path.join(targetPath, 'openspec', 'specs');
-
-    // Check if changes directory exists
     try {
-      await fs.access(changesDir);
-    } catch {
-      throw new Error("No OpenSpec changes directory found. Run 'openspec init' first.");
-    }
+      const targetPath = '.';
+      const changesDir = path.join(targetPath, 'openspec', 'changes');
+      const archiveDir = path.join(changesDir, 'archive');
+      const mainSpecsDir = path.join(targetPath, 'openspec', 'specs');
 
-    // Get change name interactively if not provided
-    if (!changeName) {
-      const selectedChange = await this.selectChange(changesDir);
-      if (!selectedChange) {
-        console.log('No change selected. Aborting.');
-        this.rl.close();
-        return;
+      // Check if changes directory exists
+      try {
+        await fs.access(changesDir);
+      } catch {
+        throw new Error("No OpenSpec changes directory found. Run 'openspec init' first.");
       }
-      changeName = selectedChange;
-    }
 
-    const changeDir = path.join(changesDir, changeName);
+      // Get change name interactively if not provided
+      if (!changeName) {
+        const selectedChange = await this.selectChange(changesDir);
+        if (!selectedChange) {
+          console.log('No change selected. Aborting.');
+          return;
+        }
+        changeName = selectedChange;
+      }
 
-    // Verify change exists
-    try {
-      const stat = await fs.stat(changeDir);
-      if (!stat.isDirectory()) {
+      const changeDir = path.join(changesDir, changeName);
+
+      // Verify change exists
+      try {
+        const stat = await fs.stat(changeDir);
+        if (!stat.isDirectory()) {
+          throw new Error(`Change '${changeName}' not found.`);
+        }
+      } catch {
         throw new Error(`Change '${changeName}' not found.`);
       }
-    } catch {
-      throw new Error(`Change '${changeName}' not found.`);
-    }
 
-    // Check for incomplete tasks
-    const tasksPath = path.join(changeDir, 'tasks.md');
-    const incompleteTasks = await this.checkIncompleteTasks(tasksPath);
-    
-    if (incompleteTasks > 0) {
-      if (!options.yes) {
-        const proceed = await this.askQuestion(
-          `Warning: ${incompleteTasks} incomplete task(s) found. Continue? (y/n): `
-        );
-        if (proceed.toLowerCase() !== 'y') {
-          console.log('Archive cancelled.');
-          this.rl.close();
-          return;
-        }
-      } else {
-        console.log(`Warning: ${incompleteTasks} incomplete task(s) found. Continuing due to --yes flag.`);
-      }
-    }
-
-    // Find specs to update
-    const specUpdates = await this.findSpecUpdates(changeDir, mainSpecsDir);
-    
-    if (specUpdates.length > 0) {
-      console.log('\nSpecs to update:');
-      for (const update of specUpdates) {
-        const status = update.exists ? 'update' : 'create';
-        const capability = path.basename(path.dirname(update.target));
-        console.log(`  ${capability}: ${status}`);
-      }
-
-      if (!options.yes) {
-        const proceed = await this.askQuestion('\nProceed with spec updates? (y/n): ');
-        if (proceed.toLowerCase() !== 'y') {
-          console.log('Archive cancelled.');
-          this.rl.close();
-          return;
+      // Check for incomplete tasks
+      const tasksPath = path.join(changeDir, 'tasks.md');
+      const incompleteTasks = await this.checkIncompleteTasks(tasksPath);
+      
+      if (incompleteTasks > 0) {
+        if (!options.yes) {
+          const proceed = await this.askQuestion(
+            `Warning: ${incompleteTasks} incomplete task(s) found. Continue? (y/n): `
+          );
+          if (proceed.toLowerCase() !== 'y') {
+            console.log('Archive cancelled.');
+            return;
+          }
+        } else {
+          console.log(`Warning: ${incompleteTasks} incomplete task(s) found. Continuing due to --yes flag.`);
         }
       }
 
-      // Update specs
-      for (const update of specUpdates) {
-        await this.updateSpec(update);
+      // Find specs to update
+      const specUpdates = await this.findSpecUpdates(changeDir, mainSpecsDir);
+      
+      if (specUpdates.length > 0) {
+        console.log('\nSpecs to update:');
+        for (const update of specUpdates) {
+          const status = update.exists ? 'update' : 'create';
+          const capability = path.basename(path.dirname(update.target));
+          console.log(`  ${capability}: ${status}`);
+        }
+
+        if (!options.yes) {
+          const proceed = await this.askQuestion('\nProceed with spec updates? (y/n): ');
+          if (proceed.toLowerCase() !== 'y') {
+            console.log('Archive cancelled.');
+            return;
+          }
+        }
+
+        // Update specs
+        for (const update of specUpdates) {
+          await this.updateSpec(update);
+        }
+        console.log('Specs updated successfully.');
       }
-      console.log('Specs updated successfully.');
-    }
 
-    // Create archive directory with date prefix
-    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-    const archiveName = `${date}-${changeName}`;
-    const archivePath = path.join(archiveDir, archiveName);
+      // Create archive directory with date prefix
+      const archiveName = `${this.getArchiveDate()}-${changeName}`;
+      const archivePath = path.join(archiveDir, archiveName);
 
-    // Check if archive already exists
-    try {
-      await fs.access(archivePath);
-      throw new Error(`Archive '${archiveName}' already exists.`);
-    } catch (error: any) {
-      if (error.code !== 'ENOENT') {
-        throw error;
+      // Check if archive already exists
+      try {
+        await fs.access(archivePath);
+        throw new Error(`Archive '${archiveName}' already exists.`);
+      } catch (error: any) {
+        if (error.code !== 'ENOENT') {
+          throw error;
+        }
       }
+
+      // Create archive directory if needed
+      await fs.mkdir(archiveDir, { recursive: true });
+
+      // Move change to archive
+      await fs.rename(changeDir, archivePath);
+      
+      console.log(`Change '${changeName}' archived as '${archiveName}'.`);
+    } finally {
+      this.rl.close();
     }
-
-    // Create archive directory if needed
-    await fs.mkdir(archiveDir, { recursive: true });
-
-    // Move change to archive
-    await fs.rename(changeDir, archivePath);
-    
-    console.log(`Change '${changeName}' archived as '${archiveName}'.`);
-    this.rl.close();
   }
 
   private async selectChange(changesDir: string): Promise<string | null> {
@@ -235,5 +234,10 @@ export class ArchiveCommand {
         resolve(answer);
       });
     });
+  }
+
+  private getArchiveDate(): string {
+    // Returns date in YYYY-MM-DD format
+    return new Date().toISOString().split('T')[0];
   }
 }
