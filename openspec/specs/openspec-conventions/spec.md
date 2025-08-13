@@ -14,8 +14,14 @@ The system SHALL follow these principles:
 
 ## Directory Structure
 
-WHEN an OpenSpec project is initialized
-THEN it SHALL have this structure:
+### Requirement: Project Structure
+
+An OpenSpec project SHALL maintain a consistent directory structure for specifications and changes.
+
+#### Scenario: Initializing project structure
+
+- **WHEN** an OpenSpec project is initialized
+- **THEN** it SHALL have this structure:
 ```
 openspec/
 ├── project.md              # Project-specific context
@@ -36,23 +42,85 @@ openspec/
         └── YYYY-MM-DD-[name]/
 ```
 
+## Specification Format
+
+### Requirement: Structured Format for Behavioral Specs
+
+Behavioral specifications SHALL use a structured format with consistent section headers and keywords to ensure visual consistency and parseability.
+
+#### Scenario: Writing requirement sections
+
+- **WHEN** documenting a requirement in a behavioral specification
+- **THEN** use a level-3 heading with format `### Requirement: [Name]`
+- **AND** immediately follow with a SHALL statement describing core behavior
+- **AND** keep requirement names descriptive and under 50 characters
+
+#### Scenario: Documenting scenarios
+
+- **WHEN** documenting specific behaviors or use cases
+- **THEN** use level-4 headings with format `#### Scenario: [Description]`
+- **AND** use bullet points with bold keywords for steps:
+  - **GIVEN** for initial state (optional)
+  - **WHEN** for conditions or triggers
+  - **THEN** for expected outcomes
+  - **AND** for additional outcomes or conditions
+
+#### Scenario: Adding implementation details
+
+- **WHEN** a step requires additional detail
+- **THEN** use sub-bullets under the main step
+- **AND** maintain consistent indentation
+  - Sub-bullets provide examples or specifics
+  - Keep sub-bullets concise
+
+### Requirement: Format Flexibility
+
+The structured format SHALL be the default for behavioral specifications, but alternative formats MAY be used when more appropriate for the content type.
+
+#### Scenario: Documenting API specifications
+
+- **WHEN** documenting REST API endpoints or GraphQL schemas
+- **THEN** OpenAPI, GraphQL SDL, or similar formats MAY be used
+- **AND** the spec SHALL clearly indicate the format being used
+- **AND** behavioral aspects SHALL still follow the structured format
+
+#### Scenario: Documenting data schemas
+
+- **WHEN** documenting data structures, database schemas, or configurations
+- **THEN** JSON Schema, SQL DDL, or similar formats MAY be used
+- **AND** include the structured format for behavioral rules and constraints
+
+#### Scenario: Using simplified format
+
+- **WHEN** documenting simple capabilities without complex scenarios
+- **THEN** a simplified WHEN/THEN format without full structure MAY be used
+- **AND** this should be consistent within the capability
+
 ## Change Storage Convention
 
-### Future State Storage
+### Requirement: Future State Storage
 
-WHEN creating a change proposal
-THEN store the complete future state of affected specs
-AND use clean markdown without diff syntax
+Change proposals SHALL store complete future state specifications without diff syntax.
+
+#### Scenario: Creating change proposals
+
+- **WHEN** creating a change proposal
+- **THEN** store the complete future state of affected specs
+- **AND** use clean markdown without diff syntax
 
 The `changes/[name]/specs/` directory SHALL contain:
 - Complete spec files as they will exist after the change
 - Clean markdown without `+` or `-` prefixes
 - All formatting and structure of the final intended state
 
-### Proposal Format
+### Requirement: Proposal Format
 
-WHEN documenting what changes
-THEN the proposal SHALL explicitly describe each change:
+Proposals SHALL explicitly document all changes with clear from/to comparisons.
+
+#### Scenario: Documenting changes
+
+- **WHEN** documenting what changes
+- **THEN** the proposal SHALL explicitly describe each change:
 
 ```markdown
 **[Section or Behavior Name]**
@@ -78,8 +146,14 @@ The change process SHALL follow these states:
 
 ## Viewing Changes
 
-WHEN reviewing proposed changes
-THEN reviewers can compare using:
+### Requirement: Change Review
+
+The system SHALL support multiple methods for reviewing proposed changes.
+
+#### Scenario: Reviewing changes
+
+- **WHEN** reviewing proposed changes
+- **THEN** reviewers can compare using:
 - GitHub PR diff view when changes are committed
 - Command line: `diff -u specs/[capability]/spec.md changes/[name]/specs/[capability]/spec.md`
 - Any visual diff tool comparing current vs future state
@@ -118,3 +192,9 @@ Clean future state storage provides:
 - **Simplicity**: No special parsing or processing needed
 - **Tool-agnostic**: Any diff tool can show changes
 - **Clear intent**: Explicit proposals document reasoning
+
+The structured format adds:
+- **Visual Consistency**: Requirement and Scenario prefixes make sections instantly recognizable
+- **Parseability**: Consistent structure enables tooling and automation
+- **Flexibility**: Alternative formats supported where appropriate
+- **Gradual Adoption**: Existing specs can migrate incrementally
