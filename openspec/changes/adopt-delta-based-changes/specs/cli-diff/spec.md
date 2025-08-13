@@ -32,7 +32,6 @@ The command SHALL generate appropriate diff output for delta-based changes.
 - **WHEN** change uses full future state format (no delta sections)
 - **THEN** fall back to traditional diff comparison
 - **AND** show unified diff between full states
-- **AND** display deprecation notice about delta format
 
 #### Scenario: Showing applied result
 

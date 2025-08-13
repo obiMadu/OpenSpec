@@ -104,4 +104,4 @@ The archive process SHALL programmatically apply delta changes to current specif
 
 **Reason for removal**: Replaced by delta-based change storage which provides better review experience and clearer change tracking.
 
-**Migration path**: Existing changes using full future states remain valid. New changes should use delta format. The archive command supports both formats during transition.
+**Migration path**: Existing changes using full future states remain valid. New changes should use delta format. The archive command supports both formats.

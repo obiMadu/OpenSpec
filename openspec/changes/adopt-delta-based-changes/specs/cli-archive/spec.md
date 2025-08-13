@@ -37,7 +37,6 @@ Before moving the change to archive, the command SHALL apply delta changes to ma
 
 - **WHEN** a change uses full future state format (no delta sections)
 - **THEN** fall back to copying the entire spec file
-- **AND** display a deprecation notice suggesting migration to delta format
 
 #### Scenario: Conflict detection
 

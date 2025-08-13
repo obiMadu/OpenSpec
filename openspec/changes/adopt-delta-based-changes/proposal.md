@@ -96,23 +96,6 @@ Sessions SHALL expire after 30 minutes of inactivity.
 
 This makes reviews focused and changes explicit. The archive command can programmatically apply these changes by matching headers (with whitespace normalization).
 
-## Migration Timeline
-
-**Phase 1 (Immediate)**: Both formats supported
-- Archive command detects format automatically
-- New changes encouraged to use delta format
-- Existing full-state changes remain valid
-
-**Phase 2 (After 3 months)**: Delta format required for new changes
-- New changes must use delta format
-- Existing full-state changes can remain but show deprecation warnings
-- Documentation updated to only show delta examples
-
-**Phase 3 (After 6 months)**: Full deprecation
-- All changes must use delta format
-- Migration tool provided to convert existing full-state changes
-- Full-state support removed from CLI commands
-
 ## Conflict Resolution
 
 Conflicts are naturally handled by Git's existing merge mechanisms:
