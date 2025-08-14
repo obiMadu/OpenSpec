@@ -4,57 +4,68 @@
 
 ### Requirement: Diff Output
 
-The command SHALL generate appropriate diff output for delta-based changes.
+The command SHALL show a requirement-level comparison between current and future specs.
 
-#### Scenario: Displaying delta changes
+#### Scenario: Default side-by-side comparison
 
-- **WHEN** change uses delta format (as detected per openspec-conventions)
-- **THEN** display the delta sections directly with syntax highlighting
-- **AND** use standard output symbols as defined in openspec-conventions:
+- **WHEN** running `openspec diff <change>`
+- **THEN** apply deltas to generate future state
+- **AND** display requirement-level side-by-side comparison:
   ```
   === specs/user-auth/spec.md ===
   
-  ADDED Requirements:
-  + ### Requirement: OAuth Support
-  + Users SHALL authenticate via OAuth providers
-  
-  MODIFIED Requirements:
-  ~ ### Requirement: Session Management
-  ~ Sessions SHALL expire after 30 minutes (was 60)
-  
-  RENAMED Requirements:
-  → ### Requirement: Basic Auth → Email Authentication
-  
-  REMOVED Requirements:
-  - ### Requirement: Legacy Auth
-  - Reason: Deprecated in favor of OAuth
+  CURRENT                                  | AFTER CHANGE
+  ─────────────────────────────────────────┼─────────────────────────────────────────
+  ### Requirement: Session Management      | ### Requirement: Session Management
+  Sessions SHALL expire after 60 minutes   | Sessions SHALL expire after 30 minutes
+  of inactivity.                          | of inactivity.
+                                          |
+                                          | ### Requirement: OAuth Support     [NEW]
+                                          | Users SHALL authenticate via OAuth
+                                          | providers including Google.
+                                          |
+  ### Requirement: Legacy Auth            | [REMOVED]
+  Support for legacy authentication.      |
   ```
 
-#### Scenario: Backward compatibility with full state
+#### Scenario: Showing only changes with --changes-only flag
 
-- **WHEN** change uses full future state format (as detected per openspec-conventions)
-- **THEN** fall back to traditional diff comparison
-- **AND** show unified diff between full states
+- **WHEN** running `openspec diff <change> --changes-only`
+- **THEN** hide unchanged requirements
+- **AND** show only added, modified, or removed requirements
 
-#### Scenario: Showing applied result
+#### Scenario: Traditional diff with --unified flag
 
-- **WHEN** user runs `openspec diff <change> --preview`
-- **THEN** apply deltas to current spec in memory
-- **AND** show unified diff of current vs result
-- **AND** note this is a preview of the applied changes
+- **WHEN** running `openspec diff <change> --unified`
+- **THEN** show traditional unified diff format
+- **AND** useful for CI/CD tools expecting standard diff output
 
-### Requirement: Validation Display
+### Requirement: Change Format Handling
 
-The command SHALL validate and display issues with delta changes.
+The command SHALL handle both delta and full-state change formats.
 
-#### Scenario: Showing validation errors
+#### Scenario: Processing delta format
 
-- **WHEN** delta references non-existent requirements
-- **THEN** display validation errors:
+- **WHEN** change uses delta format (ADDED/MODIFIED/REMOVED sections)
+- **THEN** apply deltas to current spec to generate future state
+- **AND** show requirement-level comparison
+
+#### Scenario: Processing full-state format
+
+- **WHEN** change contains complete future state
+- **THEN** parse both current and future specs
+- **AND** show requirement-level comparison
+
+### Requirement: Validation
+
+The command SHALL validate that deltas can be applied successfully.
+
+#### Scenario: Invalid delta references
+
+- **WHEN** delta references non-existent requirement
+- **THEN** show error message with specific requirement
+- **AND** continue showing other valid changes
+- **AND** mark failed changes in output:
   ```
-  Validation errors in specs/user-auth/spec.md:
-    ✗ MODIFIED requirement not found: ### Requirement: Nonexistent
-    ✗ REMOVED requirement not found: ### Requirement: Missing
+  ### Requirement: Nonexistent Feature    | [ERROR: Not found in current spec]
   ```
-- **AND** continue showing other changes despite errors
-- **AND** exit with non-zero status
