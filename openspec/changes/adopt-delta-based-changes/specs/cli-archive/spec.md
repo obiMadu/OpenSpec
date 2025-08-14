@@ -18,11 +18,6 @@ Before moving the change to archive, the command SHALL apply delta changes to ma
 - **THEN** perform validations as specified in openspec-conventions
 - **AND** if validation fails, show specific errors and abort
 
-#### Scenario: Backward compatibility
-
-- **WHEN** a change uses full future state format (as detected per openspec-conventions)
-- **THEN** fall back to copying the entire spec file
-
 #### Scenario: Conflict detection
 
 - **WHEN** applying deltas would create duplicate requirement headers

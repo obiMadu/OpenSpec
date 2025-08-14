@@ -37,16 +37,6 @@ Requirement headers SHALL serve as unique identifiers for programmatic matching 
 
 Change proposals SHALL store only the additions, modifications, and removals to specifications, not complete future states.
 
-#### Scenario: Detecting delta format
-
-- **WHEN** determining if a change uses delta format
-- **THEN** check for presence of any of these level-2 headings:
-  - `## ADDED Requirements`
-  - `## MODIFIED Requirements`
-  - `## REMOVED Requirements`
-  - `## RENAMED Requirements`
-- **AND** if none present, treat as full future state format
-
 #### Scenario: Creating change proposals with additions
 
 - **WHEN** creating a change proposal that adds new requirements
@@ -116,4 +106,4 @@ The archive process SHALL programmatically apply delta changes to current specif
 
 **Reason for removal**: Replaced by delta-based change storage which provides better review experience and clearer change tracking.
 
-**Migration path**: Existing changes using full future states remain valid. New changes should use delta format. The archive command supports both formats.
+**Migration path**: All new changes must use delta format.

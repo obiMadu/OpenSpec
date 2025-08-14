@@ -28,20 +28,6 @@ The command SHALL show a requirement-level comparison displaying only changed re
   Support for legacy authentication.      |
   ```
 
-### Requirement: Change Format Handling
-
-The command SHALL handle both delta and full-state change formats.
-
-#### Scenario: Processing delta format
-
-- **WHEN** change uses delta format (ADDED/MODIFIED/REMOVED sections)
-- **THEN** show requirement-level comparison of changes
-
-#### Scenario: Processing full-state format
-
-- **WHEN** change contains complete future state
-- **THEN** show requirement-level comparison of changes
-
 ### Requirement: Validation
 
 The command SHALL validate that changes can be applied successfully.

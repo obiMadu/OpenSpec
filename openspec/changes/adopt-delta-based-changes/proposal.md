@@ -25,7 +25,7 @@ The archive command will programmatically apply these deltas using normalized he
 - Conflicts are more apparent when two changes modify the same requirement
 - Archive command can programmatically apply changes
 
-**Compatibility**: Both formats supported - existing full-state changes remain valid.
+**Format**: Delta format only - all changes must use ADDED/MODIFIED/REMOVED sections.
 
 ## Example
 
