@@ -1,5 +1,11 @@
 # CLI Diff Command - Changes
 
+## REMOVED Requirements
+
+### Requirement: Display Format
+
+**Reason for removal**: The standard unified diff format is replaced by requirement-level side-by-side comparison that better shows semantic changes rather than line-by-line text differences.
+
 ## MODIFIED Requirements
 
 ### Requirement: Diff Output

@@ -5,7 +5,7 @@
 - [ ] 1.2 Add Header-Based Requirement Identification
 - [ ] 1.3 Define ADDED/MODIFIED/REMOVED/RENAMED sections
 - [ ] 1.4 Document standard output symbols (+ ~ - →)
-- [ ] 1.5 Update README.md with delta-based conventions
+- [ ] 1.5 Update openspec/README.md with delta-based conventions
 - [ ] 1.6 Update examples to use delta format
 
 ## 2. Update Diff Command
