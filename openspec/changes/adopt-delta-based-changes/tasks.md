@@ -1,39 +1,36 @@
 # Implementation Tasks
 
-## 1. Update Specifications
+## 1. Update Conventions
 - [ ] 1.1 Update openspec-conventions spec with delta-based approach
-- [ ] 1.2 Add Header-Based Requirement Identification to conventions
-- [ ] 1.3 Update cli-archive spec with delta processing behavior
-- [ ] 1.4 Update cli-diff spec with requirement-level comparison display
+- [ ] 1.2 Add Header-Based Requirement Identification
+- [ ] 1.3 Define ADDED/MODIFIED/REMOVED/RENAMED sections
+- [ ] 1.4 Document standard output symbols (+ ~ - →)
+- [ ] 1.5 Update README.md with delta-based conventions
+- [ ] 1.6 Update examples to use delta format
 
-## 2. CLI Commands
-- [ ] 2.1 Update archive command to parse and apply delta changes
-- [ ] 2.2 Implement normalized header matching (trim whitespace)
-- [ ] 2.3 Apply changes in order: RENAMED → REMOVED → MODIFIED → ADDED
-- [ ] 2.4 Update diff command to show requirement-level side-by-side comparison (changes only)
-  - [ ] 2.4.1 Parse specs into requirement-level structures
-  - [ ] 2.4.2 Apply deltas to generate future state
-  - [ ] 2.4.3 Implement side-by-side comparison view for changed requirements only
+## 2. Update Diff Command
+- [ ] 2.1 Update cli-diff spec with requirement-level comparison
+- [ ] 2.2 Parse specs into requirement-level structures
+- [ ] 2.3 Apply deltas to generate future state
+- [ ] 2.4 Implement side-by-side comparison view (changes only)
+- [ ] 2.5 Add tests for requirement-level comparison
+- [ ] 2.6 Add tests for side-by-side view formatting
 
-## 3. Validation
-- [ ] 3.1 Validate MODIFIED/REMOVED requirements exist
-- [ ] 3.2 Validate ADDED requirements don't already exist
-- [ ] 3.3 Validate RENAMED FROM headers exist, TO headers don't
-- [ ] 3.4 Check for duplicate headers within specs
-- [ ] 3.5 Ensure renamed requirements aren't also in ADDED
-
-## 4. Testing
-- [ ] 4.1 Add tests for header normalization
-- [ ] 4.2 Add tests for applying deltas in correct order
-- [ ] 4.3 Add tests for validation edge cases
-- [ ] 4.4 Add tests for diff command requirement-level comparison
-- [ ] 4.5 Add tests for diff command side-by-side view formatting
-
-## 5. Documentation
-- [ ] 5.1 Update README.md with delta-based conventions
-- [ ] 5.2 Update examples to use delta format
-- [ ] 5.3 Document standard output symbols
-- [ ] 5.4 Document diff command side-by-side comparison view
+## 3. Update Archive Command
+- [ ] 3.1 Update cli-archive spec with delta processing behavior
+- [ ] 3.2 Implement normalized header matching (trim whitespace)
+- [ ] 3.3 Parse delta sections (ADDED/MODIFIED/REMOVED/RENAMED)
+- [ ] 3.4 Apply changes in order: RENAMED → REMOVED → MODIFIED → ADDED
+- [ ] 3.5 Validate delta operations:
+  - [ ] 3.5.1 MODIFIED/REMOVED requirements exist
+  - [ ] 3.5.2 ADDED requirements don't already exist
+  - [ ] 3.5.3 RENAMED FROM headers exist, TO headers don't
+  - [ ] 3.5.4 No duplicate headers within specs
+  - [ ] 3.5.5 Renamed requirements aren't also in ADDED
+- [ ] 3.6 Display operation counts (+ 2 added, ~ 3 modified, etc.)
+- [ ] 3.7 Add tests for header normalization
+- [ ] 3.8 Add tests for applying deltas in correct order
+- [ ] 3.9 Add tests for validation edge cases
 
 ## Notes
 - Archive command is critical path - must work reliably
