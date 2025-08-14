@@ -10,12 +10,10 @@
 - [ ] 2.1 Update archive command to parse and apply delta changes
 - [ ] 2.2 Implement normalized header matching (trim whitespace)
 - [ ] 2.3 Apply changes in order: RENAMED → REMOVED → MODIFIED → ADDED
-- [ ] 2.4 Update diff command to apply deltas and show requirement-level side-by-side comparison
+- [ ] 2.4 Update diff command to show requirement-level side-by-side comparison (changes only)
   - [ ] 2.4.1 Parse specs into requirement-level structures
   - [ ] 2.4.2 Apply deltas to generate future state
-  - [ ] 2.4.3 Implement side-by-side requirement comparison view
-  - [ ] 2.4.4 Add --changes-only flag to hide unchanged requirements
-  - [ ] 2.4.5 Add --unified flag for traditional diff output
+  - [ ] 2.4.3 Implement side-by-side comparison view for changed requirements only
 - [ ] 2.5 Update list command to show change types
 - [ ] 2.6 Update init command to generate delta format
 
@@ -46,4 +44,4 @@
 - Archive command is critical path - must work reliably
 - Both delta and full-state formats remain supported
 - Header normalization: normalize(header) = trim(header)
-- Diff command applies deltas to show before/after comparison, not just delta display
+- Diff command shows only changed requirements in side-by-side comparison

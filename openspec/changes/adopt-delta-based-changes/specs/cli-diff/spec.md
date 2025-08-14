@@ -4,13 +4,13 @@
 
 ### Requirement: Diff Output
 
-The command SHALL show a requirement-level comparison between current and future specs.
+The command SHALL show a requirement-level comparison displaying only changed requirements.
 
-#### Scenario: Default side-by-side comparison
+#### Scenario: Side-by-side comparison of changes
 
 - **WHEN** running `openspec diff <change>`
-- **THEN** apply deltas to generate future state
-- **AND** display requirement-level side-by-side comparison:
+- **THEN** display only requirements that have changed
+- **AND** show them in side-by-side format:
   ```
   === specs/user-auth/spec.md ===
   
@@ -28,18 +28,6 @@ The command SHALL show a requirement-level comparison between current and future
   Support for legacy authentication.      |
   ```
 
-#### Scenario: Showing only changes with --changes-only flag
-
-- **WHEN** running `openspec diff <change> --changes-only`
-- **THEN** hide unchanged requirements
-- **AND** show only added, modified, or removed requirements
-
-#### Scenario: Traditional diff with --unified flag
-
-- **WHEN** running `openspec diff <change> --unified`
-- **THEN** show traditional unified diff format
-- **AND** useful for CI/CD tools expecting standard diff output
-
 ### Requirement: Change Format Handling
 
 The command SHALL handle both delta and full-state change formats.
@@ -47,18 +35,16 @@ The command SHALL handle both delta and full-state change formats.
 #### Scenario: Processing delta format
 
 - **WHEN** change uses delta format (ADDED/MODIFIED/REMOVED sections)
-- **THEN** apply deltas to current spec to generate future state
-- **AND** show requirement-level comparison
+- **THEN** show requirement-level comparison of changes
 
 #### Scenario: Processing full-state format
 
 - **WHEN** change contains complete future state
-- **THEN** parse both current and future specs
-- **AND** show requirement-level comparison
+- **THEN** show requirement-level comparison of changes
 
 ### Requirement: Validation
 
-The command SHALL validate that deltas can be applied successfully.
+The command SHALL validate that changes can be applied successfully.
 
 #### Scenario: Invalid delta references
 
