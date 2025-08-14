@@ -13,7 +13,7 @@ Store only the requirements that actually change, not complete future states:
 - **REMOVED Requirements**: Deprecated capabilities
 - **RENAMED Requirements**: Explicit header changes (e.g., `FROM: Old Name` → `TO: New Name`)
 
-The archive command will programmatically apply these deltas using header matching (with whitespace normalization) instead of manually copying entire files.
+The archive command will programmatically apply these deltas using normalized header matching (trim leading/trailing whitespace) instead of manually copying entire files.
 
 ## Impact
 
@@ -59,7 +59,7 @@ Sessions SHALL expire after 30 minutes of inactivity.
 - TO: `### Requirement: Email Authentication`
 ```
 
-This makes reviews focused and changes explicit. The archive command can programmatically apply these changes by matching headers (with whitespace normalization).
+This makes reviews focused and changes explicit.
 
 ## Conflict Resolution
 

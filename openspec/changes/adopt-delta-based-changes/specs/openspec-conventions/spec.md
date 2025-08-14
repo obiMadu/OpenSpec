@@ -10,9 +10,8 @@ Requirement headers SHALL serve as unique identifiers for programmatic matching 
 
 - **WHEN** processing delta changes
 - **THEN** use the `### Requirement: [Name]` header as the unique identifier
-- **AND** normalize headers by trimming leading/trailing whitespace
-- **AND** match requirements by exact text comparison (after normalization)
-- **AND** treat headers as case-sensitive identifiers
+- **AND** match using normalized headers: `normalize(header) = trim(header)`
+- **AND** compare headers with case-sensitive equality after normalization
 
 #### Scenario: Handling requirement renames
 
@@ -24,7 +23,7 @@ Requirement headers SHALL serve as unique identifiers for programmatic matching 
   - FROM: `### Requirement: Old Name`
   - TO: `### Requirement: New Name`
   ```
-- **AND** include the renamed requirement under MODIFIED if content also changes
+- **AND** if content also changes, include under MODIFIED using the NEW header
 
 #### Scenario: Validating header uniqueness
 
@@ -37,6 +36,16 @@ Requirement headers SHALL serve as unique identifiers for programmatic matching 
 ### Requirement: Change Storage Convention
 
 Change proposals SHALL store only the additions, modifications, and removals to specifications, not complete future states.
+
+#### Scenario: Detecting delta format
+
+- **WHEN** determining if a change uses delta format
+- **THEN** check for presence of any of these level-2 headings:
+  - `## ADDED Requirements`
+  - `## MODIFIED Requirements`
+  - `## REMOVED Requirements`
+  - `## RENAMED Requirements`
+- **AND** if none present, treat as full future state format
 
 #### Scenario: Creating change proposals with additions
 
@@ -61,12 +70,6 @@ Change proposals SHALL store only the additions, modifications, and removals to 
 - **AND** include reason for removal
 - **AND** document any migration path if applicable
 
-#### Scenario: Handling structural reorganization
-
-- **WHEN** a change completely restructures a specification
-- **THEN** use `## RESTRUCTURED Specification` marker
-- **AND** include the complete new structure
-- **AND** document in proposal.md why complete restructuring is necessary
 
 The `changes/[name]/specs/` directory SHALL contain:
 - Delta files showing only what changes
@@ -85,7 +88,7 @@ The archive process SHALL programmatically apply delta changes to current specif
 - **THEN** the archive command SHALL:
   1. Parse RENAMED sections first and apply renames
   2. Parse REMOVED sections and remove by normalized header match
-  3. Parse MODIFIED sections and replace by normalized header match
+  3. Parse MODIFIED sections and replace by normalized header match (using new names if renamed)
   4. Parse ADDED sections and append new requirements
 - **AND** validate that all MODIFIED/REMOVED headers exist in current spec
 - **AND** validate that ADDED headers don't already exist

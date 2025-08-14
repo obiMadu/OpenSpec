@@ -8,7 +8,7 @@ The command SHALL generate appropriate diff output for delta-based changes.
 
 #### Scenario: Displaying delta changes
 
-- **WHEN** change uses delta format (contains ADDED/MODIFIED/REMOVED sections)
+- **WHEN** change uses delta format (contains ADDED/MODIFIED/REMOVED/RENAMED sections)
 - **THEN** display the delta sections directly with syntax highlighting:
   ```
   === specs/user-auth/spec.md ===
@@ -21,11 +21,18 @@ The command SHALL generate appropriate diff output for delta-based changes.
   ~ ### Requirement: Session Management
   ~ Sessions SHALL expire after 30 minutes (was 60)
   
+  RENAMED Requirements:
+  → ### Requirement: Basic Auth → Email Authentication
+  
   REMOVED Requirements:
   - ### Requirement: Legacy Auth
   - Reason: Deprecated in favor of OAuth
   ```
-- **AND** use color coding: green for ADDED, yellow for MODIFIED, red for REMOVED
+- **AND** use symbols and colors:
+  - `+` ADDED (green)
+  - `~` MODIFIED (yellow)
+  - `-` REMOVED (red)
+  - `→` RENAMED (cyan)
 
 #### Scenario: Backward compatibility with full state
 

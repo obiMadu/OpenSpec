@@ -17,8 +17,7 @@
 - [ ] 3.3 Apply changes in order: RENAMED → REMOVED → MODIFIED → ADDED
 - [ ] 3.4 Validate headers exist before MODIFY/REMOVE operations
 - [ ] 3.5 Validate headers don't exist before ADD operations
-- [ ] 3.6 Support RESTRUCTURED marker for full replacements
-- [ ] 3.7 Add tests for delta application logic with exact header matching
+- [ ] 3.6 Add tests for delta application logic with normalized header matching
 
 ## 4. Update Other CLI Commands
 - [ ] 4.1 Update `diff` command to understand delta format
@@ -32,10 +31,10 @@
 
 ## 6. Tooling Validation
 - [ ] 6.1 Add validation to ensure ADDED requirements don't already exist (by header)
-- [ ] 6.2 Validate MODIFIED requirements reference existing requirements (exact match)
+- [ ] 6.2 Validate MODIFIED requirements reference existing requirements (normalized match)
 - [ ] 6.3 Check for orphaned scenarios in modifications
 - [ ] 6.4 Validate no duplicate headers within a spec
-- [ ] 6.5 Enforce exact header matching (case-sensitive, whitespace-sensitive)
+- [ ] 6.5 Enforce normalized header matching (case-sensitive, leading/trailing whitespace ignored)
 - [ ] 6.6 Validate RENAMED sections specify valid FROM headers
 - [ ] 6.7 Check that renamed requirements aren't also in ADDED section
 

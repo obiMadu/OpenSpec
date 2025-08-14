@@ -12,8 +12,8 @@ Before moving the change to archive, the command SHALL apply delta changes to ma
 - **THEN** parse the change's spec files for ADDED/MODIFIED/REMOVED/RENAMED sections
 - **AND** apply changes in this order:
   1. Process RENAMED sections - update requirement headers
-  2. Process REMOVED sections - delete requirements by exact header match
-  3. Process MODIFIED sections - replace requirements by exact header match
+  2. Process REMOVED sections - delete requirements by normalized header match
+  3. Process MODIFIED sections - replace requirements by normalized header match
   4. Process ADDED sections - append new requirements to spec
 - **AND** validate all operations before applying
 
@@ -21,17 +21,11 @@ Before moving the change to archive, the command SHALL apply delta changes to ma
 
 - **WHEN** processing delta changes
 - **THEN** validate:
-  - All MODIFIED requirements exist in current spec (by exact header match)
+  - All MODIFIED requirements exist in current spec (by normalized header match)
   - All REMOVED requirements exist in current spec
   - All ADDED requirements don't already exist
   - RENAMED source headers exist in current spec
 - **AND** if validation fails, show specific errors and abort
-
-#### Scenario: Handling RESTRUCTURED specifications
-
-- **WHEN** a spec file contains `## RESTRUCTURED Specification` marker
-- **THEN** replace the entire current spec with the restructured content
-- **AND** skip delta processing for that file
 
 #### Scenario: Backward compatibility
 
@@ -59,8 +53,8 @@ The command SHALL provide clear feedback about delta operations.
 - **AND** example output:
   ```
   Applying changes to specs/user-auth/spec.md:
-    + 2 requirements added
-    ~ 3 requirements modified
-    - 1 requirement removed
-    → 1 requirement renamed
+    + 2 added
+    ~ 3 modified
+    - 1 removed
+    → 1 renamed
   ```
