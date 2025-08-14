@@ -43,9 +43,9 @@ openspec/
 │   │   ├── proposal.md     # Why, what, impact (consolidated)
 │   │   ├── tasks.md        # Implementation checklist
 │   │   ├── design.md       # Technical decisions (optional, for complex changes)
-│   │   └── specs/          # Future state of affected specs
+│   │   └── specs/          # Delta changes to specs
 │   │       └── [capability]/
-│   │           └── spec.md # Clean markdown (no diff syntax)
+│   │           └── spec.md # Delta format (ADDED/MODIFIED/REMOVED/RENAMED)
 │   └── archive/            # Completed changes (dated)
 ```
 
@@ -94,7 +94,35 @@ Before any task:
 - If adding dependencies, frameworks, or architectural patterns, document why simpler alternatives won't work
 - Default to single-file implementations until proven insufficient
 
-### 3. Creating a Change Proposal
+### 3. Delta-Based Change Format
+
+Changes use a delta format with clear sections:
+
+```markdown
+## ADDED Requirements
+### Requirement: New Feature
+[Complete requirement content in structured format]
+
+## MODIFIED Requirements  
+### Requirement: Existing Feature
+[Complete modified requirement (header must match current spec)]
+
+## REMOVED Requirements
+### Requirement: Old Feature
+**Reason for removal**: [Why removing]
+**Migration path**: [How to handle existing usage]
+
+## RENAMED Requirements
+- FROM: `### Requirement: Old Name`
+- TO: `### Requirement: New Name`
+```
+
+Key rules:
+- Headers are matched using `normalize(header) = trim(header)`
+- Include complete requirements (not diffs)
+- Use standard symbols in CLI output: + (added), ~ (modified), - (removed), → (renamed)
+
+### 4. Creating a Change Proposal
 
 When a user requests a significant change:
 
@@ -113,13 +141,21 @@ openspec/changes/[descriptive-name]/
 - Affected specs: [list capabilities that will change]
 - Affected code: [list key files/systems]
 
-# 3. Create future state specs for ALL affected capabilities
-# - Store complete spec files as they will exist after the change
-# - Use clean markdown without diff syntax (+/- prefixes)
-# - Include all formatting and structure of the final intended state
+# 3. Create delta specs for ALL affected capabilities
+# - Store only the changes (not complete future state)
+# - Use sections: ## ADDED, ## MODIFIED, ## REMOVED, ## RENAMED
+# - Include complete requirements in their final form
+# Example spec.md content:
+#   ## ADDED Requirements
+#   ### Requirement: Password Reset
+#   Users SHALL be able to reset passwords via email...
+#   
+#   ## MODIFIED Requirements
+#   ### Requirement: User Authentication
+#   [Complete modified requirement with new password reset hook]
 specs/
 └── [capability]/
-    └── spec.md
+    └── spec.md  # Contains delta sections
 
 # 4. Create tasks.md with implementation steps
 ## 1. [Task Group]
@@ -130,16 +166,16 @@ specs/
 [Technical decisions and trade-offs]
 ```
 
-### 4. The Change Lifecycle
+### 5. The Change Lifecycle
 
-1. **Propose** → Create change directory with all documentation
+1. **Propose** → Create change directory with delta-based documentation
 2. **Review** → User reviews and approves the proposal
 3. **Implement** → Follow the approved tasks.md (can be multiple PRs)
 4. **Deploy** → User confirms deployment
-5. **Update Specs** → Sync specs/ with new reality (IF the change affects system capabilities)
+5. **Update Specs** → Apply deltas to sync specs/ with new reality (IF the change affects system capabilities)
 6. **Archive** → Move to `changes/archive/YYYY-MM-DD-[name]/`
 
-### 5. Implementing Changes
+### 6. Implementing Changes
 
 When implementing an approved change:
 1. Follow the tasks.md checklist exactly
@@ -154,7 +190,7 @@ When implementing an approved change:
 - Different developers can work on different task groups
 - Example: PR #1 completes tasks 1.1-1.3, PR #2 completes tasks 2.1-2.4
 
-### 6. Updating Specs and Archiving After Deployment
+### 7. Updating Specs and Archiving After Deployment
 
 **Create a separate PR after deployment** that:
 1. Moves change to `changes/archive/YYYY-MM-DD-[name]/`
@@ -163,7 +199,7 @@ When implementing an approved change:
 
 This ensures changes are only archived when truly complete and deployed.
 
-### 7. Types of Changes That Don't Require Specs
+### 8. Types of Changes That Don't Require Specs
 
 Some changes only affect development infrastructure and don't need specs:
 - Initial project setup (package.json, tsconfig.json, etc.)
@@ -216,7 +252,16 @@ User: "Add password reset functionality"
 You should:
 1. Read specs/user-auth/spec.md
 2. Check changes/ for pending auth changes
-3. Create changes/add-password-reset/ with proposal
+3. Create changes/add-password-reset/ with:
+   - proposal.md describing the change
+   - specs/user-auth/spec.md with:
+     ## ADDED Requirements
+     ### Requirement: Password Reset
+     [Complete requirement for password reset]
+     
+     ## MODIFIED Requirements
+     ### Requirement: User Authentication
+     [Updated to integrate with password reset]
 4. Wait for approval before implementing
 ```
 
