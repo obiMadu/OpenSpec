@@ -8,8 +8,9 @@ The command SHALL generate appropriate diff output for delta-based changes.
 
 #### Scenario: Displaying delta changes
 
-- **WHEN** change uses delta format (contains ADDED/MODIFIED/REMOVED/RENAMED sections)
-- **THEN** display the delta sections directly with syntax highlighting:
+- **WHEN** change uses delta format (as detected per openspec-conventions)
+- **THEN** display the delta sections directly with syntax highlighting
+- **AND** use standard output symbols as defined in openspec-conventions:
   ```
   === specs/user-auth/spec.md ===
   
@@ -28,15 +29,10 @@ The command SHALL generate appropriate diff output for delta-based changes.
   - ### Requirement: Legacy Auth
   - Reason: Deprecated in favor of OAuth
   ```
-- **AND** use symbols and colors:
-  - `+` ADDED (green)
-  - `~` MODIFIED (yellow)
-  - `-` REMOVED (red)
-  - `→` RENAMED (cyan)
 
 #### Scenario: Backward compatibility with full state
 
-- **WHEN** change uses full future state format (no delta sections)
+- **WHEN** change uses full future state format (as detected per openspec-conventions)
 - **THEN** fall back to traditional diff comparison
 - **AND** show unified diff between full states
 

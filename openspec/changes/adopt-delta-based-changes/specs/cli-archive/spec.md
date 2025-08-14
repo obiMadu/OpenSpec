@@ -9,27 +9,18 @@ Before moving the change to archive, the command SHALL apply delta changes to ma
 #### Scenario: Applying delta changes
 
 - **WHEN** archiving a change with delta-based specs
-- **THEN** parse the change's spec files for ADDED/MODIFIED/REMOVED/RENAMED sections
-- **AND** apply changes in this order:
-  1. Process RENAMED sections - update requirement headers
-  2. Process REMOVED sections - delete requirements by normalized header match
-  3. Process MODIFIED sections - replace requirements by normalized header match
-  4. Process ADDED sections - append new requirements to spec
+- **THEN** parse and apply delta changes as defined in openspec-conventions
 - **AND** validate all operations before applying
 
 #### Scenario: Validating delta changes
 
 - **WHEN** processing delta changes
-- **THEN** validate:
-  - All MODIFIED requirements exist in current spec (by normalized header match)
-  - All REMOVED requirements exist in current spec
-  - All ADDED requirements don't already exist
-  - RENAMED source headers exist in current spec
+- **THEN** perform validations as specified in openspec-conventions
 - **AND** if validation fails, show specific errors and abort
 
 #### Scenario: Backward compatibility
 
-- **WHEN** a change uses full future state format (no delta sections)
+- **WHEN** a change uses full future state format (as detected per openspec-conventions)
 - **THEN** fall back to copying the entire spec file
 
 #### Scenario: Conflict detection
@@ -50,7 +41,7 @@ The command SHALL provide clear feedback about delta operations.
   - Number of requirements modified
   - Number of requirements removed
   - Number of requirements renamed
-- **AND** example output:
+- **AND** use standard output symbols (+ ~ - →) as defined in openspec-conventions:
   ```
   Applying changes to specs/user-auth/spec.md:
     + 2 added
