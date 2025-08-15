@@ -47,12 +47,34 @@ export class ArchiveCommand {
       throw new Error(`Change '${changeName}' not found.`);
     }
 
-    // Validate specs before archiving
+    // Validate specs and change before archiving
     if (!options.noValidate) {
       const validator = new Validator();
-      const changeSpecsDir = path.join(changeDir, 'specs');
       let hasValidationErrors = false;
 
+      // Validate change.md file
+      const changeFile = path.join(changeDir, 'change.md');
+      try {
+        await fs.access(changeFile);
+        const changeReport = await validator.validateChange(changeFile);
+        
+        if (!changeReport.valid) {
+          hasValidationErrors = true;
+          console.log(chalk.red(`\nValidation errors in change.md:`));
+          for (const issue of changeReport.issues) {
+            if (issue.level === 'ERROR') {
+              console.log(chalk.red(`  ✗ ${issue.message}`));
+            } else if (issue.level === 'WARNING') {
+              console.log(chalk.yellow(`  ⚠ ${issue.message}`));
+            }
+          }
+        }
+      } catch {
+        // Change file doesn't exist, skip validation
+      }
+
+      // Validate spec files
+      const changeSpecsDir = path.join(changeDir, 'specs');
       try {
         const entries = await fs.readdir(changeSpecsDir, { withFileTypes: true });
         
@@ -92,17 +114,18 @@ export class ArchiveCommand {
     } else {
       // Log warning when validation is skipped
       const timestamp = new Date().toISOString();
-      console.log(chalk.yellow(`\n⚠️  WARNING: Skipping validation may archive invalid specs.`));
       
       if (!options.yes) {
         const proceed = await confirm({
-          message: 'Continue without validation? (y/N)',
+          message: chalk.yellow('⚠️  WARNING: Skipping validation may archive invalid specs. Continue? (y/N)'),
           default: false
         });
         if (!proceed) {
           console.log('Archive cancelled.');
           return;
         }
+      } else {
+        console.log(chalk.yellow(`\n⚠️  WARNING: Skipping validation may archive invalid specs.`));
       }
       
       console.log(chalk.yellow(`[${timestamp}] Validation skipped for change: ${changeName}`));

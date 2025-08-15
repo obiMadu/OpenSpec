@@ -179,9 +179,12 @@ export class MarkdownParser {
         const description = deltaMatch[2].trim();
         
         let operation: DeltaOperation = 'MODIFIED';
-        if (description.toLowerCase().includes('add')) {
+        const lowerDesc = description.toLowerCase();
+        
+        // Use word boundaries to avoid false matches (e.g., "address" matching "add")
+        if (/\badd(s|ed|ing)?\b/.test(lowerDesc) || /\bcreate(s|d|ing)?\b/.test(lowerDesc) || /\bnew\b/.test(lowerDesc)) {
           operation = 'ADDED';
-        } else if (description.toLowerCase().includes('remove') || description.toLowerCase().includes('delete')) {
+        } else if (/\bremove(s|d|ing)?\b/.test(lowerDesc) || /\bdelete(s|d|ing)?\b/.test(lowerDesc)) {
           operation = 'REMOVED';
         }
         

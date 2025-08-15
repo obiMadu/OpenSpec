@@ -143,6 +143,17 @@ export class Validator {
 
   private extractNameFromPath(filePath: string): string {
     const parts = filePath.split('/');
+    
+    // Look for the directory name after 'specs' or 'changes'
+    for (let i = parts.length - 1; i >= 0; i--) {
+      if (parts[i] === 'specs' || parts[i] === 'changes') {
+        if (i < parts.length - 1) {
+          return parts[i + 1];
+        }
+      }
+    }
+    
+    // Fallback to filename without extension if not in expected structure
     const fileName = parts[parts.length - 1];
     return fileName.replace('.md', '');
   }
