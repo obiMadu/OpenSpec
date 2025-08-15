@@ -3,6 +3,11 @@ import { readFileSync } from 'fs';
 import { SpecSchema, ChangeSchema, Spec, Change } from '../schemas/index.js';
 import { MarkdownParser } from '../parsers/markdown-parser.js';
 import { ValidationReport, ValidationIssue, ValidationLevel } from './types.js';
+import { 
+  MIN_OVERVIEW_LENGTH,
+  MAX_REQUIREMENT_TEXT_LENGTH,
+  VALIDATION_MESSAGES 
+} from './constants.js';
 
 export class Validator {
   private strictMode: boolean;
@@ -80,20 +85,20 @@ export class Validator {
   private applySpecRules(spec: Spec, content: string): ValidationIssue[] {
     const issues: ValidationIssue[] = [];
     
-    if (spec.overview.length < 50) {
+    if (spec.overview.length < MIN_OVERVIEW_LENGTH) {
       issues.push({
         level: 'WARNING',
         path: 'overview',
-        message: 'Overview section is too brief (less than 50 characters)',
+        message: VALIDATION_MESSAGES.OVERVIEW_TOO_BRIEF,
       });
     }
     
     spec.requirements.forEach((req, index) => {
-      if (req.text.length > 500) {
+      if (req.text.length > MAX_REQUIREMENT_TEXT_LENGTH) {
         issues.push({
           level: 'INFO',
           path: `requirements[${index}]`,
-          message: 'Requirement text is very long (>500 characters). Consider breaking it down.',
+          message: VALIDATION_MESSAGES.REQUIREMENT_TOO_LONG,
         });
       }
       
@@ -112,7 +117,7 @@ export class Validator {
           issues.push({
             level: 'INFO',
             path: `requirements[${index}].scenarios[${sIndex}]`,
-            message: 'Scenario does not follow Given/When/Then structure',
+            message: VALIDATION_MESSAGES.SCENARIO_NO_GIVEN_WHEN_THEN,
           });
         }
       });
@@ -124,12 +129,14 @@ export class Validator {
   private applyChangeRules(change: Change, content: string): ValidationIssue[] {
     const issues: ValidationIssue[] = [];
     
+    const MIN_DELTA_DESCRIPTION_LENGTH = 10;
+    
     change.deltas.forEach((delta, index) => {
-      if (!delta.description || delta.description.length < 10) {
+      if (!delta.description || delta.description.length < MIN_DELTA_DESCRIPTION_LENGTH) {
         issues.push({
           level: 'WARNING',
           path: `deltas[${index}].description`,
-          message: 'Delta description is too brief',
+          message: VALIDATION_MESSAGES.DELTA_DESCRIPTION_TOO_BRIEF,
         });
       }
       
@@ -138,7 +145,7 @@ export class Validator {
         issues.push({
           level: 'WARNING',
           path: `deltas[${index}].requirements`,
-          message: `${delta.operation} delta should include requirements`,
+          message: `${delta.operation} ${VALIDATION_MESSAGES.DELTA_MISSING_REQUIREMENTS}`,
         });
       }
     });

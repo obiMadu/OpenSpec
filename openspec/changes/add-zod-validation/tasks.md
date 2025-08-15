@@ -15,7 +15,7 @@
 
 ## 3. Validation Infrastructure
 - [x] 3.1 Create src/core/validation/types.ts with ValidationLevel, ValidationIssue, ValidationReport types
-- [ ] 3.2 Create src/core/validation/rules.ts with enhanced validation rules
+- [x] 3.2 Create src/core/validation/constants.ts with validation rules and thresholds
 - [x] 3.3 Create src/core/validation/validator.ts with SpecValidator and ChangeValidator classes
 
 ## 4. Enhanced Validation Rules
@@ -53,7 +53,7 @@
 - [x] 8.8 Test validation report JSON output
 
 ## 9. Documentation
-- [ ] 9.1 Document schema structure and validation rules
+- [x] 9.1 Document schema structure and validation rules (docs/validation.md)
 - [x] 9.2 Update CLI help for archive (document --no-validate flag and its warnings)
-- [ ] 9.3 Update CLI help for diff (document validation warnings behavior)
-- [ ] 9.4 Create migration guide for future command integration
+- [x] 9.3 Update CLI help for diff (document validation warnings behavior)
+- [x] 9.4 Create migration guide for future command integration (docs/migration-guide.md)

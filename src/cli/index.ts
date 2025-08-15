@@ -65,7 +65,7 @@ program
 
 program
   .command('diff [change-name]')
-  .description('Show differences between proposed spec changes and current specs')
+  .description('Show differences between proposed spec changes and current specs (includes validation warnings)')
   .action(async (changeName?: string) => {
     try {
       const diffCommand = new DiffCommand();

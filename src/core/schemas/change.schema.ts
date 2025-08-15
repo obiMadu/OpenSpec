@@ -1,24 +1,30 @@
 import { z } from 'zod';
 import { RequirementSchema } from './base.schema.js';
+import { 
+  MIN_WHY_SECTION_LENGTH,
+  MAX_WHY_SECTION_LENGTH,
+  MAX_DELTAS_PER_CHANGE,
+  VALIDATION_MESSAGES 
+} from '../validation/constants.js';
 
 export const DeltaOperationType = z.enum(['ADDED', 'MODIFIED', 'REMOVED']);
 
 export const DeltaSchema = z.object({
-  spec: z.string().min(1, 'Spec name cannot be empty'),
+  spec: z.string().min(1, VALIDATION_MESSAGES.DELTA_SPEC_EMPTY),
   operation: DeltaOperationType,
-  description: z.string().min(1, 'Delta description cannot be empty'),
+  description: z.string().min(1, VALIDATION_MESSAGES.DELTA_DESCRIPTION_EMPTY),
   requirements: z.array(RequirementSchema).optional(),
 });
 
 export const ChangeSchema = z.object({
-  name: z.string().min(1, 'Change name cannot be empty'),
+  name: z.string().min(1, VALIDATION_MESSAGES.CHANGE_NAME_EMPTY),
   why: z.string()
-    .min(50, 'Why section must be at least 50 characters')
-    .max(1000, 'Why section should not exceed 1000 characters'),
-  whatChanges: z.string().min(1, 'What Changes section cannot be empty'),
+    .min(MIN_WHY_SECTION_LENGTH, VALIDATION_MESSAGES.CHANGE_WHY_TOO_SHORT)
+    .max(MAX_WHY_SECTION_LENGTH, VALIDATION_MESSAGES.CHANGE_WHY_TOO_LONG),
+  whatChanges: z.string().min(1, VALIDATION_MESSAGES.CHANGE_WHAT_EMPTY),
   deltas: z.array(DeltaSchema)
-    .min(1, 'Change must have at least one delta')
-    .max(10, 'Consider splitting changes with more than 10 deltas'),
+    .min(1, VALIDATION_MESSAGES.CHANGE_NO_DELTAS)
+    .max(MAX_DELTAS_PER_CHANGE, VALIDATION_MESSAGES.CHANGE_TOO_MANY_DELTAS),
   metadata: z.object({
     version: z.string().default('1.0.0'),
     format: z.literal('openspec-change'),
