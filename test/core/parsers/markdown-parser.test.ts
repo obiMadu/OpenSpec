@@ -39,9 +39,9 @@ Then they see an error message`;
       expect(firstReq.scenarios).toHaveLength(1);
       
       const scenario = firstReq.scenarios[0];
-      expect(scenario.given).toBe('a user with valid credentials');
-      expect(scenario.when).toBe('they submit the login form');
-      expect(scenario.then).toBe('they are authenticated');
+      expect(scenario.rawText).toContain('Given a user with valid credentials');
+      expect(scenario.rawText).toContain('When they submit the login form');
+      expect(scenario.rawText).toContain('Then they are authenticated');
     });
 
     it('should handle multi-line scenarios', () => {
@@ -68,9 +68,12 @@ Then they are authenticated
       const spec = parser.parseSpec('test');
       
       const scenario = spec.requirements[0].scenarios[0];
-      expect(scenario.given).toContain('admin privileges');
-      expect(scenario.when).toContain('MFA token');
-      expect(scenario.then).toContain('maintenance warning');
+      expect(scenario.rawText).toContain('Given a user with valid credentials');
+      expect(scenario.rawText).toContain('and the user has admin privileges');
+      expect(scenario.rawText).toContain('When they attempt to login');
+      expect(scenario.rawText).toContain('and provide their MFA token');
+      expect(scenario.rawText).toContain('Then they are authenticated');
+      expect(scenario.rawText).toContain('and see a maintenance warning');
     });
 
     it('should throw error for missing overview', () => {

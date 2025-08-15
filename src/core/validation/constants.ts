@@ -14,9 +14,7 @@ export const MAX_DELTAS_PER_CHANGE = 10;
 // Validation messages
 export const VALIDATION_MESSAGES = {
   // Required content
-  GIVEN_EMPTY: 'Given clause cannot be empty',
-  WHEN_EMPTY: 'When clause cannot be empty',
-  THEN_EMPTY: 'Then clause cannot be empty',
+  SCENARIO_EMPTY: 'Scenario text cannot be empty',
   REQUIREMENT_EMPTY: 'Requirement text cannot be empty',
   REQUIREMENT_NO_SHALL: 'Requirement must contain SHALL or MUST keyword',
   REQUIREMENT_NO_SCENARIOS: 'Requirement must have at least one scenario',
@@ -37,7 +35,4 @@ export const VALIDATION_MESSAGES = {
   REQUIREMENT_TOO_LONG: `Requirement text is very long (>${MAX_REQUIREMENT_TEXT_LENGTH} characters). Consider breaking it down.`,
   DELTA_DESCRIPTION_TOO_BRIEF: 'Delta description is too brief',
   DELTA_MISSING_REQUIREMENTS: 'Delta should include requirements',
-  
-  // Info
-  SCENARIO_NO_GIVEN_WHEN_THEN: 'Scenario does not follow Given/When/Then structure',
 } as const;

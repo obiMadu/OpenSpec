@@ -109,18 +109,6 @@ export class Validator {
           message: 'Requirement has no scenarios',
         });
       }
-      
-      req.scenarios.forEach((scenario, sIndex) => {
-        if (!scenario.given.startsWith('Given') && 
-            !scenario.when.startsWith('When') && 
-            !scenario.then.startsWith('Then')) {
-          issues.push({
-            level: 'INFO',
-            path: `requirements[${index}].scenarios[${sIndex}]`,
-            message: VALIDATION_MESSAGES.SCENARIO_NO_GIVEN_WHEN_THEN,
-          });
-        }
-      });
     });
     
     return issues;

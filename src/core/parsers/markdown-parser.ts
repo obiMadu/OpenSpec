@@ -156,49 +156,17 @@ export class MarkdownParser {
     const scenarios: Scenario[] = [];
     
     for (const scenarioSection of requirementSection.children) {
-      const scenario = this.parseScenario(scenarioSection.content);
-      if (scenario) {
-        scenarios.push(scenario);
+      // Store the raw text content of the scenario section
+      if (scenarioSection.content.trim()) {
+        scenarios.push({
+          rawText: scenarioSection.content
+        });
       }
     }
     
     return scenarios;
   }
 
-  private parseScenario(content: string): Scenario | null {
-    const lines = content.split('\n').map(l => l.trim()).filter(l => l);
-    let given = '';
-    let when = '';
-    let then = '';
-    let currentSection = '';
-    
-    for (const line of lines) {
-      if (line.startsWith('Given ')) {
-        currentSection = 'given';
-        given = line.substring(6).trim();
-      } else if (line.startsWith('When ')) {
-        currentSection = 'when';
-        when = line.substring(5).trim();
-      } else if (line.startsWith('Then ')) {
-        currentSection = 'then';
-        then = line.substring(5).trim();
-      } else if (currentSection) {
-        if (currentSection === 'given') {
-          given += ' ' + line;
-        } else if (currentSection === 'when') {
-          when += ' ' + line;
-        } else if (currentSection === 'then') {
-          then += ' ' + line;
-        }
-      }
-    }
-    
-    if (given && when && then) {
-      return { given, when, then };
-    }
-    
-    return null;
-  }
 
   private parseDeltas(content: string): Delta[] {
     const deltas: Delta[] = [];

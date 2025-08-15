@@ -14,26 +14,22 @@ describe('Validation Schemas', () => {
   describe('ScenarioSchema', () => {
     it('should validate a valid scenario', () => {
       const scenario = {
-        given: 'a user is logged in',
-        when: 'they click logout',
-        then: 'they are redirected to login page',
+        rawText: 'Given a user is logged in\nWhen they click logout\nThen they are redirected to login page',
       };
       
       const result = ScenarioSchema.safeParse(scenario);
       expect(result.success).toBe(true);
     });
 
-    it('should reject scenario with empty given', () => {
+    it('should reject scenario with empty text', () => {
       const scenario = {
-        given: '',
-        when: 'they click logout',
-        then: 'they are redirected to login page',
+        rawText: '',
       };
       
       const result = ScenarioSchema.safeParse(scenario);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe('Given clause cannot be empty');
+        expect(result.error.issues[0].message).toBe('Scenario text cannot be empty');
       }
     });
   });
@@ -44,9 +40,7 @@ describe('Validation Schemas', () => {
         text: 'The system SHALL provide user authentication',
         scenarios: [
           {
-            given: 'a user with valid credentials',
-            when: 'they submit the login form',
-            then: 'they are authenticated',
+            rawText: 'Given a user with valid credentials\nWhen they submit the login form\nThen they are authenticated',
           },
         ],
       };
@@ -60,9 +54,7 @@ describe('Validation Schemas', () => {
         text: 'The system provides user authentication',
         scenarios: [
           {
-            given: 'a user',
-            when: 'they login',
-            then: 'authenticated',
+            rawText: 'Given a user\nWhen they login\nThen authenticated',
           },
         ],
       };
@@ -98,9 +90,7 @@ describe('Validation Schemas', () => {
             text: 'The system SHALL provide user authentication',
             scenarios: [
               {
-                given: 'a user with valid credentials',
-                when: 'they submit the login form',
-                then: 'they are authenticated',
+                rawText: 'Given a user with valid credentials\nWhen they submit the login form\nThen they are authenticated',
               },
             ],
           },

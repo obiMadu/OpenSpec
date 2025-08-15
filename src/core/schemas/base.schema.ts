@@ -2,9 +2,7 @@ import { z } from 'zod';
 import { VALIDATION_MESSAGES } from '../validation/constants.js';
 
 export const ScenarioSchema = z.object({
-  given: z.string().min(1, VALIDATION_MESSAGES.GIVEN_EMPTY),
-  when: z.string().min(1, VALIDATION_MESSAGES.WHEN_EMPTY),
-  then: z.string().min(1, VALIDATION_MESSAGES.THEN_EMPTY),
+  rawText: z.string().min(1, VALIDATION_MESSAGES.SCENARIO_EMPTY),
 });
 
 export const RequirementSchema = z.object({
