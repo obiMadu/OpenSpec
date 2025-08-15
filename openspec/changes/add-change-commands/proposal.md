@@ -1,0 +1,20 @@
+# Change: Add Change Commands with JSON Output
+
+## Why
+
+OpenSpec change proposals currently can only be viewed as markdown files, creating the same programmatic access limitations as specs. Additionally, the current `openspec list` command only lists changes, which is inconsistent with the new resource-based command structure.
+
+## What Changes
+
+- Add new `openspec change` command with three subcommands: `show`, `list`, and `validate`
+- Implement JSON output capability for change proposals
+- Add Zod schemas for change structure validation
+- Maintain backward compatibility with existing `openspec list` command
+- Enable filtering options specific to changes (requirements-only view)
+
+## Impact
+
+- **Affected specs**: cli-list (modify to add deprecation notice)
+- **Affected code**:
+  - src/cli/index.ts (register new command)
+  - src/core/list.ts (add deprecation notice)
