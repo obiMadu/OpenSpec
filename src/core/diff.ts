@@ -3,6 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import { diffStringsUnified } from 'jest-diff';
 import { select } from '@inquirer/prompts';
+import { Validator } from './validation/validator.js';
 
 // Constants
 const ARCHIVE_DIR = 'archive';
@@ -45,6 +46,53 @@ export class DiffCommand {
     } catch {
       console.log(`No spec changes found for '${changeName}'`);
       return;
+    }
+
+    // Validate specs and show warnings (non-blocking)
+    const validator = new Validator();
+    let hasWarnings = false;
+    
+    try {
+      const entries = await fs.readdir(changeSpecsDir, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const specFile = path.join(changeSpecsDir, entry.name, 'spec.md');
+          
+          try {
+            await fs.access(specFile);
+            const report = await validator.validateSpec(specFile);
+            
+            if (report.issues.length > 0) {
+              const warnings = report.issues.filter(i => i.level === 'WARNING');
+              const errors = report.issues.filter(i => i.level === 'ERROR');
+              
+              if (errors.length > 0 || warnings.length > 0) {
+                if (!hasWarnings) {
+                  console.log(chalk.yellow('\n⚠️  Validation warnings found:'));
+                  hasWarnings = true;
+                }
+                
+                console.log(chalk.yellow(`\n  ${entry.name}/spec.md:`));
+                for (const issue of errors) {
+                  console.log(chalk.red(`    ✗ ${issue.message}`));
+                }
+                for (const issue of warnings) {
+                  console.log(chalk.yellow(`    ⚠ ${issue.message}`));
+                }
+              }
+            }
+          } catch {
+            // Spec file doesn't exist, skip validation
+          }
+        }
+      }
+      
+      if (hasWarnings) {
+        console.log(chalk.yellow('\nConsider fixing these issues before archiving.\n'));
+      }
+    } catch {
+      // No specs directory, skip validation
     }
 
     // Reset counters
