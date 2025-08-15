@@ -1,33 +1,34 @@
-# Implementation Tasks
+# Implementation Tasks (Phase 2: Builds on add-zod-validation)
 
-## 1. Core Schema Setup
-- [ ] 1.1 Create src/core/schemas/change.schema.ts with Zod schemas
-- [ ] 1.2 Define DeltaOperationSchema for ADDED/MODIFIED/REMOVED/RENAMED
-- [ ] 1.3 Define ChangeProposalSchema with metadata
-- [ ] 1.4 Reuse RequirementSchema and ScenarioSchema from spec implementation
+## 1. Command Implementation
+- [ ] 1.1 Create src/commands/change.ts
+- [ ] 1.2 Import ChangeSchema and DeltaSchema from src/core/schemas/change.schema.ts
+- [ ] 1.3 Import markdown parser from src/core/parsers/markdown-parser.ts
+- [ ] 1.4 Import ChangeValidator from src/core/validation/validator.ts
+- [ ] 1.5 Import JSON converter from src/core/converters/json-converter.ts
+- [ ] 1.6 Implement show subcommand with JSON output using existing converter
+- [ ] 1.7 Implement list subcommand
+- [ ] 1.8 Implement validate subcommand using existing ChangeValidator
+- [ ] 1.9 Add --requirements-only filtering option
+- [ ] 1.10 Add --strict mode support (leveraging existing validation infrastructure)
+- [ ] 1.11 Add --json flag for validation reports
 
-## 2. Change Parser Implementation
-- [ ] 2.1 Create src/core/parsers/change-parser.ts
+## 2. Change-Specific Parser Extensions
+- [ ] 2.1 Create src/core/parsers/change-parser.ts (extends base markdown parser)
 - [ ] 2.2 Parse proposal structure (Why, What Changes sections)
 - [ ] 2.3 Extract ADDED/MODIFIED/REMOVED/RENAMED sections
 - [ ] 2.4 Parse delta operations within each section
 - [ ] 2.5 Add tests for change parser
 
-## 3. Command Implementation
-- [ ] 3.1 Create src/commands/change.ts
-- [ ] 3.2 Implement show subcommand with JSON output
-- [ ] 3.3 Implement list subcommand
-- [ ] 3.4 Implement validate subcommand
-- [ ] 3.5 Add --requirements-only filtering option
+## 3. Legacy Compatibility
+- [ ] 3.1 Update src/core/list.ts to add deprecation notice
+- [ ] 3.2 Ensure existing list command continues to work
+- [ ] 3.3 Add console warning for deprecated command usage
 
-## 4. Legacy Compatibility
-- [ ] 4.1 Update src/core/list.ts to add deprecation notice
-- [ ] 4.2 Ensure existing list command continues to work
-- [ ] 4.3 Add console warning for deprecated command usage
-
-## 5. Integration
-- [ ] 5.1 Register change command in src/cli/index.ts
-- [ ] 5.2 Add integration tests for all subcommands
-- [ ] 5.3 Test JSON output for changes
-- [ ] 5.4 Test legacy compatibility
-- [ ] 5.5 Update CLI help documentation
+## 4. Integration
+- [ ] 4.1 Register change command in src/cli/index.ts
+- [ ] 4.2 Add integration tests for all subcommands
+- [ ] 4.3 Test JSON output for changes
+- [ ] 4.4 Test legacy compatibility
+- [ ] 4.5 Test validation with strict mode
+- [ ] 4.6 Update CLI help documentation (add 'change' command to main help, document subcommands: show, list, validate)
