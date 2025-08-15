@@ -6,7 +6,7 @@ The system SHALL provide a `change` command with subcommands for displaying, lis
 
 #### Scenario: Show change as JSON
 
-- **WHEN** executing `openspec change show update-error -j`
+- **WHEN** executing `openspec change show update-error --json`
 - **THEN** parse the markdown change file
 - **AND** extract change structure and deltas
 - **AND** output valid JSON to stdout
@@ -16,7 +16,7 @@ The system SHALL provide a `change` command with subcommands for displaying, lis
 - **WHEN** executing `openspec change list`
 - **THEN** scan the openspec/changes directory
 - **AND** return list of all pending changes
-- **AND** support JSON output with `-j` flag
+- **AND** support JSON output with `--json` flag
 
 #### Scenario: Show only deltas
 

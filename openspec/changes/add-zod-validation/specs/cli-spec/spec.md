@@ -19,7 +19,7 @@ The system SHALL perform comprehensive runtime validation using Zod schemas for 
 
 #### Scenario: JSON validation report
 
-- **WHEN** executing `openspec spec validate init -j`
+- **WHEN** executing `openspec spec validate init --json`
 - **THEN** output structured validation report
 - **AND** include issue level, path, and message
 - **AND** provide summary counts
