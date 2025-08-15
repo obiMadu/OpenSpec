@@ -10,7 +10,7 @@ OpenSpec change proposals currently can only be viewed as markdown files, creati
 - Implement JSON output capability for change proposals
 - Add Zod schemas for change structure validation
 - Maintain backward compatibility with existing `openspec list` command
-- Enable filtering options specific to changes (deltas only)
+- Enable filtering options specific to changes (requirements-only view)
 
 ## Impact
 

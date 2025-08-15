@@ -18,10 +18,10 @@ The system SHALL provide a `change` command with subcommands for displaying, lis
 - **AND** return list of all pending changes
 - **AND** support JSON output with `--json` flag
 
-#### Scenario: Show only deltas
+#### Scenario: Show only requirement changes
 
-- **WHEN** executing `openspec change show update-error --deltas`
-- **THEN** display only the delta operations
+- **WHEN** executing `openspec change show update-error --requirements-only`
+- **THEN** display only the requirement changes (ADDED/MODIFIED/REMOVED/RENAMED)
 - **AND** exclude why and what changes sections
 
 #### Scenario: Validate change structure

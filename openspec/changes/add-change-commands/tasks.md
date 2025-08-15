@@ -18,7 +18,7 @@
 - [ ] 3.2 Implement show subcommand with JSON output
 - [ ] 3.3 Implement list subcommand
 - [ ] 3.4 Implement validate subcommand
-- [ ] 3.5 Add --deltas filtering option
+- [ ] 3.5 Add --requirements-only filtering option
 
 ## 4. Legacy Compatibility
 - [ ] 4.1 Update src/core/list.ts to add deprecation notice
