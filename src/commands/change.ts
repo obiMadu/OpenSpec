@@ -5,6 +5,13 @@ import chalk from 'chalk';
 import { JsonConverter } from '../core/converters/json-converter.js';
 import { Validator } from '../core/validation/validator.js';
 import { MarkdownParser } from '../core/parsers/markdown-parser.js';
+import { Change, Delta } from '../core/schemas/index.js';
+
+// Constants for better maintainability
+const ARCHIVE_DIR = 'archive';
+const MARKDOWN_EXT = '.md';
+const TASK_PATTERN = /^[-*]\s+\[[\sx]\]/i;
+const COMPLETED_TASK_PATTERN = /^[-*]\s+\[x\]/i;
 
 export class ChangeCommand {
   private converter: JsonConverter;
@@ -35,17 +42,17 @@ export class ChangeCommand {
     try {
       await fs.access(proposalPath);
     } catch {
-      throw new Error(`Change "${changeName}" not found`);
+      throw new Error(`Change "${changeName}" not found at ${proposalPath}`);
     }
     
     if (options?.json) {
       const jsonOutput = this.converter.convertChangeToJson(proposalPath);
       
       if (options.requirementsOnly) {
-        const change = JSON.parse(jsonOutput);
+        const change: Change = JSON.parse(jsonOutput);
         const requirements = change.deltas
-          ?.filter((d: any) => d.requirements && d.requirements.length > 0)
-          ?.flatMap((d: any) => d.requirements) || [];
+          ?.filter((d: Delta) => d.requirements && d.requirements.length > 0)
+          ?.flatMap((d: Delta) => d.requirements) || [];
         console.log(JSON.stringify(requirements, null, 2));
       } else {
         console.log(jsonOutput);
@@ -94,7 +101,12 @@ export class ChangeCommand {
             try {
               const tasksContent = await fs.readFile(tasksPath, 'utf-8');
               taskStatus = this.countTasks(tasksContent);
-            } catch {}
+            } catch (error) {
+              // Tasks file may not exist, which is okay
+              if (process.env.DEBUG) {
+                console.error(`Failed to read tasks file at ${tasksPath}:`, error);
+              }
+            }
             
             return {
               name: changeName,
@@ -136,7 +148,12 @@ export class ChangeCommand {
             const { total, completed } = this.countTasks(tasksContent);
             const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
             taskStatus = ` ${chalk.gray(`[${completed}/${total} tasks - ${percentage}%]`)}`;
-          } catch {}
+          } catch (error) {
+            // Tasks file may not exist, which is okay
+            if (process.env.DEBUG) {
+              console.error(`Failed to read tasks file at ${tasksPath}:`, error);
+            }
+          }
           
           console.log(`• ${chalk.cyan(changeName)}: ${title}${taskStatus}`);
         } catch (error) {
@@ -167,7 +184,7 @@ export class ChangeCommand {
     try {
       await fs.access(proposalPath);
     } catch {
-      throw new Error(`Change "${changeName}" not found`);
+      throw new Error(`Change "${changeName}" not found at ${proposalPath}`);
     }
     
     const validator = new Validator(options?.strict || false);
@@ -205,7 +222,7 @@ export class ChangeCommand {
     try {
       const entries = await fs.readdir(changesPath, { withFileTypes: true });
       return entries
-        .filter(entry => entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'archive')
+        .filter(entry => entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== ARCHIVE_DIR)
         .map(entry => entry.name)
         .sort();
     } catch {
@@ -224,9 +241,9 @@ export class ChangeCommand {
     let completed = 0;
     
     for (const line of lines) {
-      if (line.match(/^[-*]\s+\[[\sx]\]/i)) {
+      if (line.match(TASK_PATTERN)) {
         total++;
-        if (line.match(/^[-*]\s+\[x\]/i)) {
+        if (line.match(COMPLETED_TASK_PATTERN)) {
           completed++;
         }
       }

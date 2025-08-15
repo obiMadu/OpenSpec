@@ -9,9 +9,6 @@ interface ChangeInfo {
 
 export class ListCommand {
   async execute(targetPath: string = '.'): Promise<void> {
-    // Show deprecation warning
-    console.log('\x1b[33m%s\x1b[0m', 'Warning: The "openspec list" command is deprecated. Please use "openspec change list" instead.\n');
-    
     const changesDir = path.join(targetPath, 'openspec', 'changes');
     
     // Check if changes directory exists
