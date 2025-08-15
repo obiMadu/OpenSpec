@@ -200,7 +200,7 @@ This specification defines the requirements for user authentication in the syste
 ## Requirements
 
 ### The system SHALL provide secure user authentication
-Users need to be able to log in and out of the system securely.
+The system SHALL provide secure user authentication mechanisms.
 
 #### Scenario: Successful login
 Given a user with valid credentials
@@ -208,7 +208,7 @@ When they submit the login form
 Then they are authenticated and redirected to the dashboard
 
 ### The system SHALL handle invalid login attempts
-The system must gracefully handle incorrect credentials.
+The system SHALL gracefully handle incorrect credentials.
 
 #### Scenario: Invalid credentials
 Given a user with invalid credentials

@@ -35,7 +35,7 @@ Then they see an error message`;
       expect(spec.requirements).toHaveLength(2);
       
       const firstReq = spec.requirements[0];
-      expect(firstReq.text).toContain('SHALL provide secure user authentication');
+      expect(firstReq.text).toBe('Users need to be able to log in securely.');
       expect(firstReq.scenarios).toHaveLength(1);
       
       const scenario = firstReq.scenarios[0];
@@ -53,6 +53,7 @@ Test overview
 ## Requirements
 
 ### The system SHALL handle complex scenarios
+This requirement has content.
 
 #### Scenario: Multi-line scenario
 Given a user with valid credentials
@@ -221,6 +222,51 @@ Content for requirement 1`;
       
       expect(spec.overview).toContain('multiple lines');
       expect(spec.overview).toContain('more content');
+    });
+
+    it('should use requirement heading as fallback when no content is provided', () => {
+      const content = `# Test Spec
+
+## Overview
+Test overview
+
+## Requirements
+
+### The system SHALL use heading text when no content
+
+#### Scenario: Test
+Given test
+When action
+Then result`;
+
+      const parser = new MarkdownParser(content);
+      const spec = parser.parseSpec('test');
+      
+      expect(spec.requirements[0].text).toBe('The system SHALL use heading text when no content');
+    });
+
+    it('should extract requirement text from first non-empty content line', () => {
+      const content = `# Test Spec
+
+## Overview
+Test overview
+
+## Requirements
+
+### Requirement heading
+
+This is the actual requirement text.
+This is additional description.
+
+#### Scenario: Test
+Given test
+When action
+Then result`;
+
+      const parser = new MarkdownParser(content);
+      const spec = parser.parseSpec('test');
+      
+      expect(spec.requirements[0].text).toBe('This is the actual requirement text.');
     });
   });
 });

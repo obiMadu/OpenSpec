@@ -4,8 +4,10 @@ import path from 'path';
 import { execSync } from 'child_process';
 
 describe('spec command', () => {
-  const testDir = path.join(process.cwd(), 'test-spec-command-tmp');
+  const projectRoot = process.cwd();
+  const testDir = path.join(projectRoot, 'test-spec-command-tmp');
   const specsDir = path.join(testDir, 'openspec', 'specs');
+  const openspecBin = path.join(projectRoot, 'bin', 'openspec.js');
   
   beforeEach(async () => {
     await fs.mkdir(specsDir, { recursive: true });
@@ -56,7 +58,7 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec show auth', {
+        const output = execSync(`node ${openspecBin} spec show auth`, {
           encoding: 'utf-8'
         });
         
@@ -64,8 +66,8 @@ The system SHALL process credit card payments securely`;
         expect(output).toContain('Overview:');
         expect(output).toContain('test specification for the authentication system');
         expect(output).toContain('Requirements:');
-        expect(output).toContain('User Authentication');
-        expect(output).toContain('Password Reset');
+        expect(output).toContain('The system SHALL provide secure user authentication');
+        expect(output).toContain('The system SHALL allow users to reset their password');
       } finally {
         process.chdir(originalCwd);
       }
@@ -75,7 +77,7 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec show auth --json', {
+        const output = execSync(`node ${openspecBin} spec show auth --json`, {
           encoding: 'utf-8'
         });
         
@@ -93,12 +95,12 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec show auth --requirements', {
+        const output = execSync(`node ${openspecBin} spec show auth --requirements`, {
           encoding: 'utf-8'
         });
         
-        expect(output).toContain('User Authentication');
-        expect(output).toContain('Password Reset');
+        expect(output).toContain('The system SHALL provide secure user authentication');
+        expect(output).toContain('The system SHALL allow users to reset their password');
         expect(output).not.toContain('Scenario');
         expect(output).not.toContain('GIVEN');
       } finally {
@@ -110,12 +112,12 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec show auth --no-scenarios', {
+        const output = execSync(`node ${openspecBin} spec show auth --no-scenarios`, {
           encoding: 'utf-8'
         });
         
-        expect(output).toContain('User Authentication');
-        expect(output).toContain('Password Reset');
+        expect(output).toContain('The system SHALL provide secure user authentication');
+        expect(output).toContain('The system SHALL allow users to reset their password');
         expect(output).not.toContain('Scenario');
       } finally {
         process.chdir(originalCwd);
@@ -126,12 +128,12 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec show auth -r 1', {
+        const output = execSync(`node ${openspecBin} spec show auth -r 1`, {
           encoding: 'utf-8'
         });
         
         expect(output).toContain('Requirement 1:');
-        expect(output).toContain('User Authentication');
+        expect(output).toContain('The system SHALL provide secure user authentication');
         expect(output).toContain('Scenario');
         expect(output).not.toContain('Password Reset');
       } finally {
@@ -143,7 +145,7 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec show auth --json --no-scenarios', {
+        const output = execSync(`node ${openspecBin} spec show auth --json --no-scenarios`, {
           encoding: 'utf-8'
         });
         
@@ -161,7 +163,7 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec list', {
+        const output = execSync(`node ${openspecBin} spec list`, {
           encoding: 'utf-8'
         });
         
@@ -179,7 +181,7 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec list --json', {
+        const output = execSync(`node ${openspecBin} spec list --json`, {
           encoding: 'utf-8'
         });
         
@@ -199,7 +201,7 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec validate auth', {
+        const output = execSync(`node ${openspecBin} spec validate auth`, {
           encoding: 'utf-8'
         });
         
@@ -215,7 +217,7 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec validate auth --json', {
+        const output = execSync(`node ${openspecBin} spec validate auth --json`, {
           encoding: 'utf-8'
         });
         
@@ -234,7 +236,7 @@ The system SHALL process credit card payments securely`;
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync('node ../../../bin/openspec.js spec validate auth --strict --json', {
+        const output = execSync(`node ${openspecBin} spec validate auth --strict --json`, {
           encoding: 'utf-8'
         });
         
@@ -262,7 +264,7 @@ This section has no actual requirements`;
         // This should exit with non-zero code
         let exitCode = 0;
         try {
-          execSync('node ../../../bin/openspec.js spec validate invalid', {
+          execSync(`node ${openspecBin} spec validate invalid`, {
             encoding: 'utf-8'
           });
         } catch (error: any) {
@@ -284,7 +286,7 @@ This section has no actual requirements`;
         
         let error: any;
         try {
-          execSync('node ../../../bin/openspec.js spec show nonexistent', {
+          execSync(`node ${openspecBin} spec show nonexistent`, {
             encoding: 'utf-8'
           });
         } catch (e) {
@@ -293,7 +295,7 @@ This section has no actual requirements`;
         
         expect(error).toBeDefined();
         expect(error.status).not.toBe(0);
-        expect(error.stderr.toString()).toContain('Error');
+        expect(error.stderr.toString()).toContain('not found');
       } finally {
         process.chdir(originalCwd);
       }
@@ -308,7 +310,7 @@ This section has no actual requirements`;
         
         let error: any;
         try {
-          execSync('node ../../../bin/openspec.js spec list', {
+          execSync(`node ${openspecBin} spec list`, {
             encoding: 'utf-8'
           });
         } catch (e) {
