@@ -1,0 +1,237 @@
+import { promises as fs } from 'fs';
+import path from 'path';
+import ora from 'ora';
+import chalk from 'chalk';
+import { JsonConverter } from '../core/converters/json-converter.js';
+import { Validator } from '../core/validation/validator.js';
+import { MarkdownParser } from '../core/parsers/markdown-parser.js';
+
+export class ChangeCommand {
+  private converter: JsonConverter;
+  private validator: Validator;
+
+  constructor() {
+    this.converter = new JsonConverter();
+    this.validator = new Validator();
+  }
+
+  async show(changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean }): Promise<void> {
+    const changesPath = path.join(process.cwd(), 'openspec', 'changes');
+    
+    if (!changeName) {
+      const changes = await this.getActiveChanges(changesPath);
+      if (changes.length === 0) {
+        throw new Error('No active changes found');
+      }
+      if (changes.length === 1) {
+        changeName = changes[0];
+      } else {
+        throw new Error(`Multiple active changes found. Please specify one: ${changes.join(', ')}`);
+      }
+    }
+    
+    const proposalPath = path.join(changesPath, changeName, 'proposal.md');
+    
+    try {
+      await fs.access(proposalPath);
+    } catch {
+      throw new Error(`Change "${changeName}" not found`);
+    }
+    
+    if (options?.json) {
+      const jsonOutput = this.converter.convertChangeToJson(proposalPath);
+      
+      if (options.requirementsOnly) {
+        const change = JSON.parse(jsonOutput);
+        const requirements = change.deltas
+          ?.filter((d: any) => d.requirements && d.requirements.length > 0)
+          ?.flatMap((d: any) => d.requirements) || [];
+        console.log(JSON.stringify(requirements, null, 2));
+      } else {
+        console.log(jsonOutput);
+      }
+    } else {
+      const content = await fs.readFile(proposalPath, 'utf-8');
+      
+      if (options?.requirementsOnly) {
+        const parser = new MarkdownParser(content);
+        const change = parser.parseChange(changeName);
+        
+        console.log(chalk.bold(`\nRequirements from change: ${changeName}\n`));
+        
+        change.deltas.forEach(delta => {
+          if (delta.requirements && delta.requirements.length > 0) {
+            console.log(chalk.cyan(`${delta.spec} (${delta.operation}):`));
+            delta.requirements.forEach(req => {
+              console.log(`  - ${req.text}`);
+            });
+            console.log();
+          }
+        });
+      } else {
+        console.log(content);
+      }
+    }
+  }
+
+  async list(options?: { json?: boolean }): Promise<void> {
+    const changesPath = path.join(process.cwd(), 'openspec', 'changes');
+    
+    const changes = await this.getActiveChanges(changesPath);
+    
+    if (options?.json) {
+      const changeDetails = await Promise.all(
+        changes.map(async (changeName) => {
+          const proposalPath = path.join(changesPath, changeName, 'proposal.md');
+          const tasksPath = path.join(changesPath, changeName, 'tasks.md');
+          
+          try {
+            const content = await fs.readFile(proposalPath, 'utf-8');
+            const parser = new MarkdownParser(content);
+            const change = parser.parseChange(changeName);
+            
+            let taskStatus = { total: 0, completed: 0 };
+            try {
+              const tasksContent = await fs.readFile(tasksPath, 'utf-8');
+              taskStatus = this.countTasks(tasksContent);
+            } catch {}
+            
+            return {
+              name: changeName,
+              title: this.extractTitle(content),
+              deltas: change.deltas.length,
+              taskStatus,
+            };
+          } catch (error) {
+            return {
+              name: changeName,
+              title: 'Unknown',
+              deltas: 0,
+              taskStatus: { total: 0, completed: 0 },
+            };
+          }
+        })
+      );
+      
+      console.log(JSON.stringify(changeDetails, null, 2));
+    } else {
+      if (changes.length === 0) {
+        console.log('No active changes found');
+        return;
+      }
+      
+      console.log(chalk.bold('\nActive Changes:\n'));
+      
+      for (const changeName of changes) {
+        const proposalPath = path.join(changesPath, changeName, 'proposal.md');
+        const tasksPath = path.join(changesPath, changeName, 'tasks.md');
+        
+        try {
+          const content = await fs.readFile(proposalPath, 'utf-8');
+          const title = this.extractTitle(content);
+          
+          let taskStatus = '';
+          try {
+            const tasksContent = await fs.readFile(tasksPath, 'utf-8');
+            const { total, completed } = this.countTasks(tasksContent);
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            taskStatus = ` ${chalk.gray(`[${completed}/${total} tasks - ${percentage}%]`)}`;
+          } catch {}
+          
+          console.log(`• ${chalk.cyan(changeName)}: ${title}${taskStatus}`);
+        } catch (error) {
+          console.log(`• ${chalk.cyan(changeName)}: ${chalk.red('Error reading proposal')}`);
+        }
+      }
+      console.log();
+    }
+  }
+
+  async validate(changeName?: string, options?: { strict?: boolean; json?: boolean }): Promise<void> {
+    const changesPath = path.join(process.cwd(), 'openspec', 'changes');
+    
+    if (!changeName) {
+      const changes = await this.getActiveChanges(changesPath);
+      if (changes.length === 0) {
+        throw new Error('No active changes found');
+      }
+      if (changes.length === 1) {
+        changeName = changes[0];
+      } else {
+        throw new Error(`Multiple active changes found. Please specify one: ${changes.join(', ')}`);
+      }
+    }
+    
+    const proposalPath = path.join(changesPath, changeName, 'proposal.md');
+    
+    try {
+      await fs.access(proposalPath);
+    } catch {
+      throw new Error(`Change "${changeName}" not found`);
+    }
+    
+    const validator = new Validator(options?.strict || false);
+    const report = await validator.validateChange(proposalPath);
+    
+    if (options?.json) {
+      console.log(JSON.stringify(report, null, 2));
+    } else {
+      const spinner = ora();
+      
+      if (report.valid) {
+        spinner.succeed(chalk.green(`Change "${changeName}" is valid`));
+      } else {
+        spinner.fail(chalk.red(`Change "${changeName}" has validation issues`));
+        console.log();
+        
+        report.issues.forEach(issue => {
+          const icon = issue.level === 'ERROR' ? '✗' : '⚠';
+          const color = issue.level === 'ERROR' ? chalk.red : chalk.yellow;
+          console.log(color(`  ${icon} ${issue.path}: ${issue.message}`));
+        });
+      }
+      
+      const warnings = report.issues.filter(issue => issue.level === 'WARNING');
+      if (warnings.length > 0) {
+        console.log(chalk.yellow('\nWarnings:'));
+        warnings.forEach(warning => {
+          console.log(chalk.yellow(`  ⚠ ${warning.path}: ${warning.message}`));
+        });
+      }
+    }
+  }
+
+  private async getActiveChanges(changesPath: string): Promise<string[]> {
+    try {
+      const entries = await fs.readdir(changesPath, { withFileTypes: true });
+      return entries
+        .filter(entry => entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'archive')
+        .map(entry => entry.name)
+        .sort();
+    } catch {
+      return [];
+    }
+  }
+
+  private extractTitle(content: string): string {
+    const match = content.match(/^#\s+(?:Change:\s+)?(.+)$/m);
+    return match ? match[1].trim() : 'Untitled Change';
+  }
+
+  private countTasks(content: string): { total: number; completed: number } {
+    const lines = content.split('\n');
+    let total = 0;
+    let completed = 0;
+    
+    for (const line of lines) {
+      if (line.match(/^[-*]\s+\[[\sx]\]/i)) {
+        total++;
+        if (line.match(/^[-*]\s+\[x\]/i)) {
+          completed++;
+        }
+      }
+    }
+    
+    return { total, completed };
+  }
+}

@@ -8,6 +8,7 @@ import { DiffCommand } from '../core/diff.js';
 import { ListCommand } from '../core/list.js';
 import { ArchiveCommand } from '../core/archive.js';
 import { registerSpecCommand } from '../commands/spec.js';
+import { ChangeCommand } from '../commands/change.js';
 
 const program = new Command();
 
@@ -80,11 +81,64 @@ program
 
 program
   .command('list')
-  .description('List all active changes with their task status')
+  .description('List all active changes with their task status (DEPRECATED: use "openspec change list" instead)')
   .action(async () => {
     try {
+      console.log('\x1b[33m%s\x1b[0m', 'Warning: The "openspec list" command is deprecated. Please use "openspec change list" instead.\n');
       const listCommand = new ListCommand();
       await listCommand.execute();
+    } catch (error) {
+      console.log(); // Empty line for spacing
+      ora().fail(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+// Change command with subcommands
+const changeCmd = program
+  .command('change')
+  .description('Manage OpenSpec change proposals');
+
+changeCmd
+  .command('show [change-name]')
+  .description('Show a change proposal in JSON or markdown format')
+  .option('--json', 'Output as JSON')
+  .option('--requirements-only', 'Show only requirement changes')
+  .action(async (changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean }) => {
+    try {
+      const changeCommand = new ChangeCommand();
+      await changeCommand.show(changeName, options);
+    } catch (error) {
+      console.log(); // Empty line for spacing
+      ora().fail(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+changeCmd
+  .command('list')
+  .description('List all active changes')
+  .option('--json', 'Output as JSON')
+  .action(async (options?: { json?: boolean }) => {
+    try {
+      const changeCommand = new ChangeCommand();
+      await changeCommand.list(options);
+    } catch (error) {
+      console.log(); // Empty line for spacing
+      ora().fail(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+changeCmd
+  .command('validate [change-name]')
+  .description('Validate a change proposal')
+  .option('--strict', 'Enable strict validation mode')
+  .option('--json', 'Output validation report as JSON')
+  .action(async (changeName?: string, options?: { strict?: boolean; json?: boolean }) => {
+    try {
+      const changeCommand = new ChangeCommand();
+      await changeCommand.validate(changeName, options);
     } catch (error) {
       console.log(); // Empty line for spacing
       ora().fail(`Error: ${(error as Error).message}`);
