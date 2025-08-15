@@ -89,7 +89,7 @@ When action
 Then result`;
 
       const parser = new MarkdownParser(content);
-      expect(() => parser.parseSpec('test')).toThrow('must have an Overview section');
+      expect(() => parser.parseSpec('test')).toThrow('must have an Overview or Purpose section');
     });
 
     it('should throw error for missing requirements', () => {
@@ -99,7 +99,7 @@ Then result`;
 This is a test spec`;
 
       const parser = new MarkdownParser(content);
-      expect(() => parser.parseSpec('test')).toThrow('must have a Requirements section');
+      expect(() => parser.parseSpec('test')).toThrow('must have a Requirements or Behavior section');
     });
   });
 
