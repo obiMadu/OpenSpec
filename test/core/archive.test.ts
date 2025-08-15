@@ -99,12 +99,24 @@ describe('ArchiveCommand', () => {
       const changeSpecDir = path.join(changeDir, 'specs', 'test-capability');
       await fs.mkdir(changeSpecDir, { recursive: true });
       
-      // Create spec in change
-      const specContent = '# Test Capability Spec\n\nTest content';
+      // Create valid spec in change
+      const specContent = `# Test Capability Spec
+
+## Overview
+This is a test capability specification for testing purposes.
+
+## Requirements
+
+### The system SHALL provide test capability
+
+#### Scenario: Basic test
+Given a test condition
+When an action occurs
+Then expected result happens`;
       await fs.writeFile(path.join(changeSpecDir, 'spec.md'), specContent);
       
-      // Execute archive with --yes flag
-      await archiveCommand.execute(changeName, { yes: true });
+      // Execute archive with --yes flag and skip validation for speed
+      await archiveCommand.execute(changeName, { yes: true, noValidate: true });
       
       // Verify spec was copied to main specs
       const mainSpecPath = path.join(tempDir, 'openspec', 'specs', 'test-capability', 'spec.md');
@@ -182,8 +194,8 @@ describe('ArchiveCommand', () => {
       const specContent = '# Test Capability Spec\n\nTest content';
       await fs.writeFile(path.join(changeSpecDir, 'spec.md'), specContent);
       
-      // Execute archive with --skip-specs flag
-      await archiveCommand.execute(changeName, { yes: true, skipSpecs: true });
+      // Execute archive with --skip-specs flag and noValidate to skip validation
+      await archiveCommand.execute(changeName, { yes: true, skipSpecs: true, noValidate: true });
       
       // Verify skip message was logged
       expect(console.log).toHaveBeenCalledWith(
@@ -210,8 +222,20 @@ describe('ArchiveCommand', () => {
       const changeSpecDir = path.join(changeDir, 'specs', 'test-capability');
       await fs.mkdir(changeSpecDir, { recursive: true });
       
-      // Create spec in change
-      const specContent = '# Test Capability Spec\n\nTest content';
+      // Create valid spec in change
+      const specContent = `# Test Capability Spec
+
+## Overview
+This is a test capability specification.
+
+## Requirements
+
+### The system SHALL provide test capability
+
+#### Scenario: Basic test
+Given a test condition
+When an action occurs
+Then expected result happens`;
       await fs.writeFile(path.join(changeSpecDir, 'spec.md'), specContent);
       
       // Mock confirm to return false (decline spec updates)
@@ -323,11 +347,13 @@ describe('ArchiveCommand', () => {
       const tasksContent = '- [ ] Task 1';
       await fs.writeFile(path.join(changeDir, 'tasks.md'), tasksContent);
       
-      // Mock confirm to return false (cancel)
+      // Mock confirm to return false (cancel) for validation skip
+      mockConfirm.mockResolvedValueOnce(false);
+      // Mock another false for task warning
       mockConfirm.mockResolvedValueOnce(false);
       
-      // Execute without --yes flag
-      await archiveCommand.execute(changeName);
+      // Execute without --yes flag but skip validation to test task warning
+      await archiveCommand.execute(changeName, { noValidate: true });
       
       // Verify archive was cancelled
       expect(console.log).toHaveBeenCalledWith('Archive cancelled.');

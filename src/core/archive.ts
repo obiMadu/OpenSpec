@@ -2,6 +2,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { select, confirm } from '@inquirer/prompts';
 import { FileSystemUtils } from '../utils/file-system.js';
+import { Validator } from './validation/validator.js';
+import chalk from 'chalk';
 
 interface SpecUpdate {
   source: string;
@@ -10,7 +12,7 @@ interface SpecUpdate {
 }
 
 export class ArchiveCommand {
-  async execute(changeName?: string, options: { yes?: boolean; skipSpecs?: boolean } = {}): Promise<void> {
+  async execute(changeName?: string, options: { yes?: boolean; skipSpecs?: boolean; noValidate?: boolean } = {}): Promise<void> {
     const targetPath = '.';
     const changesDir = path.join(targetPath, 'openspec', 'changes');
     const archiveDir = path.join(changesDir, 'archive');
@@ -43,6 +45,91 @@ export class ArchiveCommand {
       }
     } catch {
       throw new Error(`Change '${changeName}' not found.`);
+    }
+
+    // Validate specs and change before archiving
+    if (!options.noValidate) {
+      const validator = new Validator();
+      let hasValidationErrors = false;
+
+      // Validate change.md file
+      const changeFile = path.join(changeDir, 'change.md');
+      try {
+        await fs.access(changeFile);
+        const changeReport = await validator.validateChange(changeFile);
+        
+        if (!changeReport.valid) {
+          hasValidationErrors = true;
+          console.log(chalk.red(`\nValidation errors in change.md:`));
+          for (const issue of changeReport.issues) {
+            if (issue.level === 'ERROR') {
+              console.log(chalk.red(`  ✗ ${issue.message}`));
+            } else if (issue.level === 'WARNING') {
+              console.log(chalk.yellow(`  ⚠ ${issue.message}`));
+            }
+          }
+        }
+      } catch {
+        // Change file doesn't exist, skip validation
+      }
+
+      // Validate spec files
+      const changeSpecsDir = path.join(changeDir, 'specs');
+      try {
+        const entries = await fs.readdir(changeSpecsDir, { withFileTypes: true });
+        
+        for (const entry of entries) {
+          if (entry.isDirectory()) {
+            const specFile = path.join(changeSpecsDir, entry.name, 'spec.md');
+            
+            try {
+              await fs.access(specFile);
+              const report = await validator.validateSpec(specFile);
+              
+              if (!report.valid) {
+                hasValidationErrors = true;
+                console.log(chalk.red(`\nValidation errors in ${entry.name}/spec.md:`));
+                for (const issue of report.issues) {
+                  if (issue.level === 'ERROR') {
+                    console.log(chalk.red(`  ✗ ${issue.message}`));
+                  } else if (issue.level === 'WARNING') {
+                    console.log(chalk.yellow(`  ⚠ ${issue.message}`));
+                  }
+                }
+              }
+            } catch {
+              // Spec file doesn't exist, skip validation
+            }
+          }
+        }
+      } catch {
+        // No specs directory, skip validation
+      }
+
+      if (hasValidationErrors) {
+        console.log(chalk.red('\nValidation failed. Please fix the errors before archiving.'));
+        console.log(chalk.yellow('To skip validation (not recommended), use --no-validate flag.'));
+        return;
+      }
+    } else {
+      // Log warning when validation is skipped
+      const timestamp = new Date().toISOString();
+      
+      if (!options.yes) {
+        const proceed = await confirm({
+          message: chalk.yellow('⚠️  WARNING: Skipping validation may archive invalid specs. Continue? (y/N)'),
+          default: false
+        });
+        if (!proceed) {
+          console.log('Archive cancelled.');
+          return;
+        }
+      } else {
+        console.log(chalk.yellow(`\n⚠️  WARNING: Skipping validation may archive invalid specs.`));
+      }
+      
+      console.log(chalk.yellow(`[${timestamp}] Validation skipped for change: ${changeName}`));
+      console.log(chalk.yellow(`Affected files: ${changeDir}`));
     }
 
     // Check for incomplete tasks

@@ -65,7 +65,7 @@ program
 
 program
   .command('diff [change-name]')
-  .description('Show differences between proposed spec changes and current specs')
+  .description('Show differences between proposed spec changes and current specs (includes validation warnings)')
   .action(async (changeName?: string) => {
     try {
       const diffCommand = new DiffCommand();
@@ -96,7 +96,8 @@ program
   .description('Archive a completed change and update main specs')
   .option('-y, --yes', 'Skip confirmation prompts')
   .option('--skip-specs', 'Skip spec update operations (useful for infrastructure, tooling, or doc-only changes)')
-  .action(async (changeName?: string, options?: { yes?: boolean; skipSpecs?: boolean }) => {
+  .option('--no-validate', 'Skip validation (not recommended, requires confirmation)')
+  .action(async (changeName?: string, options?: { yes?: boolean; skipSpecs?: boolean; noValidate?: boolean }) => {
     try {
       const archiveCommand = new ArchiveCommand();
       await archiveCommand.execute(changeName, options);
