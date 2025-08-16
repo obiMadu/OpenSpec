@@ -4,9 +4,8 @@ import ora from 'ora';
 import chalk from 'chalk';
 import { JsonConverter } from '../core/converters/json-converter.js';
 import { Validator } from '../core/validation/validator.js';
-import { MarkdownParser } from '../core/parsers/markdown-parser.js';
 import { ChangeParser } from '../core/parsers/change-parser.js';
-import { Change, Delta } from '../core/schemas/index.js';
+import { Change } from '../core/schemas/index.js';
 
 // Constants for better maintainability
 const ARCHIVE_DIR = 'archive';
