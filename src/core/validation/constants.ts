@@ -4,7 +4,7 @@
 
 // Minimum character lengths
 export const MIN_WHY_SECTION_LENGTH = 50;
-export const MIN_OVERVIEW_LENGTH = 50;
+export const MIN_PURPOSE_LENGTH = 50;
 
 // Maximum character/item limits
 export const MAX_WHY_SECTION_LENGTH = 1000;
@@ -19,7 +19,7 @@ export const VALIDATION_MESSAGES = {
   REQUIREMENT_NO_SHALL: 'Requirement must contain SHALL or MUST keyword',
   REQUIREMENT_NO_SCENARIOS: 'Requirement must have at least one scenario',
   SPEC_NAME_EMPTY: 'Spec name cannot be empty',
-  SPEC_OVERVIEW_EMPTY: 'Overview section cannot be empty',
+  SPEC_PURPOSE_EMPTY: 'Purpose section cannot be empty',
   SPEC_NO_REQUIREMENTS: 'Spec must have at least one requirement',
   CHANGE_NAME_EMPTY: 'Change name cannot be empty',
   CHANGE_WHY_TOO_SHORT: `Why section must be at least ${MIN_WHY_SECTION_LENGTH} characters`,
@@ -31,7 +31,7 @@ export const VALIDATION_MESSAGES = {
   DELTA_DESCRIPTION_EMPTY: 'Delta description cannot be empty',
   
   // Warnings
-  OVERVIEW_TOO_BRIEF: `Overview section is too brief (less than ${MIN_OVERVIEW_LENGTH} characters)`,
+  PURPOSE_TOO_BRIEF: `Purpose section is too brief (less than ${MIN_PURPOSE_LENGTH} characters)`,
   REQUIREMENT_TOO_LONG: `Requirement text is very long (>${MAX_REQUIREMENT_TEXT_LENGTH} characters). Consider breaking it down.`,
   DELTA_DESCRIPTION_TOO_BRIEF: 'Delta description is too brief',
   DELTA_MISSING_REQUIREMENTS: 'Delta should include requirements',

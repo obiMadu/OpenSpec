@@ -13,7 +13,7 @@ describe('spec command', () => {
     await fs.mkdir(specsDir, { recursive: true });
     
     // Create test spec files
-    const testSpec = `## Overview
+    const testSpec = `## Purpose
 This is a test specification for the authentication system.
 
 ## Requirements
@@ -37,7 +37,7 @@ The system SHALL allow users to reset their password
     await fs.mkdir(path.join(specsDir, 'auth'), { recursive: true });
     await fs.writeFile(path.join(specsDir, 'auth', 'spec.md'), testSpec);
     
-    const testSpec2 = `## Overview
+    const testSpec2 = `## Purpose
 This specification defines the payment processing system.
 
 ## Requirements
@@ -63,7 +63,7 @@ The system SHALL process credit card payments securely`;
         });
         
         expect(output).toContain('Spec: auth');
-        expect(output).toContain('Overview:');
+        expect(output).toContain('Purpose:');
         expect(output).toContain('test specification for the authentication system');
         expect(output).toContain('Requirements:');
         expect(output).toContain('The system SHALL provide secure user authentication');
@@ -249,7 +249,7 @@ The system SHALL process credit card payments securely`;
     });
 
     it('should detect invalid spec structure', async () => {
-      const invalidSpec = `## Overview
+      const invalidSpec = `## Purpose
 
 ## Requirements
 This section has no actual requirements`;

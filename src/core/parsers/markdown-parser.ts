@@ -18,31 +18,23 @@ export class MarkdownParser {
 
   parseSpec(name: string): Spec {
     const sections = this.parseSections();
-    // Support both "Overview" and "Purpose" sections
-    let overview = this.findSection(sections, 'Overview')?.content || '';
-    if (!overview) {
-      overview = this.findSection(sections, 'Purpose')?.content || '';
-    }
+    const purpose = this.findSection(sections, 'Purpose')?.content || '';
     
-    // Support both "Requirements" and "Behavior" sections
-    let requirementsSection = this.findSection(sections, 'Requirements');
-    if (!requirementsSection) {
-      requirementsSection = this.findSection(sections, 'Behavior');
-    }
+    const requirementsSection = this.findSection(sections, 'Requirements');
     
-    if (!overview) {
-      throw new Error('Spec must have an Overview or Purpose section');
+    if (!purpose) {
+      throw new Error('Spec must have a Purpose section');
     }
     
     if (!requirementsSection) {
-      throw new Error('Spec must have a Requirements or Behavior section');
+      throw new Error('Spec must have a Requirements section');
     }
 
     const requirements = this.parseRequirements(requirementsSection);
 
     return {
       name,
-      overview: overview.trim(),
+      overview: purpose.trim(),
       requirements,
       metadata: {
         version: '1.0.0',

@@ -60,7 +60,7 @@ export function registerSpecCommand(rootProgram: typeof program) {
   function printSpecText(spec: Spec, options: ShowOptions): void {
     console.log(chalk.bold.blue(`Spec: ${spec.name}`));
     console.log();
-    console.log(chalk.bold('Overview:'));
+    console.log(chalk.bold('Purpose:'));
     console.log(spec.overview);
     console.log();
 

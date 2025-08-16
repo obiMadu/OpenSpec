@@ -4,7 +4,7 @@
 
 The `openspec init` command SHALL create a complete OpenSpec directory structure in any project, enabling immediate adoption of OpenSpec conventions with support for multiple AI coding assistants.
 
-## Behavior
+## Requirements
 
 ### Requirement: Progress Indicators
 

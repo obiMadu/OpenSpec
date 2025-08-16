@@ -194,7 +194,7 @@ describe('Validator', () => {
     it('should validate a valid spec file', async () => {
       const specContent = `# User Authentication Spec
 
-## Overview
+## Purpose
 This specification defines the requirements for user authentication in the system.
 
 ## Requirements
@@ -245,7 +245,7 @@ Then authenticated`;
       
       expect(report.valid).toBe(false);
       expect(report.summary.errors).toBeGreaterThan(0);
-      expect(report.issues.some(i => i.message.includes('Overview'))).toBe(true);
+      expect(report.issues.some(i => i.message.includes('Purpose'))).toBe(true);
     });
   });
 
@@ -292,7 +292,7 @@ We need to implement user authentication to secure the application and protect u
     it('should fail on warnings in strict mode', async () => {
       const specContent = `# Test Spec
 
-## Overview
+## Purpose
 Brief overview
 
 ## Requirements
@@ -316,7 +316,7 @@ Then result`;
     it('should pass warnings in non-strict mode', async () => {
       const specContent = `# Test Spec
 
-## Overview
+## Purpose
 Brief overview
 
 ## Requirements

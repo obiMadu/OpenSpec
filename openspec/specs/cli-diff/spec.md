@@ -10,7 +10,7 @@ The `openspec diff` command provides developers with a visual comparison between
 openspec diff [change-name]
 ```
 
-## Behavior
+## Requirements
 
 ### Requirement: Without Arguments
 

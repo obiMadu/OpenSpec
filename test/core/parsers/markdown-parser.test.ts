@@ -6,7 +6,7 @@ describe('MarkdownParser', () => {
     it('should parse a valid spec', () => {
       const content = `# User Authentication Spec
 
-## Overview
+## Purpose
 This specification defines the requirements for user authentication.
 
 ## Requirements
@@ -47,7 +47,7 @@ Then they see an error message`;
     it('should handle multi-line scenarios', () => {
       const content = `# Test Spec
 
-## Overview
+## Purpose
 Test overview
 
 ## Requirements
@@ -90,17 +90,17 @@ When action
 Then result`;
 
       const parser = new MarkdownParser(content);
-      expect(() => parser.parseSpec('test')).toThrow('must have an Overview or Purpose section');
+      expect(() => parser.parseSpec('test')).toThrow('must have a Purpose section');
     });
 
     it('should throw error for missing requirements', () => {
       const content = `# Test Spec
 
-## Overview
+## Purpose
 This is a test spec`;
 
       const parser = new MarkdownParser(content);
-      expect(() => parser.parseSpec('test')).toThrow('must have a Requirements or Behavior section');
+      expect(() => parser.parseSpec('test')).toThrow('must have a Requirements section');
     });
   });
 
@@ -175,7 +175,7 @@ Some general description of changes without specific deltas`;
     it('should handle nested sections correctly', () => {
       const content = `# Test Spec
 
-## Overview
+## Purpose
 This is the overview section for testing nested sections.
 
 ## Requirements
@@ -206,7 +206,7 @@ Then success`;
     it('should preserve content between headers', () => {
       const content = `# Test
 
-## Overview
+## Purpose
 This is the overview.
 It has multiple lines.
 
@@ -227,7 +227,7 @@ Content for requirement 1`;
     it('should use requirement heading as fallback when no content is provided', () => {
       const content = `# Test Spec
 
-## Overview
+## Purpose
 Test overview
 
 ## Requirements
@@ -248,7 +248,7 @@ Then result`;
     it('should extract requirement text from first non-empty content line', () => {
       const content = `# Test Spec
 
-## Overview
+## Purpose
 Test overview
 
 ## Requirements

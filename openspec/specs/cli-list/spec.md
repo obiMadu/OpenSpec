@@ -4,7 +4,7 @@
 
 The `openspec list` command SHALL provide developers with a quick overview of all active changes in the project, showing their names and task completion status.
 
-## Behavior
+## Requirements
 
 ### Requirement: Command Execution
 

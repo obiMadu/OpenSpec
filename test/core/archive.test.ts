@@ -102,7 +102,7 @@ describe('ArchiveCommand', () => {
       // Create valid spec in change
       const specContent = `# Test Capability Spec
 
-## Overview
+## Purpose
 This is a test capability specification for testing purposes.
 
 ## Requirements
@@ -225,7 +225,7 @@ Then expected result happens`;
       // Create valid spec in change
       const specContent = `# Test Capability Spec
 
-## Overview
+## Purpose
 This is a test capability specification.
 
 ## Requirements
