@@ -1,7 +1,9 @@
 import { z, ZodError } from 'zod';
 import { readFileSync } from 'fs';
+import path from 'path';
 import { SpecSchema, ChangeSchema, Spec, Change } from '../schemas/index.js';
 import { MarkdownParser } from '../parsers/markdown-parser.js';
+import { ChangeParser } from '../parsers/change-parser.js';
 import { ValidationReport, ValidationIssue, ValidationLevel } from './types.js';
 import { 
   MIN_PURPOSE_LENGTH,
@@ -50,10 +52,11 @@ export class Validator {
     
     try {
       const content = readFileSync(filePath, 'utf-8');
-      const parser = new MarkdownParser(content);
       const changeName = this.extractNameFromPath(filePath);
+      const changeDir = path.dirname(filePath);
+      const parser = new ChangeParser(content, changeDir);
       
-      const change = parser.parseChange(changeName);
+      const change = await parser.parseChangeWithDeltas(changeName);
       
       const result = ChangeSchema.safeParse(change);
       

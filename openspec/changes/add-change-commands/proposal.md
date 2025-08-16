@@ -6,11 +6,8 @@ OpenSpec change proposals currently can only be viewed as markdown files, creati
 
 ## What Changes
 
-- Add new `openspec change` command with three subcommands: `show`, `list`, and `validate`
-- Implement JSON output capability for change proposals
-- Add Zod schemas for change structure validation
-- Maintain backward compatibility with existing `openspec list` command
-- Enable filtering options specific to changes (requirements-only view)
+- **cli-change:** Add new command for managing change proposals with show, list, and validate subcommands
+- **cli-list:** Add deprecation notice for legacy list command to guide users to the new change list command
 
 ## Impact
 

@@ -1,5 +1,7 @@
 import { readFileSync } from 'fs';
+import path from 'path';
 import { MarkdownParser } from '../parsers/markdown-parser.js';
+import { ChangeParser } from '../parsers/change-parser.js';
 import { Spec, Change } from '../schemas/index.js';
 
 export class JsonConverter {
@@ -21,12 +23,13 @@ export class JsonConverter {
     return JSON.stringify(jsonSpec, null, 2);
   }
 
-  convertChangeToJson(filePath: string): string {
+  async convertChangeToJson(filePath: string): Promise<string> {
     const content = readFileSync(filePath, 'utf-8');
-    const parser = new MarkdownParser(content);
     const changeName = this.extractNameFromPath(filePath);
+    const changeDir = path.dirname(filePath);
+    const parser = new ChangeParser(content, changeDir);
     
-    const change = parser.parseChange(changeName);
+    const change = await parser.parseChangeWithDeltas(changeName);
     
     const jsonChange = {
       ...change,

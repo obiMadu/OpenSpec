@@ -1,6 +1,6 @@
 import { Spec, Change, Requirement, Scenario, Delta, DeltaOperation } from '../schemas/index.js';
 
-interface Section {
+export interface Section {
   level: number;
   title: string;
   content: string;
@@ -70,7 +70,7 @@ export class MarkdownParser {
     };
   }
 
-  private parseSections(): Section[] {
+  protected parseSections(): Section[] {
     const sections: Section[] = [];
     const stack: Section[] = [];
     
@@ -107,7 +107,7 @@ export class MarkdownParser {
     return sections;
   }
 
-  private getContentUntilNextHeader(startLine: number, currentLevel: number): string {
+  protected getContentUntilNextHeader(startLine: number, currentLevel: number): string {
     const contentLines: string[] = [];
     
     for (let i = startLine; i < this.lines.length; i++) {
@@ -124,7 +124,7 @@ export class MarkdownParser {
     return contentLines.join('\n').trim();
   }
 
-  private findSection(sections: Section[], title: string): Section | undefined {
+  protected findSection(sections: Section[], title: string): Section | undefined {
     for (const section of sections) {
       if (section.title.toLowerCase() === title.toLowerCase()) {
         return section;
@@ -137,7 +137,7 @@ export class MarkdownParser {
     return undefined;
   }
 
-  private parseRequirements(section: Section): Requirement[] {
+  protected parseRequirements(section: Section): Requirement[] {
     const requirements: Requirement[] = [];
     
     for (const child of section.children) {
@@ -179,7 +179,7 @@ export class MarkdownParser {
     return requirements;
   }
 
-  private parseScenarios(requirementSection: Section): Scenario[] {
+  protected parseScenarios(requirementSection: Section): Scenario[] {
     const scenarios: Scenario[] = [];
     
     for (const scenarioSection of requirementSection.children) {
@@ -195,12 +195,13 @@ export class MarkdownParser {
   }
 
 
-  private parseDeltas(content: string): Delta[] {
+  protected parseDeltas(content: string): Delta[] {
     const deltas: Delta[] = [];
     const lines = content.split('\n');
     
     for (const line of lines) {
-      const deltaMatch = line.match(/^\s*-\s*\*\*([^:]+):\*\*\s*(.+)$/);
+      // Match both formats: **spec:** and **spec**:
+      const deltaMatch = line.match(/^\s*-\s*\*\*([^*:]+)(?::\*\*|\*\*:)\s*(.+)$/);
       if (deltaMatch) {
         const specName = deltaMatch[1].trim();
         const description = deltaMatch[2].trim();
@@ -209,7 +210,10 @@ export class MarkdownParser {
         const lowerDesc = description.toLowerCase();
         
         // Use word boundaries to avoid false matches (e.g., "address" matching "add")
-        if (/\badd(s|ed|ing)?\b/.test(lowerDesc) || /\bcreate(s|d|ing)?\b/.test(lowerDesc) || /\bnew\b/.test(lowerDesc)) {
+        // Check RENAMED first since it's more specific than patterns containing "new"
+        if (/\brename(s|d|ing)?\b/.test(lowerDesc) || /\brenamed\s+(to|from)\b/.test(lowerDesc)) {
+          operation = 'RENAMED';
+        } else if (/\badd(s|ed|ing)?\b/.test(lowerDesc) || /\bcreate(s|d|ing)?\b/.test(lowerDesc) || /\bnew\b/.test(lowerDesc)) {
           operation = 'ADDED';
         } else if (/\bremove(s|d|ing)?\b/.test(lowerDesc) || /\bdelete(s|d|ing)?\b/.test(lowerDesc)) {
           operation = 'REMOVED';

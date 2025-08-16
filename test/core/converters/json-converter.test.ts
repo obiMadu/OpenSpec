@@ -89,7 +89,7 @@ We need to implement user authentication to secure the application and protect u
       const changePath = path.join(testDir, 'change.md');
       await fs.writeFile(changePath, changeContent);
       
-      const json = converter.convertChangeToJson(changePath);
+      const json = await converter.convertChangeToJson(changePath);
       const parsed = JSON.parse(json);
       
       expect(parsed.name).toBe('change');
@@ -117,7 +117,7 @@ We need authentication for security reasons and to protect user data properly.
       const changePath = path.join(changesDir, 'proposal.md');
       await fs.writeFile(changePath, changeContent);
       
-      const json = converter.convertChangeToJson(changePath);
+      const json = await converter.convertChangeToJson(changePath);
       const parsed = JSON.parse(json);
       
       expect(parsed.name).toBe('add-auth');

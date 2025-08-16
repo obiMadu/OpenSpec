@@ -7,13 +7,18 @@ import {
   VALIDATION_MESSAGES 
 } from '../validation/constants.js';
 
-export const DeltaOperationType = z.enum(['ADDED', 'MODIFIED', 'REMOVED']);
+export const DeltaOperationType = z.enum(['ADDED', 'MODIFIED', 'REMOVED', 'RENAMED']);
 
 export const DeltaSchema = z.object({
   spec: z.string().min(1, VALIDATION_MESSAGES.DELTA_SPEC_EMPTY),
   operation: DeltaOperationType,
   description: z.string().min(1, VALIDATION_MESSAGES.DELTA_DESCRIPTION_EMPTY),
+  requirement: RequirementSchema.optional(),
   requirements: z.array(RequirementSchema).optional(),
+  rename: z.object({
+    from: z.string(),
+    to: z.string(),
+  }).optional(),
 });
 
 export const ChangeSchema = z.object({
