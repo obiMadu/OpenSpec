@@ -14,11 +14,11 @@
 - [x] 1.11 Add --json flag for validation reports
 
 ## 2. Change-Specific Parser Extensions
-- [ ] 2.1 Create src/core/parsers/change-parser.ts (extends base markdown parser)
-- [ ] 2.2 Parse proposal structure (Why, What Changes sections)
-- [ ] 2.3 Extract ADDED/MODIFIED/REMOVED/RENAMED sections
-- [ ] 2.4 Parse delta operations within each section
-- [ ] 2.5 Add tests for change parser
+- [x] 2.1 Create src/core/parsers/change-parser.ts (extends base markdown parser)
+- [x] 2.2 Parse proposal structure (Why, What Changes sections)
+- [x] 2.3 Extract ADDED/MODIFIED/REMOVED/RENAMED sections
+- [x] 2.4 Parse delta operations within each section
+- [x] 2.5 Add tests for change parser
 
 ## 3. Legacy Compatibility
 - [x] 3.1 Update src/core/list.ts to add deprecation notice

@@ -5,21 +5,19 @@ import chalk from 'chalk';
 import { JsonConverter } from '../core/converters/json-converter.js';
 import { Validator } from '../core/validation/validator.js';
 import { MarkdownParser } from '../core/parsers/markdown-parser.js';
+import { ChangeParser } from '../core/parsers/change-parser.js';
 import { Change, Delta } from '../core/schemas/index.js';
 
 // Constants for better maintainability
 const ARCHIVE_DIR = 'archive';
-const MARKDOWN_EXT = '.md';
 const TASK_PATTERN = /^[-*]\s+\[[\sx]\]/i;
 const COMPLETED_TASK_PATTERN = /^[-*]\s+\[x\]/i;
 
 export class ChangeCommand {
   private converter: JsonConverter;
-  private validator: Validator;
 
   constructor() {
     this.converter = new JsonConverter();
-    this.validator = new Validator();
   }
 
   async show(changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean }): Promise<void> {
@@ -46,14 +44,17 @@ export class ChangeCommand {
     }
     
     if (options?.json) {
-      const jsonOutput = this.converter.convertChangeToJson(proposalPath);
+      const jsonOutput = await this.converter.convertChangeToJson(proposalPath);
       
       if (options.requirementsOnly) {
         const change: Change = JSON.parse(jsonOutput);
-        const requirements = change.deltas
-          ?.filter((d: Delta) => d.requirements && d.requirements.length > 0)
-          ?.flatMap((d: Delta) => d.requirements) || [];
-        console.log(JSON.stringify(requirements, null, 2));
+        // Show only deltas (spec changes) for requirements-only mode
+        const deltas = change.deltas || [];
+        if (deltas.length === 0) {
+          console.log(JSON.stringify({ message: "No requirement changes found" }, null, 2));
+        } else {
+          console.log(JSON.stringify(deltas, null, 2));
+        }
       } else {
         console.log(jsonOutput);
       }
@@ -61,20 +62,20 @@ export class ChangeCommand {
       const content = await fs.readFile(proposalPath, 'utf-8');
       
       if (options?.requirementsOnly) {
-        const parser = new MarkdownParser(content);
-        const change = parser.parseChange(changeName);
+        const changeDir = path.join(changesPath, changeName);
+        const parser = new ChangeParser(content, changeDir);
+        const change = await parser.parseChangeWithDeltas(changeName);
         
-        console.log(chalk.bold(`\nRequirements from change: ${changeName}\n`));
+        console.log(chalk.bold(`\nRequirement changes from: ${changeName}\n`));
         
-        change.deltas.forEach(delta => {
-          if (delta.requirements && delta.requirements.length > 0) {
-            console.log(chalk.cyan(`${delta.spec} (${delta.operation}):`));
-            delta.requirements.forEach(req => {
-              console.log(`  - ${req.text}`);
-            });
-            console.log();
-          }
-        });
+        if (change.deltas.length === 0) {
+          console.log(chalk.yellow('No requirement changes found'));
+        } else {
+          change.deltas.forEach(delta => {
+            console.log(chalk.cyan(`• ${delta.spec} (${delta.operation}): ${delta.description}`));
+          });
+        }
+        console.log();
       } else {
         console.log(content);
       }
@@ -94,8 +95,9 @@ export class ChangeCommand {
           
           try {
             const content = await fs.readFile(proposalPath, 'utf-8');
-            const parser = new MarkdownParser(content);
-            const change = parser.parseChange(changeName);
+            const changeDir = path.join(changesPath, changeName);
+            const parser = new ChangeParser(content, changeDir);
+            const change = await parser.parseChangeWithDeltas(changeName);
             
             let taskStatus = { total: 0, completed: 0 };
             try {
