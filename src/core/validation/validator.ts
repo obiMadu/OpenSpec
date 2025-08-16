@@ -4,7 +4,7 @@ import { SpecSchema, ChangeSchema, Spec, Change } from '../schemas/index.js';
 import { MarkdownParser } from '../parsers/markdown-parser.js';
 import { ValidationReport, ValidationIssue, ValidationLevel } from './types.js';
 import { 
-  MIN_OVERVIEW_LENGTH,
+  MIN_PURPOSE_LENGTH,
   MAX_REQUIREMENT_TEXT_LENGTH,
   VALIDATION_MESSAGES 
 } from './constants.js';
@@ -85,11 +85,11 @@ export class Validator {
   private applySpecRules(spec: Spec, content: string): ValidationIssue[] {
     const issues: ValidationIssue[] = [];
     
-    if (spec.overview.length < MIN_OVERVIEW_LENGTH) {
+    if (spec.overview.length < MIN_PURPOSE_LENGTH) {
       issues.push({
         level: 'WARNING',
         path: 'overview',
-        message: VALIDATION_MESSAGES.OVERVIEW_TOO_BRIEF,
+        message: VALIDATION_MESSAGES.PURPOSE_TOO_BRIEF,
       });
     }
     

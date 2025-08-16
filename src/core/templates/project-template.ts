@@ -7,7 +7,7 @@ export interface ProjectContext {
 
 export const projectTemplate = (context: ProjectContext = {}) => `# ${context.projectName || 'Project'} Context
 
-## Overview
+## Purpose
 ${context.description || '[Describe your project\'s purpose and goals]'}
 
 ## Tech Stack

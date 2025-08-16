@@ -11,7 +11,7 @@ openspec archive [change-name] [--yes|-y]
 Options:
 - `--yes`, `-y`: Skip confirmation prompts (for automation)
 
-## Behavior
+## Requirements
 
 ### Requirement: Change Selection
 

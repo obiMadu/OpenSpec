@@ -19,7 +19,7 @@ describe('JsonConverter', () => {
     it('should convert a spec to JSON format', async () => {
       const specContent = `# User Authentication Spec
 
-## Overview
+## Purpose
 This specification defines the requirements for user authentication.
 
 ## Requirements
@@ -53,7 +53,7 @@ Then they are authenticated`;
       
       const specContent = `# User Auth
 
-## Overview
+## Purpose
 Auth spec overview
 
 ## Requirements
@@ -128,7 +128,7 @@ We need authentication for security reasons and to protect user data properly.
     it('should produce properly formatted JSON with indentation', async () => {
       const specContent = `# Test
 
-## Overview
+## Purpose
 Test overview
 
 ## Requirements
@@ -157,7 +157,7 @@ Then result`;
     it('should handle special characters in content', async () => {
       const specContent = `# Test
 
-## Overview
+## Purpose
 This has "quotes" and \\ backslashes and
 newlines
 

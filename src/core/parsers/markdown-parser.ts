@@ -18,11 +18,12 @@ export class MarkdownParser {
 
   parseSpec(name: string): Spec {
     const sections = this.parseSections();
-    const overview = this.findSection(sections, 'Overview')?.content || '';
+    const purpose = this.findSection(sections, 'Purpose')?.content || '';
+    
     const requirementsSection = this.findSection(sections, 'Requirements');
     
-    if (!overview) {
-      throw new Error('Spec must have an Overview section');
+    if (!purpose) {
+      throw new Error('Spec must have a Purpose section');
     }
     
     if (!requirementsSection) {
@@ -33,7 +34,7 @@ export class MarkdownParser {
 
     return {
       name,
-      overview: overview.trim(),
+      overview: purpose.trim(),
       requirements,
       metadata: {
         version: '1.0.0',
@@ -140,7 +141,33 @@ export class MarkdownParser {
     const requirements: Requirement[] = [];
     
     for (const child of section.children) {
-      const text = child.title;
+      // Extract requirement text from first non-empty content line, fall back to heading
+      let text = child.title;
+      
+      // Get content before any child sections (scenarios)
+      if (child.content.trim()) {
+        // Split content into lines and find content before any child headers
+        const lines = child.content.split('\n');
+        const contentBeforeChildren: string[] = [];
+        
+        for (const line of lines) {
+          // Stop at child headers (scenarios start with ####)
+          if (line.trim().startsWith('#')) {
+            break;
+          }
+          contentBeforeChildren.push(line);
+        }
+        
+        // Find first non-empty line
+        const directContent = contentBeforeChildren.join('\n').trim();
+        if (directContent) {
+          const firstLine = directContent.split('\n').find(l => l.trim());
+          if (firstLine) {
+            text = firstLine.trim();
+          }
+        }
+      }
+      
       const scenarios = this.parseScenarios(child);
       
       requirements.push({
