@@ -47,6 +47,25 @@ describe('ChangeCommand.show/validate', () => {
     }
   });
 
+  it('error when no change specified: prints available IDs', async () => {
+    const logsErr: string[] = [];
+    const origErr = console.error;
+    try {
+      console.error = (msg?: any, ...args: any[]) => {
+        logsErr.push([msg, ...args].filter(Boolean).join(' '));
+      };
+      await cmd.show(undefined as unknown as string, { json: false } as any);
+      // Should have set exit code and printed hint
+      expect(process.exitCode).toBe(1);
+      const errOut = logsErr.join('\n');
+      expect(errOut).toMatch(/No change specified/);
+      expect(errOut).toMatch(/Available IDs/);
+    } finally {
+      console.error = origErr;
+      process.exitCode = 0;
+    }
+  });
+
   it('show --json --requirements-only returns minimal object with deltas (deprecated alias)', async () => {
     if (!changeName) return; // skip if no changes present
 

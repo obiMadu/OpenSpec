@@ -58,8 +58,11 @@ export function registerSpecCommand(rootProgram: typeof program) {
     };
   }
 
+  /**
+   * Print the raw markdown content for a spec file without any formatting.
+   * Raw-first behavior ensures text mode is a passthrough for deterministic output.
+   */
   function printSpecTextRaw(specPath: string): void {
-    // Raw-first: passthrough the source markdown content
     const content = readFileSync(specPath, 'utf-8');
     console.log(content);
   }

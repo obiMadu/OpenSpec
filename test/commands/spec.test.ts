@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
@@ -8,6 +8,11 @@ describe('spec command', () => {
   const testDir = path.join(projectRoot, 'test-spec-command-tmp');
   const specsDir = path.join(testDir, 'openspec', 'specs');
   const openspecBin = path.join(projectRoot, 'bin', 'openspec.js');
+  
+  beforeAll(() => {
+    // Ensure CLI is built so bin/openspec.js loads latest logic from dist/
+    execSync('pnpm -s build', { stdio: 'pipe' });
+  });
   
   beforeEach(async () => {
     await fs.mkdir(specsDir, { recursive: true });
@@ -62,12 +67,9 @@ The system SHALL process credit card payments securely`;
           encoding: 'utf-8'
         });
         
-        expect(output).toContain('Spec: auth');
-        expect(output).toContain('Purpose:');
-        expect(output).toContain('test specification for the authentication system');
-        expect(output).toContain('Requirements:');
-        expect(output).toContain('The system SHALL provide secure user authentication');
-        expect(output).toContain('The system SHALL allow users to reset their password');
+        // Raw passthrough should match spec.md content
+        const raw = execSync(`cat ${path.join(specsDir, 'auth', 'spec.md')}`, { encoding: 'utf-8' });
+        expect(output.trim()).toBe(raw.trim());
       } finally {
         process.chdir(originalCwd);
       }
@@ -82,7 +84,8 @@ The system SHALL process credit card payments securely`;
         });
         
         const json = JSON.parse(output);
-        expect(json.name).toBe('auth');
+        expect(json.id).toBe('auth');
+        expect(json.title).toBe('auth');
         expect(json.overview).toContain('test specification');
         expect(json.requirements).toHaveLength(2);
         expect(json.metadata.format).toBe('openspec');
@@ -91,51 +94,50 @@ The system SHALL process credit card payments securely`;
       }
     });
 
-    it('should filter to show only requirements with --requirements flag', () => {
+    it('should filter to show only requirements with --requirements flag (JSON only)', () => {
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync(`node ${openspecBin} spec show auth --requirements`, {
+        const output = execSync(`node ${openspecBin} spec show auth --json --requirements`, {
           encoding: 'utf-8'
         });
         
-        expect(output).toContain('The system SHALL provide secure user authentication');
-        expect(output).toContain('The system SHALL allow users to reset their password');
-        expect(output).not.toContain('Scenario');
-        expect(output).not.toContain('GIVEN');
+        const json = JSON.parse(output);
+        expect(json.requirements).toHaveLength(2);
+        // Scenarios should be excluded when --requirements is used
+        expect(json.requirements.every((r: any) => Array.isArray(r.scenarios) && r.scenarios.length === 0)).toBe(true);
       } finally {
         process.chdir(originalCwd);
       }
     });
 
-    it('should exclude scenarios with --no-scenarios flag', () => {
+    it('should exclude scenarios with --no-scenarios flag (JSON only)', () => {
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync(`node ${openspecBin} spec show auth --no-scenarios`, {
+        const output = execSync(`node ${openspecBin} spec show auth --json --no-scenarios`, {
           encoding: 'utf-8'
         });
         
-        expect(output).toContain('The system SHALL provide secure user authentication');
-        expect(output).toContain('The system SHALL allow users to reset their password');
-        expect(output).not.toContain('Scenario');
+        const json = JSON.parse(output);
+        expect(json.requirements).toHaveLength(2);
+        expect(json.requirements.every((r: any) => Array.isArray(r.scenarios) && r.scenarios.length === 0)).toBe(true);
       } finally {
         process.chdir(originalCwd);
       }
     });
 
-    it('should show specific requirement with -r flag', () => {
+    it('should show specific requirement with -r flag (JSON only)', () => {
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execSync(`node ${openspecBin} spec show auth -r 1`, {
+        const output = execSync(`node ${openspecBin} spec show auth --json -r 1`, {
           encoding: 'utf-8'
         });
         
-        expect(output).toContain('Requirement 1:');
-        expect(output).toContain('The system SHALL provide secure user authentication');
-        expect(output).toContain('Scenario');
-        expect(output).not.toContain('Password Reset');
+        const json = JSON.parse(output);
+        expect(json.requirements).toHaveLength(1);
+        expect(json.requirements[0].text).toContain('The system SHALL provide secure user authentication');
       } finally {
         process.chdir(originalCwd);
       }
@@ -159,7 +161,7 @@ The system SHALL process credit card payments securely`;
   });
 
   describe('spec list', () => {
-    it('should list all available specs', () => {
+    it('should list all available specs (IDs only by default)', () => {
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
@@ -167,11 +169,10 @@ The system SHALL process credit card payments securely`;
           encoding: 'utf-8'
         });
         
-        expect(output).toContain('Available Specifications:');
         expect(output).toContain('auth');
         expect(output).toContain('payment');
-        expect(output).toContain('Requirements: 2');
-        expect(output).toContain('Requirements: 1');
+        // Default should not include counts or teasers
+        expect(output).not.toMatch(/Requirements:\s*\d+/);
       } finally {
         process.chdir(originalCwd);
       }
@@ -205,9 +206,7 @@ The system SHALL process credit card payments securely`;
           encoding: 'utf-8'
         });
         
-        expect(output).toContain('Validation Report');
-        expect(output).toContain('auth');
-        expect(output).toContain('Specification is valid');
+        expect(output).toContain("Specification 'auth' is valid");
       } finally {
         process.chdir(originalCwd);
       }
@@ -301,24 +300,26 @@ This section has no actual requirements`;
       }
     });
 
-    it('should handle missing specs directory', async () => {
+    it('should handle missing specs directory gracefully', async () => {
       await fs.rm(specsDir, { recursive: true, force: true });
-      
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        
-        let error: any;
-        try {
-          execSync(`node ${openspecBin} spec list`, {
-            encoding: 'utf-8'
-          });
-        } catch (e) {
-          error = e;
-        }
-        
-        expect(error).toBeDefined();
-        expect(error.status).not.toBe(0);
+        const output = execSync(`node ${openspecBin} spec list`, { encoding: 'utf-8' });
+        expect(output.trim()).toBe('No items found');
+      } finally {
+        process.chdir(originalCwd);
+      }
+    });
+
+    it('should honor --no-color (no ANSI escapes)', () => {
+      const originalCwd = process.cwd();
+      try {
+        process.chdir(testDir);
+        const output = execSync(`node ${openspecBin} --no-color spec list --long`, { encoding: 'utf-8' });
+        // Basic ANSI escape pattern
+        const hasAnsi = /\u001b\[[0-9;]*m/.test(output);
+        expect(hasAnsi).toBe(false);
       } finally {
         process.chdir(originalCwd);
       }

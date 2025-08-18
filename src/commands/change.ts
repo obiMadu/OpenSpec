@@ -19,6 +19,12 @@ export class ChangeCommand {
     this.converter = new JsonConverter();
   }
 
+  /**
+   * Show a change proposal.
+   * - Text mode: raw markdown passthrough (no filters)
+   * - JSON mode: minimal object with deltas; --deltas-only returns same object with filtered deltas
+   *   Note: --requirements-only is deprecated alias for --deltas-only
+   */
   async show(changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean; deltasOnly?: boolean }): Promise<void> {
     const changesPath = path.join(process.cwd(), 'openspec', 'changes');
     
@@ -45,18 +51,21 @@ export class ChangeCommand {
         console.error('Flag --requirements-only is deprecated; use --deltas-only instead.');
       }
 
+      const parsed: Change = JSON.parse(jsonOutput);
+      const contentForTitle = await fs.readFile(proposalPath, 'utf-8');
+      const title = this.extractTitle(contentForTitle);
+      const id = parsed.name;
+      const deltas = parsed.deltas || [];
+
       if (options.requirementsOnly || options.deltasOnly) {
-        const change: Change = JSON.parse(jsonOutput);
-        const deltas = change.deltas || [];
-        console.log(JSON.stringify({ id: change.id, title: change.title, deltaCount: deltas.length, deltas }, null, 2));
+        const output = { id, title, deltaCount: deltas.length, deltas };
+        console.log(JSON.stringify(output, null, 2));
       } else {
-        const parsed: Change = JSON.parse(jsonOutput);
         const output = {
-          id: parsed.id,
-          title: parsed.title,
-          deltaCount: parsed.deltas?.length ?? 0,
-          deltas: parsed.deltas ?? [],
-          taskStatus: parsed.taskStatus,
+          id,
+          title,
+          deltaCount: deltas.length,
+          deltas,
         };
         console.log(JSON.stringify(output, null, 2));
       }
@@ -66,6 +75,11 @@ export class ChangeCommand {
     }
   }
 
+  /**
+   * List active changes.
+   * - Text default: IDs only; --long prints minimal details (title, counts)
+   * - JSON: array of { id, title, deltaCount, taskStatus }, sorted by id
+   */
   async list(options?: { json?: boolean; long?: boolean }): Promise<void> {
     const changesPath = path.join(process.cwd(), 'openspec', 'changes');
     
@@ -137,7 +151,11 @@ export class ChangeCommand {
             const tasksContent = await fs.readFile(tasksPath, 'utf-8');
             const { total, completed } = this.countTasks(tasksContent);
             taskStatusText = ` [tasks ${completed}/${total}]`;
-          } catch {}
+          } catch (error) {
+            if (process.env.DEBUG) {
+              console.error(`Failed to read tasks file at ${tasksPath}:`, error);
+            }
+          }
           const changeDir = path.join(changesPath, changeName);
           const parser = new ChangeParser(await fs.readFile(proposalPath, 'utf-8'), changeDir);
           const change = await parser.parseChangeWithDeltas(changeName);
