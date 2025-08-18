@@ -27,9 +27,9 @@ describe('ChangeCommand.list', () => {
       expect(Array.isArray(parsed)).toBe(true);
       if (parsed.length > 0) {
         const item = parsed[0];
-        expect(item).toHaveProperty('name');
+        expect(item).toHaveProperty('id');
         expect(item).toHaveProperty('title');
-        expect(item).toHaveProperty('deltas');
+        expect(item).toHaveProperty('deltaCount');
         expect(item).toHaveProperty('taskStatus');
         expect(item.taskStatus).toHaveProperty('total');
         expect(item.taskStatus).toHaveProperty('completed');

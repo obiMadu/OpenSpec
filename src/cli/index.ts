@@ -17,6 +17,17 @@ program
   .description('AI-native system for spec-driven development')
   .version('0.0.1');
 
+// Global options
+program.option('--no-color', 'Disable color output');
+
+// Apply global flags before any command runs
+program.hook('preAction', (thisCommand) => {
+  const opts = thisCommand.opts();
+  if (opts.noColor) {
+    process.env.NO_COLOR = '1';
+  }
+});
+
 program
   .command('init [path]')
   .description('Initialize OpenSpec in your project')
@@ -103,15 +114,15 @@ changeCmd
   .command('show [change-name]')
   .description('Show a change proposal in JSON or markdown format')
   .option('--json', 'Output as JSON')
-  .option('--requirements-only', 'Show only requirement changes')
-  .action(async (changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean }) => {
+  .option('--deltas-only', 'Show only deltas (JSON only)')
+  .option('--requirements-only', 'Alias for --deltas-only (deprecated)')
+  .action(async (changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean; deltasOnly?: boolean }) => {
     try {
       const changeCommand = new ChangeCommand();
       await changeCommand.show(changeName, options);
     } catch (error) {
-      console.log(); // Empty line for spacing
-      ora().fail(`Error: ${(error as Error).message}`);
-      process.exit(1);
+      console.error(`Error: ${(error as Error).message}`);
+      process.exitCode = 1;
     }
   });
 
@@ -119,14 +130,14 @@ changeCmd
   .command('list')
   .description('List all active changes')
   .option('--json', 'Output as JSON')
-  .action(async (options?: { json?: boolean }) => {
+  .option('--long', 'Show id and title with counts')
+  .action(async (options?: { json?: boolean; long?: boolean }) => {
     try {
       const changeCommand = new ChangeCommand();
       await changeCommand.list(options);
     } catch (error) {
-      console.log(); // Empty line for spacing
-      ora().fail(`Error: ${(error as Error).message}`);
-      process.exit(1);
+      console.error(`Error: ${(error as Error).message}`);
+      process.exitCode = 1;
     }
   });
 
@@ -140,9 +151,8 @@ changeCmd
       const changeCommand = new ChangeCommand();
       await changeCommand.validate(changeName, options);
     } catch (error) {
-      console.log(); // Empty line for spacing
-      ora().fail(`Error: ${(error as Error).message}`);
-      process.exit(1);
+      console.error(`Error: ${(error as Error).message}`);
+      process.exitCode = 1;
     }
   });
 

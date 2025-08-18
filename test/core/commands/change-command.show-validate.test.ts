@@ -47,7 +47,7 @@ describe('ChangeCommand.show/validate', () => {
     }
   });
 
-  it('show --json --requirements-only prints only deltas array', async () => {
+  it('show --json --requirements-only returns minimal object with deltas (deprecated alias)', async () => {
     if (!changeName) return; // skip if no changes present
 
     const logs: string[] = [];
@@ -61,11 +61,12 @@ describe('ChangeCommand.show/validate', () => {
 
       const output = logs.join('\n');
       const parsed = JSON.parse(output);
-      expect(Array.isArray(parsed)).toBe(true);
-      if (parsed.length > 0) {
-        expect(parsed[0]).toHaveProperty('spec');
-        expect(parsed[0]).toHaveProperty('operation');
-        expect(parsed[0]).toHaveProperty('description');
+      expect(parsed).toHaveProperty('deltas');
+      expect(Array.isArray(parsed.deltas)).toBe(true);
+      if (parsed.deltas.length > 0) {
+        expect(parsed.deltas[0]).toHaveProperty('spec');
+        expect(parsed.deltas[0]).toHaveProperty('operation');
+        expect(parsed.deltas[0]).toHaveProperty('description');
       }
     } finally {
       console.log = origLog;
