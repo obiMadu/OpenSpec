@@ -47,7 +47,26 @@ describe('ChangeCommand.show/validate', () => {
     }
   });
 
-  it('show --json --requirements-only prints only deltas array', async () => {
+  it('error when no change specified: prints available IDs', async () => {
+    const logsErr: string[] = [];
+    const origErr = console.error;
+    try {
+      console.error = (msg?: any, ...args: any[]) => {
+        logsErr.push([msg, ...args].filter(Boolean).join(' '));
+      };
+      await cmd.show(undefined as unknown as string, { json: false } as any);
+      // Should have set exit code and printed hint
+      expect(process.exitCode).toBe(1);
+      const errOut = logsErr.join('\n');
+      expect(errOut).toMatch(/No change specified/);
+      expect(errOut).toMatch(/Available IDs/);
+    } finally {
+      console.error = origErr;
+      process.exitCode = 0;
+    }
+  });
+
+  it('show --json --requirements-only returns minimal object with deltas (deprecated alias)', async () => {
     if (!changeName) return; // skip if no changes present
 
     const logs: string[] = [];
@@ -61,11 +80,12 @@ describe('ChangeCommand.show/validate', () => {
 
       const output = logs.join('\n');
       const parsed = JSON.parse(output);
-      expect(Array.isArray(parsed)).toBe(true);
-      if (parsed.length > 0) {
-        expect(parsed[0]).toHaveProperty('spec');
-        expect(parsed[0]).toHaveProperty('operation');
-        expect(parsed[0]).toHaveProperty('description');
+      expect(parsed).toHaveProperty('deltas');
+      expect(Array.isArray(parsed.deltas)).toBe(true);
+      if (parsed.deltas.length > 0) {
+        expect(parsed.deltas[0]).toHaveProperty('spec');
+        expect(parsed.deltas[0]).toHaveProperty('operation');
+        expect(parsed.deltas[0]).toHaveProperty('description');
       }
     } finally {
       console.log = origLog;

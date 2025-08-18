@@ -1,7 +1,6 @@
 import { program } from 'commander';
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
-import chalk from 'chalk';
 import { MarkdownParser } from '../core/parsers/markdown-parser.js';
 import { Validator } from '../core/validation/validator.js';
 import type { Spec } from '../core/schemas/index.js';
@@ -15,9 +14,10 @@ export function registerSpecCommand(rootProgram: typeof program) {
 
   interface ShowOptions {
     json?: boolean;
+    // JSON-only filters (raw-first text has no filters)
     requirements?: boolean;
-    scenarios?: boolean; // --no-scenarios sets this to false
-    requirement?: string;
+    scenarios?: boolean; // --no-scenarios sets this to false (JSON only)
+    requirement?: string; // JSON only
   }
 
   function parseSpecFromFile(specPath: string, specId: string): Spec {
@@ -57,51 +57,22 @@ export function registerSpecCommand(rootProgram: typeof program) {
     };
   }
 
-  function printSpecText(spec: Spec, options: ShowOptions): void {
-    console.log(chalk.bold.blue(`Spec: ${spec.name}`));
-    console.log();
-    console.log(chalk.bold('Purpose:'));
-    console.log(spec.overview);
-    console.log();
-
-    const requirementIndex = options.requirement
-      ? Number.parseInt(options.requirement, 10) - 1
-      : undefined;
-
-    if (requirementIndex !== undefined) {
-      const req = spec.requirements[0]; // already filtered to single requirement
-      console.log(chalk.bold(`Requirement ${requirementIndex + 1}:`));
-      console.log(chalk.green(req.text));
-      if (req.scenarios.length > 0) {
-        console.log();
-        console.log(chalk.bold('Scenarios:'));
-        req.scenarios.forEach((scenario, sIndex) => {
-          console.log(chalk.gray(`  Scenario ${sIndex + 1}:`));
-          scenario.rawText.split('\n').forEach(line => console.log(chalk.gray(`    ${line}`)));
-        });
-      }
-      return;
-    }
-
-    console.log(chalk.bold('Requirements:'));
-    spec.requirements.forEach((req, index) => {
-      console.log(chalk.green(`  ${index + 1}. ${req.text}`));
-      if (req.scenarios.length > 0) {
-        req.scenarios.forEach((scenario, sIndex) => {
-          console.log(chalk.gray(`     Scenario ${sIndex + 1}:`));
-          scenario.rawText.split('\n').forEach(line => console.log(chalk.gray(`       ${line}`)));
-        });
-      }
-    });
+  /**
+   * Print the raw markdown content for a spec file without any formatting.
+   * Raw-first behavior ensures text mode is a passthrough for deterministic output.
+   */
+  function printSpecTextRaw(specPath: string): void {
+    const content = readFileSync(specPath, 'utf-8');
+    console.log(content);
   }
 
   specCommand
     .command('show <spec-id>')
     .description('Display a specific specification')
     .option('--json', 'Output as JSON')
-    .option('--requirements', 'Show only requirements (exclude scenarios)')
-    .option('--no-scenarios', 'Exclude scenario content')
-    .option('-r, --requirement <id>', 'Show specific requirement by ID (1-based)')
+    .option('--requirements', 'JSON only: Show only requirements (exclude scenarios)')
+    .option('--no-scenarios', 'JSON only: Exclude scenario content')
+    .option('-r, --requirement <id>', 'JSON only: Show specific requirement by ID (1-based)')
     .action((specId: string, options: ShowOptions) => {
       try {
         const specPath = join(SPECS_DIR, specId, 'spec.md');
@@ -110,20 +81,27 @@ export function registerSpecCommand(rootProgram: typeof program) {
           throw new Error(`Spec '${specId}' not found at openspec/specs/${specId}/spec.md`);
         }
 
-        if (options.requirements && options.requirement) {
-          throw new Error('Options --requirements and --requirement cannot be used together');
-        }
-
-        const parsed = parseSpecFromFile(specPath, specId);
-        const filtered = filterSpec(parsed, options);
-
         if (options.json) {
-          console.log(JSON.stringify(filtered, null, 2));
+          if (options.requirements && options.requirement) {
+            throw new Error('Options --requirements and --requirement cannot be used together');
+          }
+          const parsed = parseSpecFromFile(specPath, specId);
+          const filtered = filterSpec(parsed, options);
+          const output = {
+            id: specId,
+            title: parsed.name,
+            overview: parsed.overview,
+            requirementCount: filtered.requirements.length,
+            requirements: filtered.requirements,
+            metadata: parsed.metadata ?? { version: '1.0.0', format: 'openspec' as const },
+          };
+          console.log(JSON.stringify(output, null, 2));
         } else {
-          printSpecText(filtered, options);
+          // raw-first text: print raw file
+          printSpecTextRaw(specPath);
         }
       } catch (error) {
-        console.error(chalk.red(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
         process.exitCode = 1;
       }
     });
@@ -132,14 +110,13 @@ export function registerSpecCommand(rootProgram: typeof program) {
     .command('list')
     .description('List all available specifications')
     .option('--json', 'Output as JSON')
-    .action((options: { json?: boolean }) => {
+    .option('--long', 'Show id and title with counts')
+    .action((options: { json?: boolean; long?: boolean }) => {
       try {
         if (!existsSync(SPECS_DIR)) {
-          throw new Error(`Specs directory not found at openspec/specs`);
+          console.log('No items found');
+          return;
         }
-
-        const overviewTeaser = (text: string): string =>
-          text.length > 100 ? `${text.substring(0, 100)}...` : text;
 
         const specs = readdirSync(SPECS_DIR, { withFileTypes: true })
           .filter(dirent => dirent.isDirectory())
@@ -152,37 +129,38 @@ export function registerSpecCommand(rootProgram: typeof program) {
                 return {
                   id: dirent.name,
                   title: spec.name,
-                  overview: overviewTeaser(spec.overview),
                   requirementCount: spec.requirements.length
                 };
               } catch {
                 return {
                   id: dirent.name,
                   title: dirent.name,
-                  overview: 'Unable to parse spec',
                   requirementCount: 0
                 };
               }
             }
             return null;
           })
-          .filter((spec): spec is { id: string; title: string; overview: string; requirementCount: number } => spec !== null)
+          .filter((spec): spec is { id: string; title: string; requirementCount: number } => spec !== null)
           .sort((a, b) => a.id.localeCompare(b.id));
 
         if (options.json) {
           console.log(JSON.stringify(specs, null, 2));
         } else {
-          console.log(chalk.bold.blue('Available Specifications:'));
-          console.log();
+          if (specs.length === 0) {
+            console.log('No items found');
+            return;
+          }
+          if (!options.long) {
+            specs.forEach(spec => console.log(spec.id));
+            return;
+          }
           specs.forEach(spec => {
-            console.log(chalk.green(`  ${spec.id}`));
-            console.log(chalk.gray(`    ${spec.overview}`));
-            console.log(chalk.gray(`    Requirements: ${spec.requirementCount}`));
-            console.log();
+            console.log(`${spec.id}: ${spec.title} [requirements ${spec.requirementCount}]`);
           });
         }
       } catch (error) {
-        console.error(chalk.red(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
         process.exitCode = 1;
       }
     });
@@ -206,36 +184,20 @@ export function registerSpecCommand(rootProgram: typeof program) {
         if (options.json) {
           console.log(JSON.stringify(report, null, 2));
         } else {
-          console.log(chalk.bold.blue(`Validation Report for '${specId}':`));
-          console.log();
-          
           if (report.valid) {
-            console.log(chalk.green('✓ Specification is valid'));
+            console.log(`Specification '${specId}' is valid`);
           } else {
-            console.log(chalk.red('✗ Specification has issues'));
-          }
-          
-          console.log();
-          console.log(chalk.bold('Summary:'));
-          console.log(`  Errors: ${report.summary.errors}`);
-          console.log(`  Warnings: ${report.summary.warnings}`);
-          console.log(`  Info: ${report.summary.info}`);
-          
-          if (report.issues.length > 0) {
-            console.log();
-            console.log(chalk.bold('Issues:'));
+            console.error(`Specification '${specId}' has issues`);
             report.issues.forEach(issue => {
-              const icon = issue.level === 'ERROR' ? '✗' : 
-                          issue.level === 'WARNING' ? '⚠' : 'ℹ';
-              const color = issue.level === 'ERROR' ? chalk.red :
-                           issue.level === 'WARNING' ? chalk.yellow : chalk.blue;
-              console.log(color(`  ${icon} [${issue.level}] ${issue.path}: ${issue.message}`));
+              const label = issue.level === 'ERROR' ? 'ERROR' : issue.level;
+              const prefix = issue.level === 'ERROR' ? '✗' : issue.level === 'WARNING' ? '⚠' : 'ℹ';
+              console.error(`${prefix} [${label}] ${issue.path}: ${issue.message}`);
             });
           }
         }
         process.exitCode = report.valid ? 0 : 1;
       } catch (error) {
-        console.error(chalk.red(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
         process.exitCode = 1;
       }
     });

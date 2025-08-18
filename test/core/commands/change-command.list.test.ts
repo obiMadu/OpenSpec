@@ -27,13 +27,33 @@ describe('ChangeCommand.list', () => {
       expect(Array.isArray(parsed)).toBe(true);
       if (parsed.length > 0) {
         const item = parsed[0];
-        expect(item).toHaveProperty('name');
+        expect(item).toHaveProperty('id');
         expect(item).toHaveProperty('title');
-        expect(item).toHaveProperty('deltas');
+        expect(item).toHaveProperty('deltaCount');
         expect(item).toHaveProperty('taskStatus');
         expect(item.taskStatus).toHaveProperty('total');
         expect(item.taskStatus).toHaveProperty('completed');
       }
+    } finally {
+      console.log = origLog;
+    }
+  });
+
+  it('prints IDs by default and details with --long', async () => {
+    const logs: string[] = [];
+    const origLog = console.log;
+    try {
+      console.log = (msg?: any, ...args: any[]) => {
+        logs.push([msg, ...args].filter(Boolean).join(' '));
+      };
+      await cmd.list({});
+      const idsOnly = logs.join('\n');
+      expect(idsOnly).toMatch(/\w+/);
+      logs.length = 0;
+      await cmd.list({ long: true });
+      const longOut = logs.join('\n');
+      expect(longOut).toMatch(/:\s/);
+      expect(longOut).toMatch(/\[deltas\s\d+\]/);
     } finally {
       console.log = origLog;
     }

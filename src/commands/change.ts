@@ -1,7 +1,5 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import ora from 'ora';
-import chalk from 'chalk';
 import { JsonConverter } from '../core/converters/json-converter.js';
 import { Validator } from '../core/validation/validator.js';
 import { ChangeParser } from '../core/parsers/change-parser.js';
@@ -19,19 +17,25 @@ export class ChangeCommand {
     this.converter = new JsonConverter();
   }
 
-  async show(changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean }): Promise<void> {
+  /**
+   * Show a change proposal.
+   * - Text mode: raw markdown passthrough (no filters)
+   * - JSON mode: minimal object with deltas; --deltas-only returns same object with filtered deltas
+   *   Note: --requirements-only is deprecated alias for --deltas-only
+   */
+  async show(changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean; deltasOnly?: boolean }): Promise<void> {
     const changesPath = path.join(process.cwd(), 'openspec', 'changes');
     
     if (!changeName) {
       const changes = await this.getActiveChanges(changesPath);
       if (changes.length === 0) {
-        throw new Error('No active changes found');
-      }
-      if (changes.length === 1) {
-        changeName = changes[0];
+        console.error('No change specified. No active changes found.');
       } else {
-        throw new Error(`Multiple active changes found. Please specify one: ${changes.join(', ')}`);
+        console.error(`No change specified. Available IDs: ${changes.join(', ')}`);
       }
+      console.error('Hint: use "openspec change list" to view available changes.');
+      process.exitCode = 1;
+      return;
     }
     
     const proposalPath = path.join(changesPath, changeName, 'proposal.md');
@@ -46,42 +50,39 @@ export class ChangeCommand {
       const jsonOutput = await this.converter.convertChangeToJson(proposalPath);
       
       if (options.requirementsOnly) {
-        const change: Change = JSON.parse(jsonOutput);
-        // Show only deltas (spec changes) for requirements-only mode
-        const deltas = change.deltas || [];
-        if (deltas.length === 0) {
-          console.log(JSON.stringify({ message: "No requirement changes found" }, null, 2));
-        } else {
-          console.log(JSON.stringify(deltas, null, 2));
-        }
+        console.error('Flag --requirements-only is deprecated; use --deltas-only instead.');
+      }
+
+      const parsed: Change = JSON.parse(jsonOutput);
+      const contentForTitle = await fs.readFile(proposalPath, 'utf-8');
+      const title = this.extractTitle(contentForTitle);
+      const id = parsed.name;
+      const deltas = parsed.deltas || [];
+
+      if (options.requirementsOnly || options.deltasOnly) {
+        const output = { id, title, deltaCount: deltas.length, deltas };
+        console.log(JSON.stringify(output, null, 2));
       } else {
-        console.log(jsonOutput);
+        const output = {
+          id,
+          title,
+          deltaCount: deltas.length,
+          deltas,
+        };
+        console.log(JSON.stringify(output, null, 2));
       }
     } else {
       const content = await fs.readFile(proposalPath, 'utf-8');
-      
-      if (options?.requirementsOnly) {
-        const changeDir = path.join(changesPath, changeName);
-        const parser = new ChangeParser(content, changeDir);
-        const change = await parser.parseChangeWithDeltas(changeName);
-        
-        console.log(chalk.bold(`\nRequirement changes from: ${changeName}\n`));
-        
-        if (change.deltas.length === 0) {
-          console.log(chalk.yellow('No requirement changes found'));
-        } else {
-          change.deltas.forEach(delta => {
-            console.log(chalk.cyan(`• ${delta.spec} (${delta.operation}): ${delta.description}`));
-          });
-        }
-        console.log();
-      } else {
-        console.log(content);
-      }
+      console.log(content);
     }
   }
 
-  async list(options?: { json?: boolean }): Promise<void> {
+  /**
+   * List active changes.
+   * - Text default: IDs only; --long prints minimal details (title, counts)
+   * - JSON: array of { id, title, deltaCount, taskStatus }, sorted by id
+   */
+  async list(options?: { json?: boolean; long?: boolean }): Promise<void> {
     const changesPath = path.join(process.cwd(), 'openspec', 'changes');
     
     const changes = await this.getActiveChanges(changesPath);
@@ -110,58 +111,62 @@ export class ChangeCommand {
             }
             
             return {
-              name: changeName,
+              id: changeName,
               title: this.extractTitle(content),
-              deltas: change.deltas.length,
+              deltaCount: change.deltas.length,
               taskStatus,
             };
           } catch (error) {
             return {
-              name: changeName,
+              id: changeName,
               title: 'Unknown',
-              deltas: 0,
+              deltaCount: 0,
               taskStatus: { total: 0, completed: 0 },
             };
           }
         })
       );
       
-      console.log(JSON.stringify(changeDetails, null, 2));
+      const sorted = changeDetails.sort((a, b) => a.id.localeCompare(b.id));
+      console.log(JSON.stringify(sorted, null, 2));
     } else {
       if (changes.length === 0) {
-        console.log('No active changes found');
+        console.log('No items found');
         return;
       }
-      
-      console.log(chalk.bold('\nActive Changes:\n'));
-      
-      for (const changeName of changes) {
+      const sorted = [...changes].sort();
+      if (!options?.long) {
+        // IDs only
+        sorted.forEach(id => console.log(id));
+        return;
+      }
+
+      // Long format: id: title and minimal counts
+      for (const changeName of sorted) {
         const proposalPath = path.join(changesPath, changeName, 'proposal.md');
         const tasksPath = path.join(changesPath, changeName, 'tasks.md');
-        
         try {
           const content = await fs.readFile(proposalPath, 'utf-8');
           const title = this.extractTitle(content);
-          
-          let taskStatus = '';
+          let taskStatusText = '';
           try {
             const tasksContent = await fs.readFile(tasksPath, 'utf-8');
             const { total, completed } = this.countTasks(tasksContent);
-            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-            taskStatus = ` ${chalk.gray(`[${completed}/${total} tasks - ${percentage}%]`)}`;
+            taskStatusText = ` [tasks ${completed}/${total}]`;
           } catch (error) {
-            // Tasks file may not exist, which is okay
             if (process.env.DEBUG) {
               console.error(`Failed to read tasks file at ${tasksPath}:`, error);
             }
           }
-          
-          console.log(`• ${chalk.cyan(changeName)}: ${title}${taskStatus}`);
-        } catch (error) {
-          console.log(`• ${chalk.cyan(changeName)}: ${chalk.red('Error reading proposal')}`);
+          const changeDir = path.join(changesPath, changeName);
+          const parser = new ChangeParser(await fs.readFile(proposalPath, 'utf-8'), changeDir);
+          const change = await parser.parseChangeWithDeltas(changeName);
+          const deltaCountText = ` [deltas ${change.deltas.length}]`;
+          console.log(`${changeName}: ${title}${deltaCountText}${taskStatusText}`);
+        } catch {
+          console.log(`${changeName}: (unable to read)`);
         }
       }
-      console.log();
     }
   }
 
@@ -171,13 +176,13 @@ export class ChangeCommand {
     if (!changeName) {
       const changes = await this.getActiveChanges(changesPath);
       if (changes.length === 0) {
-        throw new Error('No active changes found');
-      }
-      if (changes.length === 1) {
-        changeName = changes[0];
+        console.error('No change specified. No active changes found.');
       } else {
-        throw new Error(`Multiple active changes found. Please specify one: ${changes.join(', ')}`);
+        console.error(`No change specified. Available IDs: ${changes.join(', ')}`);
       }
+      console.error('Hint: use "openspec change list" to view available changes.');
+      process.exitCode = 1;
+      return;
     }
     
     const proposalPath = path.join(changesPath, changeName, 'proposal.md');
@@ -194,26 +199,14 @@ export class ChangeCommand {
     if (options?.json) {
       console.log(JSON.stringify(report, null, 2));
     } else {
-      const spinner = ora();
-      
       if (report.valid) {
-        spinner.succeed(chalk.green(`Change "${changeName}" is valid`));
+        console.log(`Change "${changeName}" is valid`);
       } else {
-        spinner.fail(chalk.red(`Change "${changeName}" has validation issues`));
-        console.log();
-        
+        console.error(`Change "${changeName}" has validation issues`);
         report.issues.forEach(issue => {
-          const icon = issue.level === 'ERROR' ? '✗' : '⚠';
-          const color = issue.level === 'ERROR' ? chalk.red : chalk.yellow;
-          console.log(color(`  ${icon} ${issue.path}: ${issue.message}`));
-        });
-      }
-      
-      const warnings = report.issues.filter(issue => issue.level === 'WARNING');
-      if (warnings.length > 0) {
-        console.log(chalk.yellow('\nWarnings:'));
-        warnings.forEach(warning => {
-          console.log(chalk.yellow(`  ⚠ ${warning.path}: ${warning.message}`));
+          const label = issue.level === 'ERROR' ? 'ERROR' : 'WARNING';
+          const prefix = issue.level === 'ERROR' ? '✗' : '⚠';
+          console.error(`${prefix} [${label}] ${issue.path}: ${issue.message}`);
         });
       }
     }
