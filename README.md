@@ -17,8 +17,9 @@ openspec init
 # Update existing OpenSpec instructions (team-friendly)
 openspec update
 
-# List all specifications
-openspec list
+# List specs or changes
+openspec spec list        # specs (IDs by default; use --long for details)
+openspec change list      # changes (IDs by default; use --long for details)
 
 # Show differences between specs and proposed changes
 openspec diff [change-name]
@@ -47,12 +48,37 @@ Updates OpenSpec instructions to the latest version. This command is **team-frie
 
 This allows team members to use different AI tools without conflicts. Each developer can maintain their preferred AI tool configuration file, and `openspec update` will respect their choice.
 
-### `openspec list`
+### `openspec spec`
 
-Lists all specifications and pending changes in your project:
-- Shows current specifications in `openspec/specs/`
-- Shows pending changes in `openspec/changes/`
-- Shows archived changes in `openspec/changes/archive/`
+Manage and view specifications.
+
+Examples:
+- `openspec spec show <spec-id>`
+  - Text mode: prints raw `spec.md` content
+  - JSON mode (`--json`): returns minimal, stable shape
+    - Filters are JSON-only: `--requirements`, `--no-scenarios`, `-r/--requirement <1-based>`
+- `openspec spec list`
+  - Prints IDs only by default
+  - Use `--long` to include `title` and `[requirements N]`
+- `openspec spec validate <spec-id>`
+  - Text: human-readable summary to stdout/stderr
+  - `--json` for structured report
+
+### `openspec change`
+
+Manage and view change proposals.
+
+Examples:
+- `openspec change show <change-id>`
+  - Text mode: prints raw `proposal.md` content
+  - JSON mode (`--json`): `{ id, title, deltaCount, deltas }`
+  - Filtering is JSON-only: `--deltas-only` (alias: `--requirements-only`, deprecated)
+- `openspec change list`
+  - Prints IDs only by default
+  - Use `--long` to include `title` and counts `[deltas N] [tasks x/y]`
+- `openspec change validate <change-id>`
+  - Text: human-readable result
+  - `--json` for structured report
 
 ### `openspec diff [change-name]`
 
@@ -81,6 +107,12 @@ OpenSpec is designed for team collaboration:
 ## Contributing
 
 See `openspec/specs/` for the current system specifications and `openspec/changes/` for pending improvements.
+
+## Notes
+
+- The legacy `openspec list` command is deprecated. Use `openspec spec list` and `openspec change list`.
+- Text output is raw-first (no formatting or filtering). Prefer `--json` for tooling-friendly output.
+- Global `--no-color` disables ANSI colors and respects `NO_COLOR`.
 
 ## License
 

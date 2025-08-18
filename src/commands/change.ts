@@ -1,7 +1,5 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import ora from 'ora';
-import chalk from 'chalk';
 import { JsonConverter } from '../core/converters/json-converter.js';
 import { Validator } from '../core/validation/validator.js';
 import { ChangeParser } from '../core/parsers/change-parser.js';
@@ -30,7 +28,11 @@ export class ChangeCommand {
     
     if (!changeName) {
       const changes = await this.getActiveChanges(changesPath);
-      console.error(`No change specified. Available IDs: ${changes.join(', ')}`);
+      if (changes.length === 0) {
+        console.error('No change specified. No active changes found.');
+      } else {
+        console.error(`No change specified. Available IDs: ${changes.join(', ')}`);
+      }
       console.error('Hint: use "openspec change list" to view available changes.');
       process.exitCode = 1;
       return;
@@ -173,7 +175,11 @@ export class ChangeCommand {
     
     if (!changeName) {
       const changes = await this.getActiveChanges(changesPath);
-      console.error(`No change specified. Available IDs: ${changes.join(', ')}`);
+      if (changes.length === 0) {
+        console.error('No change specified. No active changes found.');
+      } else {
+        console.error(`No change specified. Available IDs: ${changes.join(', ')}`);
+      }
       console.error('Hint: use "openspec change list" to view available changes.');
       process.exitCode = 1;
       return;
