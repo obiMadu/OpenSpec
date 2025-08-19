@@ -4,7 +4,15 @@
 
 ### Requirement: Display Format
 
+The diff command SHALL display unified diff output in text format.
+
 **Reason for removal**: The standard unified diff format is replaced by requirement-level side-by-side comparison that better shows semantic changes rather than line-by-line text differences.
+
+#### Scenario: Unified diff output (deprecated)
+
+- **WHEN** running `openspec diff <change>`
+- **THEN** show a unified text diff of files
+- **AND** include `+`/`-` prefixed lines representing additions and removals
 
 ## MODIFIED Requirements
 

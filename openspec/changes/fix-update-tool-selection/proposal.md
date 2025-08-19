@@ -26,3 +26,15 @@ Modify the update command to:
 - No new AI tool files created during update
 - Team members can use different AI tools without conflicts
 - Existing projects continue to work (backward compatibility)
+
+## Why
+
+Users need predictable, tool-agnostic behavior from `openspec update`. Creating or forcing updates for AI tool files that a project does not use causes confusion and merge conflicts. Restricting updates to existing files and always updating core OpenSpec files keeps the workflow consistent for mixed-tool teams.
+
+## What Changes
+
+- **cli-update:** Modify update behavior to update only existing AI tool configuration files and never create new ones; always update core OpenSpec files and display an ASCII-safe success message.
+
+## ADDED Requirements
+
+Removed from proposal to follow conventions. See `specs/cli-update/spec.md` for the delta requirements content.

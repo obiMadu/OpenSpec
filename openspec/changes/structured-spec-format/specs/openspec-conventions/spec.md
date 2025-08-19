@@ -1,5 +1,17 @@
 # OpenSpec Conventions Specification
 
+## ADDED Requirements
+
+### Requirement: Structured Format Adoption
+
+Behavioral specifications SHALL adopt the structured format with `### Requirement:` and `#### Scenario:` headers as the default.
+
+#### Scenario: Use structured headings for behavior
+
+- **WHEN** documenting behavioral requirements
+- **THEN** use `### Requirement:` for requirements
+- **AND** use `#### Scenario:` for scenarios with bold WHEN/THEN/AND keywords
+
 ## Purpose
 
 OpenSpec conventions SHALL define how system capabilities are documented, how changes are proposed and tracked, and how specifications evolve over time. This meta-specification serves as the source of truth for OpenSpec's own conventions.
