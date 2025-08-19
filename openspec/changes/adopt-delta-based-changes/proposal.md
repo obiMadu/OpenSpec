@@ -64,3 +64,30 @@ This makes reviews focused and changes explicit.
 ## Conflict Resolution
 
 Git naturally detects conflicts when two changes modify the same requirement header. This is actually better than full-state storage where Git might silently merge incompatible changes.
+
+## Decisions and Product Guidelines
+
+To keep the archive flow lean and predictable, the following decisions apply:
+
+- New spec creation: When a target spec does not exist, auto-generate a minimal skeleton and insert ADDED requirements only. Skeleton format:
+  - `# [Spec Name] Specification`
+  - `## Purpose` with placeholder: "TBD — created by archiving change [change-name]. Update Purpose after archive."
+  - `## Requirements`
+  - If a non-existent spec includes MODIFIED/REMOVED/RENAMED, abort with guidance to create via ADDED-only first.
+
+- Requirement identification: Match requirements by exact header `### Requirement: [Name]` with trim-only normalization and case-sensitive comparison. Use a requirement-block extractor that preserves the exact header and captures full content (including scenarios) for both main specs and delta files.
+
+- Application order and atomicity: Apply deltas in order RENAMED → REMOVED → MODIFIED → ADDED. Validate all operations first, apply in-memory, and write each spec once. On any validation failure, abort without writing partial results. An aggregated totals line is displayed across all specs: `Totals: + A, ~ M, - R, → N`.
+
+- Validation matrix: Enforce that MODIFIED/REMOVED exist; ADDED do not exist; RENAMED FROM exists and TO does not; no duplicates after all operations; and no cross-section conflicts (e.g., same item in MODIFIED and REMOVED). When a rename and modify apply to the same item, MODIFIED must reference the NEW header.
+
+- Idempotency: Keep v1 simple. Abort on precondition failures (e.g., ADDED already exists) with clear errors. Do not implement no-op detection in v1.
+
+- Output and UX: For each spec, display operation counts using standard symbols `+ ~ - →`. Optionally include a short aggregated totals line at the end. Keep messages concise and actionable.
+
+- Error messaging: Standardize messages as `[spec] [operation] failed for header "### Requirement: X" — reason`. On abort, explicitly state: `Aborted. No files were changed.`
+- Subsections: Any subsections under a requirement (e.g., `#### Scenario: ...`) are preserved verbatim during parsing and application.
+
+- Backward compatibility: Reject full future-state spec copies for existing specs with guidance to convert to deltas. Allow brand-new specs to be created via ADDED-only deltas using the skeleton above.
+
+- Dry-run: Deferred for v1 to keep scope minimal.
