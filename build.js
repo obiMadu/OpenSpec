@@ -11,10 +11,11 @@ if (existsSync('dist')) {
   rmSync('dist', { recursive: true, force: true });
 }
 
-// Run TypeScript compiler
+// Run TypeScript compiler (use local version explicitly)
 console.log('Compiling TypeScript...');
 try {
-  execSync('tsc', { stdio: 'inherit' });
+  execSync('./node_modules/.bin/tsc -v', { stdio: 'inherit' });
+  execSync('./node_modules/.bin/tsc', { stdio: 'inherit' });
   console.log('\n✅ Build completed successfully!');
 } catch (error) {
   console.error('\n❌ Build failed!');

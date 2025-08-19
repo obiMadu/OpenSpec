@@ -94,12 +94,14 @@ program
 
 program
   .command('list')
-  .description('List all active changes with their task status (DEPRECATED: use "openspec change list" instead)')
-  .action(async () => {
+  .description('List items (changes by default). Use --specs to list specs.')
+  .option('--specs', 'List specs instead of changes')
+  .option('--changes', 'List changes explicitly (default)')
+  .action(async (options?: { specs?: boolean; changes?: boolean }) => {
     try {
-      console.log('\x1b[33m%s\x1b[0m', 'Warning: The "openspec list" command is deprecated. Please use "openspec change list" instead.\n');
       const listCommand = new ListCommand();
-      await listCommand.execute();
+      const mode: 'changes' | 'specs' = options?.specs ? 'specs' : 'changes';
+      await listCommand.execute('.', mode);
     } catch (error) {
       console.log(); // Empty line for spacing
       ora().fail(`Error: ${(error as Error).message}`);
@@ -111,6 +113,11 @@ program
 const changeCmd = program
   .command('change')
   .description('Manage OpenSpec change proposals');
+
+// Deprecation notice for noun-based commands
+changeCmd.hook('preAction', () => {
+  console.error('Warning: The "openspec change ..." commands are deprecated. Prefer verb-first commands (e.g., "openspec list", "openspec validate --changes").');
+});
 
 changeCmd
   .command('show [change-name]')
@@ -131,11 +138,12 @@ changeCmd
 
 changeCmd
   .command('list')
-  .description('List all active changes')
+  .description('List all active changes (DEPRECATED: use "openspec list" instead)')
   .option('--json', 'Output as JSON')
   .option('--long', 'Show id and title with counts')
   .action(async (options?: { json?: boolean; long?: boolean }) => {
     try {
+      console.error('Warning: "openspec change list" is deprecated. Use "openspec list".');
       const changeCommand = new ChangeCommand();
       await changeCommand.list(options);
     } catch (error) {

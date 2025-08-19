@@ -10,10 +10,65 @@ import { getSpecIds } from '../utils/item-discovery.js';
 
 const SPECS_DIR = 'openspec/specs';
 
+interface ShowOptions {
+  json?: boolean;
+  // JSON-only filters (raw-first text has no filters)
+  requirements?: boolean;
+  scenarios?: boolean; // --no-scenarios sets this to false (JSON only)
+  requirement?: string; // JSON only
+  noInteractive?: boolean;
+}
+
+function parseSpecFromFile(specPath: string, specId: string): Spec {
+  const content = readFileSync(specPath, 'utf-8');
+  const parser = new MarkdownParser(content);
+  return parser.parseSpec(specId);
+}
+
+function validateRequirementIndex(spec: Spec, requirementOpt?: string): number | undefined {
+  if (!requirementOpt) return undefined;
+  const index = Number.parseInt(requirementOpt, 10);
+  if (!Number.isInteger(index) || index < 1 || index > spec.requirements.length) {
+    throw new Error(`Requirement ${requirementOpt} not found`);
+  }
+  return index - 1; // convert to 0-based
+}
+
+function filterSpec(spec: Spec, options: ShowOptions): Spec {
+  const requirementIndex = validateRequirementIndex(spec, options.requirement);
+  const includeScenarios = options.scenarios !== false && !options.requirements;
+
+  const filteredRequirements = (requirementIndex !== undefined
+    ? [spec.requirements[requirementIndex]]
+    : spec.requirements
+  ).map(req => ({
+    text: req.text,
+    scenarios: includeScenarios ? req.scenarios : [],
+  }));
+
+  const metadata = spec.metadata ?? { version: '1.0.0', format: 'openspec' as const };
+
+  return {
+    name: spec.name,
+    overview: spec.overview,
+    requirements: filteredRequirements,
+    metadata,
+  };
+}
+
+/**
+ * Print the raw markdown content for a spec file without any formatting.
+ * Raw-first behavior ensures text mode is a passthrough for deterministic output.
+ */
+function printSpecTextRaw(specPath: string): void {
+  const content = readFileSync(specPath, 'utf-8');
+  console.log(content);
+}
+
 export class SpecCommand {
   private SPECS_DIR = 'openspec/specs';
 
-  async show(specId?: string, options: { json?: boolean; requirements?: boolean; scenarios?: boolean; requirement?: string; noInteractive?: boolean } = {}): Promise<void> {
+  async show(specId?: string, options: ShowOptions = {}): Promise<void> {
     if (!specId) {
       const canPrompt = isInteractive(options?.noInteractive);
       const specIds = await getSpecIds();
@@ -58,59 +113,10 @@ export function registerSpecCommand(rootProgram: typeof program) {
     .command('spec')
     .description('Manage and view OpenSpec specifications');
 
-  interface ShowOptions {
-    json?: boolean;
-    // JSON-only filters (raw-first text has no filters)
-    requirements?: boolean;
-    scenarios?: boolean; // --no-scenarios sets this to false (JSON only)
-    requirement?: string; // JSON only
-  }
-
-  function parseSpecFromFile(specPath: string, specId: string): Spec {
-    const content = readFileSync(specPath, 'utf-8');
-    const parser = new MarkdownParser(content);
-    return parser.parseSpec(specId);
-  }
-
-  function validateRequirementIndex(spec: Spec, requirementOpt?: string): number | undefined {
-    if (!requirementOpt) return undefined;
-    const index = Number.parseInt(requirementOpt, 10);
-    if (!Number.isInteger(index) || index < 1 || index > spec.requirements.length) {
-      throw new Error(`Requirement ${requirementOpt} not found`);
-    }
-    return index - 1; // convert to 0-based
-  }
-
-  function filterSpec(spec: Spec, options: ShowOptions): Spec {
-    const requirementIndex = validateRequirementIndex(spec, options.requirement);
-    const includeScenarios = options.scenarios !== false && !options.requirements;
-
-    const filteredRequirements = (requirementIndex !== undefined
-      ? [spec.requirements[requirementIndex]]
-      : spec.requirements
-    ).map(req => ({
-      text: req.text,
-      scenarios: includeScenarios ? req.scenarios : [],
-    }));
-
-    const metadata = spec.metadata ?? { version: '1.0.0', format: 'openspec' as const };
-
-    return {
-      name: spec.name,
-      overview: spec.overview,
-      requirements: filteredRequirements,
-      metadata,
-    };
-  }
-
-  /**
-   * Print the raw markdown content for a spec file without any formatting.
-   * Raw-first behavior ensures text mode is a passthrough for deterministic output.
-   */
-  function printSpecTextRaw(specPath: string): void {
-    const content = readFileSync(specPath, 'utf-8');
-    console.log(content);
-  }
+  // Deprecation notice for noun-based commands
+  specCommand.hook('preAction', () => {
+    console.error('Warning: The "openspec spec ..." commands are deprecated. Prefer verb-first commands (e.g., "openspec show", "openspec validate --specs").');
+  });
 
   specCommand
     .command('show [spec-id]')

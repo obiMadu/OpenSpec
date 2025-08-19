@@ -34,7 +34,7 @@ describe('ListCommand', () => {
     it('should handle missing openspec/changes directory', async () => {
       const listCommand = new ListCommand();
       
-      await expect(listCommand.execute(tempDir)).rejects.toThrow(
+      await expect(listCommand.execute(tempDir, 'changes')).rejects.toThrow(
         "No OpenSpec changes directory found. Run 'openspec init' first."
       );
     });
@@ -44,7 +44,7 @@ describe('ListCommand', () => {
       await fs.mkdir(changesDir, { recursive: true });
 
       const listCommand = new ListCommand();
-      await listCommand.execute(tempDir);
+      await listCommand.execute(tempDir, 'changes');
 
       expect(logOutput).toEqual(['No active changes found.']);
     });
@@ -61,7 +61,7 @@ describe('ListCommand', () => {
       );
 
       const listCommand = new ListCommand();
-      await listCommand.execute(tempDir);
+      await listCommand.execute(tempDir, 'changes');
 
       expect(logOutput).toContain('Changes:');
       expect(logOutput.some(line => line.includes('my-change'))).toBe(true);
@@ -85,7 +85,7 @@ Regular text that should be ignored
       );
 
       const listCommand = new ListCommand();
-      await listCommand.execute(tempDir);
+      await listCommand.execute(tempDir, 'changes');
 
       expect(logOutput.some(line => line.includes('2/5 tasks'))).toBe(true);
     });
@@ -100,7 +100,7 @@ Regular text that should be ignored
       );
 
       const listCommand = new ListCommand();
-      await listCommand.execute(tempDir);
+      await listCommand.execute(tempDir, 'changes');
 
       expect(logOutput.some(line => line.includes('✓ Complete'))).toBe(true);
     });
@@ -110,7 +110,7 @@ Regular text that should be ignored
       await fs.mkdir(path.join(changesDir, 'no-tasks'), { recursive: true });
 
       const listCommand = new ListCommand();
-      await listCommand.execute(tempDir);
+      await listCommand.execute(tempDir, 'changes');
 
       expect(logOutput.some(line => line.includes('no-tasks') && line.includes('No tasks'))).toBe(true);
     });
