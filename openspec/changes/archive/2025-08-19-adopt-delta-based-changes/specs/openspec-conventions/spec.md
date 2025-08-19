@@ -1,6 +1,6 @@
 # OpenSpec Conventions - Changes
 
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Header-Based Requirement Identification
 
@@ -30,8 +30,6 @@ Requirement headers SHALL serve as unique identifiers for programmatic matching 
 - **WHEN** creating or modifying requirements
 - **THEN** ensure no duplicate headers exist within a spec
 - **AND** validation tools SHALL flag duplicate headers as errors
-
-## MODIFIED Requirements
 
 ### Requirement: Change Storage Convention
 
@@ -100,18 +98,4 @@ The archive process SHALL programmatically apply delta changes to current specif
 - **AND** require manual resolution before proceeding
 - **AND** provide clear guidance on resolving conflicts
 
-## REMOVED Requirements
-
-### Requirement: Future State Storage
-
-The system SHALL no longer store complete future-state specifications in change proposals.
-
-**Reason for removal**: Replaced by delta-based change storage which provides better review experience and clearer change tracking.
-
-**Migration path**: All new changes must use delta format.
-
-#### Scenario: Deprecate future state storage
-
-- **WHEN** creating a new change proposal
-- **THEN** do not include full future-state specs
-- **AND** include only ADDED/MODIFIED/REMOVED/RENAMED requirements under the change's `specs/` directory
+ 

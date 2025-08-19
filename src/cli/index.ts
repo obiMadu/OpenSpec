@@ -162,6 +162,9 @@ changeCmd
     try {
       const changeCommand = new ChangeCommand();
       await changeCommand.validate(changeName, options);
+      if (typeof process.exitCode === 'number' && process.exitCode !== 0) {
+        process.exit(process.exitCode);
+      }
     } catch (error) {
       console.error(`Error: ${(error as Error).message}`);
       process.exitCode = 1;

@@ -3,9 +3,7 @@
 ## Purpose
 
 As a developer using OpenSpec, I want to update the OpenSpec instructions in my project when new versions are released, so that I can benefit from improvements to AI agent instructions.
-
 ## Requirements
-
 ### Requirement: Update Behavior
 
 The update command SHALL update OpenSpec instruction files to the latest templates in a team-friendly manner.
@@ -47,6 +45,28 @@ The update command SHALL handle file updates in a predictable and safe manner.
 - **AND** use the default directory name `openspec`
 - **AND** be idempotent (repeated runs have no additional effect)
 - **AND** respect team members' AI tool choices by not creating unwanted files
+
+### Requirement: Tool-Agnostic Updates
+
+The update command SHALL update only existing AI tool configuration files and SHALL NOT create new ones.
+
+#### Scenario: Updating existing tool files
+
+- **WHEN** a user runs `openspec update`
+- **THEN** update each AI tool configuration file that exists (e.g., CLAUDE.md, COPILOT.md)
+- **AND** do not create missing tool configuration files
+- **AND** preserve user content outside OpenSpec markers
+
+### Requirement: Core Files Always Updated
+
+The update command SHALL always update the core OpenSpec files and display an ASCII-safe success message.
+
+#### Scenario: Successful update
+
+- **WHEN** the update completes successfully
+- **THEN** replace `openspec/README.md` with the latest template
+- **AND** update existing AI tool configuration files within markers
+- **AND** display the message: "Updated OpenSpec instructions"
 
 ## Edge Cases
 

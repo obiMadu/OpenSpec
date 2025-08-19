@@ -24,6 +24,8 @@ Before moving the change to archive, the command SHALL apply delta changes to ma
 - **THEN** abort with error message showing the conflict
 - **AND** suggest manual resolution
 
+## ADDED Requirements
+
 ### Requirement: Display Output
 
 The command SHALL provide clear feedback about delta operations.

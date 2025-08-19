@@ -59,16 +59,48 @@ export class ArchiveCommand {
       const validator = new Validator();
       let hasValidationErrors = false;
 
-      // Validate change.md file
-      const changeFile = path.join(changeDir, 'change.md');
+      // Validate proposal.md (non-blocking unless strict mode desired in future)
+      const changeFile = path.join(changeDir, 'proposal.md');
       try {
         await fs.access(changeFile);
         const changeReport = await validator.validateChange(changeFile);
-        
+        // Proposal validation is informative only (do not block archive)
         if (!changeReport.valid) {
-          hasValidationErrors = true;
-          console.log(chalk.red(`\nValidation errors in change.md:`));
+          console.log(chalk.yellow(`\nProposal warnings in proposal.md (non-blocking):`));
           for (const issue of changeReport.issues) {
+            const symbol = issue.level === 'ERROR' ? '⚠' : (issue.level === 'WARNING' ? '⚠' : 'ℹ');
+            console.log(chalk.yellow(`  ${symbol} ${issue.message}`));
+          }
+        }
+      } catch {
+        // Change file doesn't exist, skip validation
+      }
+
+      // Validate delta-formatted spec files under the change directory if present
+      const changeSpecsDir = path.join(changeDir, 'specs');
+      let hasDeltaSpecs = false;
+      try {
+        const candidates = await fs.readdir(changeSpecsDir, { withFileTypes: true });
+        for (const c of candidates) {
+          if (c.isDirectory()) {
+            try {
+              const candidatePath = path.join(changeSpecsDir, c.name, 'spec.md');
+              await fs.access(candidatePath);
+              const content = await fs.readFile(candidatePath, 'utf-8');
+              if (/^##\s+(ADDED|MODIFIED|REMOVED|RENAMED)\s+Requirements/m.test(content)) {
+                hasDeltaSpecs = true;
+                break;
+              }
+            } catch {}
+          }
+        }
+      } catch {}
+      if (hasDeltaSpecs) {
+        const deltaReport = await validator.validateChangeDeltaSpecs(changeDir);
+        if (!deltaReport.valid) {
+          hasValidationErrors = true;
+          console.log(chalk.red(`\nValidation errors in change delta specs:`));
+          for (const issue of deltaReport.issues) {
             if (issue.level === 'ERROR') {
               console.log(chalk.red(`  ✗ ${issue.message}`));
             } else if (issue.level === 'WARNING') {
@@ -76,41 +108,6 @@ export class ArchiveCommand {
             }
           }
         }
-      } catch {
-        // Change file doesn't exist, skip validation
-      }
-
-      // Validate spec files
-      const changeSpecsDir = path.join(changeDir, 'specs');
-      try {
-        const entries = await fs.readdir(changeSpecsDir, { withFileTypes: true });
-        
-        for (const entry of entries) {
-          if (entry.isDirectory()) {
-            const specFile = path.join(changeSpecsDir, entry.name, 'spec.md');
-            
-            try {
-              await fs.access(specFile);
-              const report = await validator.validateSpec(specFile);
-              
-              if (!report.valid) {
-                hasValidationErrors = true;
-                console.log(chalk.red(`\nValidation errors in ${entry.name}/spec.md:`));
-                for (const issue of report.issues) {
-                  if (issue.level === 'ERROR') {
-                    console.log(chalk.red(`  ✗ ${issue.message}`));
-                  } else if (issue.level === 'WARNING') {
-                    console.log(chalk.yellow(`  ⚠ ${issue.message}`));
-                  }
-                }
-              }
-            } catch {
-              // Spec file doesn't exist, skip validation
-            }
-          }
-        }
-      } catch {
-        // No specs directory, skip validation
       }
 
       if (hasValidationErrors) {
@@ -200,9 +197,22 @@ export class ArchiveCommand {
             return;
           }
 
-          // All validations passed; write files and display counts
+          // All validations passed; pre-validate rebuilt full spec and then write files and display counts
           let totals = { added: 0, modified: 0, removed: 0, renamed: 0 };
           for (const p of prepared) {
+            const specName = path.basename(path.dirname(p.update.target));
+            if (!options.noValidate) {
+              const report = await new Validator().validateSpecContent(specName, p.rebuilt);
+              if (!report.valid) {
+                console.log(chalk.red(`\nValidation errors in rebuilt spec for ${specName} (will not write changes):`));
+                for (const issue of report.issues) {
+                  if (issue.level === 'ERROR') console.log(chalk.red(`  ✗ ${issue.message}`));
+                  else if (issue.level === 'WARNING') console.log(chalk.yellow(`  ⚠ ${issue.message}`));
+                }
+                console.log('Aborted. No files were changed.');
+                return;
+              }
+            }
             await this.writeUpdatedSpec(p.update, p.rebuilt, p.counts);
             totals.added += p.counts.added;
             totals.modified += p.counts.modified;

@@ -9,9 +9,7 @@ The `openspec diff` command provides developers with a visual comparison between
 ```bash
 openspec diff [change-name]
 ```
-
 ## Requirements
-
 ### Requirement: Without Arguments
 
 The command SHALL provide an interactive selection when no change is specified.
@@ -33,35 +31,18 @@ The command SHALL compare specs when a specific change is provided.
 
 ### Requirement: Diff Output
 
-The command SHALL generate appropriate diff output for all spec changes.
+The command SHALL show a requirement-level comparison displaying only changed requirements.
 
-#### Scenario: Comparing existing files
+#### Scenario: Side-by-side comparison of changes
 
-- **WHEN** file exists in both locations
-- **THEN** show unified diff
-
-#### Scenario: New files
-
-- **WHEN** file only exists in change
-- **THEN** show as new file (all lines with +)
-
-#### Scenario: Deleted files
-
-- **WHEN** file only exists in current specs
-- **THEN** show as deleted (all lines with -)
-
-### Requirement: Display Format
-
-The command SHALL use standard unified diff format for consistency with existing tools.
-
-#### Scenario: Formatting diff output
-
-- **WHEN** displaying diff output
-- **THEN** use standard unified diff format:
-  - Lines prefixed with `-` for removed content
-  - Lines prefixed with `+` for added content
-  - Lines without prefix for unchanged context
-  - File headers showing the paths being compared
+- **WHEN** running `openspec diff <change>`
+- **THEN** display only requirements that have changed
+- **AND** show them in a side-by-side format that:
+  - Clearly shows the current version on the left
+  - Shows the future version on the right
+  - Indicates new requirements (not in current)
+  - Indicates removed requirements (not in future)
+  - Aligns modified requirements for easy comparison
 
 ### Requirement: Color Support
 
@@ -94,6 +75,28 @@ The command SHALL provide clear error messages for various failure conditions.
 
 - **WHEN** changes directory doesn't exist
 - **THEN** display "No OpenSpec changes directory found"
+
+### Requirement: Validation
+
+The command SHALL validate that changes can be applied successfully.
+
+#### Scenario: Invalid delta references
+
+- **WHEN** delta references non-existent requirement
+- **THEN** show error message with specific requirement
+- **AND** continue showing other valid changes
+- **AND** clearly mark failed changes in the output
+
+### Requirement: Diff Command Enhancement
+
+The diff command SHALL validate change structure before displaying differences.
+
+#### Scenario: Validate before diff
+
+- **WHEN** executing `openspec diff change-name`
+- **THEN** validate change structure
+- **AND** show validation warnings if present
+- **AND** continue with diff display
 
 ## Examples
 

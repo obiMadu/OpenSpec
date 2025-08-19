@@ -31,6 +31,8 @@ The command SHALL show a requirement-level comparison displaying only changed re
   - Indicates removed requirements (not in future)
   - Aligns modified requirements for easy comparison
 
+## ADDED Requirements
+
 ### Requirement: Validation
 
 The command SHALL validate that changes can be applied successfully.

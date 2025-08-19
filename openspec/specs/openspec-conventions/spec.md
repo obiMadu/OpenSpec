@@ -3,9 +3,7 @@
 ## Purpose
 
 OpenSpec conventions SHALL define how system capabilities are documented, how changes are proposed and tracked, and how specifications evolve over time. This meta-specification serves as the source of truth for OpenSpec's own conventions.
-
 ## Requirements
-
 ### Requirement: Structured conventions for specs and changes
 
 OpenSpec conventions SHALL mandate a structured spec format with clear requirement and scenario sections so tooling can parse consistently.
@@ -135,6 +133,15 @@ The `changes/[name]/specs/` directory SHALL contain:
 - Complete requirements using the structured format
 - Clear indication of change type for each requirement
 
+#### Scenario: Using standard output symbols
+
+- **WHEN** displaying delta operations in CLI output
+- **THEN** use these standard symbols:
+  - `+` for ADDED (green)
+  - `~` for MODIFIED (yellow)
+  - `-` for REMOVED (red)
+  - `→` for RENAMED (cyan)
+
 ### Requirement: Archive Process Enhancement
 
 The archive process SHALL programmatically apply delta changes to current specifications using header-based matching.
@@ -188,6 +195,34 @@ The system SHALL support multiple methods for reviewing proposed changes.
 - GitHub PR diff view when changes are committed
 - Command line: `diff -u specs/[capability]/spec.md changes/[name]/specs/[capability]/spec.md`
 - Any visual diff tool comparing current vs future state
+
+### Requirement: Structured Format Adoption
+
+Behavioral specifications SHALL adopt the structured format with `### Requirement:` and `#### Scenario:` headers as the default.
+
+#### Scenario: Use structured headings for behavior
+
+- **WHEN** documenting behavioral requirements
+- **THEN** use `### Requirement:` for requirements
+- **AND** use `#### Scenario:` for scenarios with bold WHEN/THEN/AND keywords
+
+### Requirement: Verb–Noun CLI Command Structure
+OpenSpec CLI design SHALL use verbs as top-level commands with nouns provided as arguments or flags for scoping.
+
+#### Scenario: Verb-first command discovery
+- **WHEN** a user runs a command like `openspec list`
+- **THEN** the verb communicates the action clearly
+- **AND** nouns refine scope via flags or arguments (e.g., `--changes`, `--specs`)
+
+#### Scenario: Backward compatibility for noun commands
+- **WHEN** users run noun-prefixed commands such as `openspec spec ...` or `openspec change ...`
+- **THEN** the CLI SHALL continue to support them for at least one release
+- **AND** display a deprecation warning that points to verb-first alternatives
+
+#### Scenario: Disambiguation guidance
+- **WHEN** item names are ambiguous between changes and specs
+- **THEN** `openspec show` and `openspec validate` SHALL accept `--type spec|change`
+- **AND** the help text SHALL document this clearly
 
 ## Core Principles
 
@@ -258,7 +293,6 @@ Behavioral specifications SHALL use a structured format with consistent section 
   - Sub-bullets provide examples or specifics
   - Keep sub-bullets concise
 
-
 ## Change Storage Convention
 
 ### Requirement: Header-Based Requirement Identification
@@ -316,7 +350,6 @@ Change proposals SHALL store only the additions, modifications, and removals to 
 - **AND** use the normalized header text for identification
 - **AND** include reason for removal
 - **AND** document any migration path if applicable
-
 
 The `changes/[name]/specs/` directory SHALL contain:
 - Delta files showing only what changes

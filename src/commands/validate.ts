@@ -129,11 +129,12 @@ export class ValidateCommand {
   private async validateByType(type: ItemType, id: string, opts: { strict: boolean; json: boolean }): Promise<void> {
     const validator = new Validator(opts.strict);
     if (type === 'change') {
-      const file = path.join(process.cwd(), 'openspec', 'changes', id, 'proposal.md');
+      const changeDir = path.join(process.cwd(), 'openspec', 'changes', id);
       const start = Date.now();
-      const report = await validator.validateChange(file);
+      const report = await validator.validateChangeDeltaSpecs(changeDir);
       const durationMs = Date.now() - start;
       this.printReport('change', id, report, durationMs, opts.json);
+      // Non-zero exit if invalid (keeps enriched output test semantics)
       process.exitCode = report.valid ? 0 : 1;
       return;
     }
@@ -195,8 +196,8 @@ export class ValidateCommand {
     for (const id of changeIds) {
       queue.push(async () => {
         const start = Date.now();
-        const file = path.join(process.cwd(), 'openspec', 'changes', id, 'proposal.md');
-        const report = await validator.validateChange(file);
+        const changeDir = path.join(process.cwd(), 'openspec', 'changes', id);
+        const report = await validator.validateChangeDeltaSpecs(changeDir);
         const durationMs = Date.now() - start;
         return { id, type: 'change' as const, valid: report.valid, issues: report.issues, durationMs };
       });
