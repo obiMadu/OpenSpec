@@ -4,16 +4,18 @@ Currently, users must validate changes and specs individually by specifying each
 - Teams want to validate all changes/specs before a release
 - Developers need to ensure consistency across multiple related changes  
 - Users run validation or show commands without arguments and receive errors instead of helpful guidance
+- The subcommand structure requires users to know in advance whether they're validating a change or spec
 
 ## What Changes
 
-- Add new `validate-all` command for bulk validation of all changes and specs
-- Enhance `change validate` and `change show` to support interactive selection when no arguments provided
-- Enhance `spec validate` and `spec show` to support interactive selection when no arguments provided  
-- Maintain backward compatibility - all existing commands with arguments work unchanged
+- Add new top-level `validate` command with intuitive flags (--all, --changes, --specs)
+- Add new top-level `show` command for displaying changes or specs interactively
+- Enhance existing `change validate/show` and `spec validate/show` to support interactive selection (backwards compatibility)
+- Interactive selection by default when no arguments provided
+- Support direct item validation: `openspec validate <item>`
 
 ## Impact
 
-- New specs to create: cli-validate-all
-- Specs to enhance: cli-change, cli-spec
-- Affected code: src/cli/index.ts, src/commands/spec.ts, src/commands/change.ts, src/commands/validate-all.ts (new)
+- New specs to create: cli-validate, cli-show
+- Specs to enhance: cli-change, cli-spec (for backwards compatibility)
+- Affected code: src/cli/index.ts, src/commands/validate.ts (new), src/commands/show.ts (new), src/commands/spec.ts, src/commands/change.ts
