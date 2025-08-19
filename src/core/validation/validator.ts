@@ -20,11 +20,10 @@ export class Validator {
 
   async validateSpec(filePath: string): Promise<ValidationReport> {
     const issues: ValidationIssue[] = [];
-    
+    const specName = this.extractNameFromPath(filePath);
     try {
       const content = readFileSync(filePath, 'utf-8');
       const parser = new MarkdownParser(content);
-      const specName = this.extractNameFromPath(filePath);
       
       const spec = parser.parseSpec(specName);
       
@@ -37,10 +36,12 @@ export class Validator {
       issues.push(...this.applySpecRules(spec, content));
       
     } catch (error) {
+      const baseMessage = error instanceof Error ? error.message : 'Unknown error';
+      const enriched = this.enrichTopLevelError(specName, baseMessage);
       issues.push({
         level: 'ERROR',
         path: 'file',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: enriched,
       });
     }
     
@@ -49,10 +50,9 @@ export class Validator {
 
   async validateChange(filePath: string): Promise<ValidationReport> {
     const issues: ValidationIssue[] = [];
-    
+    const changeName = this.extractNameFromPath(filePath);
     try {
       const content = readFileSync(filePath, 'utf-8');
-      const changeName = this.extractNameFromPath(filePath);
       const changeDir = path.dirname(filePath);
       const parser = new ChangeParser(content, changeDir);
       
@@ -67,10 +67,12 @@ export class Validator {
       issues.push(...this.applyChangeRules(change, content));
       
     } catch (error) {
+      const baseMessage = error instanceof Error ? error.message : 'Unknown error';
+      const enriched = this.enrichTopLevelError(changeName, baseMessage);
       issues.push({
         level: 'ERROR',
         path: 'file',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: enriched,
       });
     }
     
@@ -78,11 +80,17 @@ export class Validator {
   }
 
   private convertZodErrors(error: ZodError): ValidationIssue[] {
-    return error.issues.map(err => ({
-      level: 'ERROR' as ValidationLevel,
-      path: err.path.join('.'),
-      message: err.message,
-    }));
+    return error.issues.map(err => {
+      let message = err.message;
+      if (message === VALIDATION_MESSAGES.CHANGE_NO_DELTAS) {
+        message = `${message}. ${VALIDATION_MESSAGES.GUIDE_NO_DELTAS}`;
+      }
+      return {
+        level: 'ERROR' as ValidationLevel,
+        path: err.path.join('.'),
+        message,
+      };
+    });
   }
 
   private applySpecRules(spec: Spec, content: string): ValidationIssue[] {
@@ -109,7 +117,7 @@ export class Validator {
         issues.push({
           level: 'WARNING',
           path: `requirements[${index}].scenarios`,
-          message: 'Requirement has no scenarios',
+          message: `${VALIDATION_MESSAGES.REQUIREMENT_NO_SCENARIOS}. ${VALIDATION_MESSAGES.GUIDE_SCENARIO_FORMAT}`,
         });
       }
     });
@@ -142,6 +150,20 @@ export class Validator {
     });
     
     return issues;
+  }
+
+  private enrichTopLevelError(itemId: string, baseMessage: string): string {
+    const msg = baseMessage.trim();
+    if (msg === VALIDATION_MESSAGES.CHANGE_NO_DELTAS) {
+      return `${msg}. ${VALIDATION_MESSAGES.GUIDE_NO_DELTAS}`;
+    }
+    if (msg.includes('Spec must have a Purpose section') || msg.includes('Spec must have a Requirements section')) {
+      return `${msg}. ${VALIDATION_MESSAGES.GUIDE_MISSING_SPEC_SECTIONS}`;
+    }
+    if (msg.includes('Change must have a Why section') || msg.includes('Change must have a What Changes section')) {
+      return `${msg}. ${VALIDATION_MESSAGES.GUIDE_MISSING_CHANGE_SECTIONS}`;
+    }
+    return msg;
   }
 
   private extractNameFromPath(filePath: string): string {

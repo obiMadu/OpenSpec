@@ -160,7 +160,23 @@ export class ValidateCommand {
         const prefix = issue.level === 'ERROR' ? '✗' : issue.level === 'WARNING' ? '⚠' : 'ℹ';
         console.error(`${prefix} [${label}] ${issue.path}: ${issue.message}`);
       }
+      this.printNextSteps(type);
     }
+  }
+
+  private printNextSteps(type: ItemType): void {
+    const bullets: string[] = [];
+    if (type === 'change') {
+      bullets.push('- Ensure change has deltas in specs/: use headers ## ADDED/MODIFIED/REMOVED/RENAMED Requirements');
+      bullets.push('- Each requirement MUST include at least one #### Scenario: block');
+      bullets.push('- Debug parsed deltas: openspec change show <id> --json --deltas-only');
+    } else {
+      bullets.push('- Ensure spec includes ## Purpose and ## Requirements sections');
+      bullets.push('- Each requirement MUST include at least one #### Scenario: block');
+      bullets.push('- Re-run with --json to see structured report');
+    }
+    console.error('Next steps:');
+    bullets.forEach(b => console.error(`  ${b}`));
   }
 
   private async runBulkValidation(scope: { changes: boolean; specs: boolean }, opts: { strict: boolean; json: boolean; concurrency?: string }): Promise<void> {
