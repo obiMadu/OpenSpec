@@ -4,6 +4,9 @@ import { join } from 'path';
 import { MarkdownParser } from '../core/parsers/markdown-parser.js';
 import { Validator } from '../core/validation/validator.js';
 import type { Spec } from '../core/schemas/index.js';
+import { select } from '@inquirer/prompts';
+import { isInteractive } from '../utils/interactive.js';
+import { getSpecIds } from '../utils/item-discovery.js';
 
 const SPECS_DIR = 'openspec/specs';
 
@@ -166,12 +169,26 @@ export function registerSpecCommand(rootProgram: typeof program) {
     });
 
   specCommand
-    .command('validate <spec-id>')
+    .command('validate [spec-id]')
     .description('Validate a specification structure')
     .option('--strict', 'Enable strict validation mode')
     .option('--json', 'Output validation report as JSON')
-    .action(async (specId: string, options: { strict?: boolean; json?: boolean }) => {
+    .option('--no-interactive', 'Disable interactive prompts')
+    .action(async (specId: string | undefined, options: { strict?: boolean; json?: boolean; noInteractive?: boolean }) => {
       try {
+        if (!specId) {
+          const canPrompt = isInteractive(options?.noInteractive);
+          const specIds = await getSpecIds();
+          if (canPrompt && specIds.length > 0) {
+            specId = await select({
+              message: 'Select a spec to validate',
+              choices: specIds.map(id => ({ name: id, value: id })),
+            });
+          } else {
+            throw new Error('Missing required argument <spec-id>');
+          }
+        }
+
         const specPath = join(SPECS_DIR, specId, 'spec.md');
         
         if (!existsSync(specPath)) {
