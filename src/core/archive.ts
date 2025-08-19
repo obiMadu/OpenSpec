@@ -2,6 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { select, confirm } from '@inquirer/prompts';
 import { FileSystemUtils } from '../utils/file-system.js';
+import { getTaskProgressForChange, formatTaskStatus } from '../utils/task-progress.js';
 import { Validator } from './validation/validator.js';
 import chalk from 'chalk';
 import {
@@ -138,10 +139,12 @@ export class ArchiveCommand {
       console.log(chalk.yellow(`Affected files: ${changeDir}`));
     }
 
-    // Check for incomplete tasks
-    const tasksPath = path.join(changeDir, 'tasks.md');
-    const incompleteTasks = await this.checkIncompleteTasks(tasksPath);
-    
+    // Show progress and check for incomplete tasks
+    const progress = await getTaskProgressForChange(changesDir, changeName);
+    const status = formatTaskStatus(progress);
+    console.log(`Task status: ${status}`);
+
+    const incompleteTasks = Math.max(progress.total - progress.completed, 0);
     if (incompleteTasks > 0) {
       if (!options.yes) {
         const proceed = await confirm({
@@ -250,11 +253,24 @@ export class ArchiveCommand {
       return null;
     }
 
-    console.log('Available changes:');
-    const choices = changeDirs.map(name => ({
-      name: name,
-      value: name
-    }));
+    // Build choices with progress inline to avoid duplicate lists
+    let choices: Array<{ name: string; value: string }> = changeDirs.map(name => ({ name, value: name }));
+    try {
+      const progressList: Array<{ id: string; status: string }> = [];
+      for (const id of changeDirs) {
+        const progress = await getTaskProgressForChange(changesDir, id);
+        const status = formatTaskStatus(progress);
+        progressList.push({ id, status });
+      }
+      const nameWidth = Math.max(...progressList.map(p => p.id.length));
+      choices = progressList.map(p => ({
+        name: `${p.id.padEnd(nameWidth)}     ${p.status}`,
+        value: p.id
+      }));
+    } catch {
+      // If anything fails, fall back to simple names
+      choices = changeDirs.map(name => ({ name, value: name }));
+    }
 
     try {
       const answer = await select({
@@ -268,23 +284,9 @@ export class ArchiveCommand {
     }
   }
 
-  private async checkIncompleteTasks(tasksPath: string): Promise<number> {
-    try {
-      const content = await fs.readFile(tasksPath, 'utf-8');
-      const lines = content.split('\n');
-      let incompleteTasks = 0;
-      
-      for (const line of lines) {
-        if (line.includes('- [ ]')) {
-          incompleteTasks++;
-        }
-      }
-      
-      return incompleteTasks;
-    } catch {
-      // No tasks.md file or error reading it
-      return 0;
-    }
+  // Deprecated: replaced by shared task-progress utilities
+  private async checkIncompleteTasks(_tasksPath: string): Promise<number> {
+    return 0;
   }
 
   private async findSpecUpdates(changeDir: string, mainSpecsDir: string): Promise<SpecUpdate[]> {

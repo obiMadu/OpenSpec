@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { getTaskProgressForChange, formatTaskStatus } from '../utils/task-progress.js';
 
 interface ChangeInfo {
   name: string;
@@ -33,35 +34,11 @@ export class ListCommand {
     const changes: ChangeInfo[] = [];
     
     for (const changeDir of changeDirs) {
-      const tasksPath = path.join(changesDir, changeDir, 'tasks.md');
-      let completedTasks = 0;
-      let incompleteTasks = 0;
-      
-      try {
-        const content = await fs.readFile(tasksPath, 'utf-8');
-        const lines = content.split('\n');
-        
-        for (const line of lines) {
-          if (line.includes('- [x]')) {
-            completedTasks++;
-          } else if (line.includes('- [ ]')) {
-            incompleteTasks++;
-          }
-        }
-      } catch {
-        // No tasks.md file
-        changes.push({
-          name: changeDir,
-          completedTasks: 0,
-          totalTasks: 0
-        });
-        continue;
-      }
-      
+      const progress = await getTaskProgressForChange(changesDir, changeDir);
       changes.push({
         name: changeDir,
-        completedTasks,
-        totalTasks: completedTasks + incompleteTasks
+        completedTasks: progress.completed,
+        totalTasks: progress.total
       });
     }
 
@@ -75,14 +52,7 @@ export class ListCommand {
       const nameWidth = Math.max(...changes.map(c => c.name.length));
       const paddedName = change.name.padEnd(nameWidth);
       
-      let status: string;
-      if (change.totalTasks === 0) {
-        status = 'No tasks';
-      } else if (change.completedTasks === change.totalTasks) {
-        status = '✓ Complete';
-      } else {
-        status = `${change.completedTasks}/${change.totalTasks} tasks`;
-      }
+      const status = formatTaskStatus({ total: change.totalTasks, completed: change.completedTasks });
       
       console.log(`${padding}${paddedName}     ${status}`);
     }

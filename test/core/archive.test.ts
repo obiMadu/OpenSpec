@@ -569,14 +569,14 @@ E1 updated`);
       // Execute without change name
       await archiveCommand.execute(undefined, { yes: true });
       
-      // Verify select was called with correct options
-      expect(mockSelect).toHaveBeenCalledWith({
+      // Verify select was called with correct options (values matter, names may include progress)
+      expect(mockSelect).toHaveBeenCalledWith(expect.objectContaining({
         message: 'Select a change to archive',
-        choices: [
-          { name: change1, value: change1 },
-          { name: change2, value: change2 }
-        ]
-      });
+        choices: expect.arrayContaining([
+          expect.objectContaining({ value: change1 }),
+          expect.objectContaining({ value: change2 })
+        ])
+      }));
       
       // Verify the selected change was archived
       const archiveDir = path.join(tempDir, 'openspec', 'changes', 'archive');
