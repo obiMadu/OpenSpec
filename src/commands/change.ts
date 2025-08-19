@@ -26,19 +26,28 @@ export class ChangeCommand {
    * - JSON mode: minimal object with deltas; --deltas-only returns same object with filtered deltas
    *   Note: --requirements-only is deprecated alias for --deltas-only
    */
-  async show(changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean; deltasOnly?: boolean }): Promise<void> {
+  async show(changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean; deltasOnly?: boolean; noInteractive?: boolean }): Promise<void> {
     const changesPath = path.join(process.cwd(), 'openspec', 'changes');
     
     if (!changeName) {
+      const canPrompt = isInteractive(options?.noInteractive);
       const changes = await this.getActiveChanges(changesPath);
-      if (changes.length === 0) {
-        console.error('No change specified. No active changes found.');
+      if (canPrompt && changes.length > 0) {
+        const selected = await select({
+          message: 'Select a change to show',
+          choices: changes.map(id => ({ name: id, value: id })),
+        });
+        changeName = selected;
       } else {
-        console.error(`No change specified. Available IDs: ${changes.join(', ')}`);
+        if (changes.length === 0) {
+          console.error('No change specified. No active changes found.');
+        } else {
+          console.error(`No change specified. Available IDs: ${changes.join(', ')}`);
+        }
+        console.error('Hint: use "openspec change list" to view available changes.');
+        process.exitCode = 1;
+        return;
       }
-      console.error('Hint: use "openspec change list" to view available changes.');
-      process.exitCode = 1;
-      return;
     }
     
     const proposalPath = path.join(changesPath, changeName, 'proposal.md');

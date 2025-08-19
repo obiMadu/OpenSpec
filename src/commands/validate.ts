@@ -4,6 +4,7 @@ import path from 'path';
 import { Validator } from '../core/validation/validator.js';
 import { isInteractive } from '../utils/interactive.js';
 import { getActiveChangeIds, getSpecIds } from '../utils/item-discovery.js';
+import { nearestMatches } from '../utils/match.js';
 
 type ItemType = 'change' | 'spec';
 
@@ -260,31 +261,6 @@ function summarizeType(results: BulkItemResult[], type: ItemType) {
   const passed = filtered.filter(r => r.valid).length;
   const failed = items - passed;
   return { items, passed, failed };
-}
-
-function nearestMatches(input: string, candidates: string[], max: number = 5): string[] {
-  const scored = candidates.map(c => ({ c, d: levenshtein(input, c) }));
-  scored.sort((a, b) => a.d - b.d);
-  return scored.slice(0, max).map(s => s.c);
-}
-
-function levenshtein(a: string, b: string): number {
-  const m = a.length;
-  const n = b.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-  for (let i = 0; i <= m; i++) dp[i][0] = i;
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      dp[i][j] = Math.min(
-        dp[i - 1][j] + 1,
-        dp[i][j - 1] + 1,
-        dp[i - 1][j - 1] + cost
-      );
-    }
-  }
-  return dp[m][n];
 }
 
 function normalizeConcurrency(value?: string): number | undefined {

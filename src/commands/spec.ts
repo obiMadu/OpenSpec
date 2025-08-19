@@ -10,6 +10,54 @@ import { getSpecIds } from '../utils/item-discovery.js';
 
 const SPECS_DIR = 'openspec/specs';
 
+export class SpecCommand {
+  private SPECS_DIR = 'openspec/specs';
+
+  async show(specId?: string, options: { json?: boolean; requirements?: boolean; scenarios?: boolean; requirement?: string; noInteractive?: boolean } = {}): Promise<void> {
+    try {
+      if (!specId) {
+        const canPrompt = isInteractive(options?.noInteractive);
+        const specIds = await getSpecIds();
+        if (canPrompt && specIds.length > 0) {
+          specId = await select({
+            message: 'Select a spec to show',
+            choices: specIds.map(id => ({ name: id, value: id })),
+          });
+        } else {
+          throw new Error('Missing required argument <spec-id>');
+        }
+      }
+
+      const specPath = join(this.SPECS_DIR, specId, 'spec.md');
+      if (!existsSync(specPath)) {
+        throw new Error(`Spec '${specId}' not found at openspec/specs/${specId}/spec.md`);
+      }
+
+      if (options.json) {
+        if (options.requirements && options.requirement) {
+          throw new Error('Options --requirements and --requirement cannot be used together');
+        }
+        const parsed = parseSpecFromFile(specPath, specId);
+        const filtered = filterSpec(parsed, options);
+        const output = {
+          id: specId,
+          title: parsed.name,
+          overview: parsed.overview,
+          requirementCount: filtered.requirements.length,
+          requirements: filtered.requirements,
+          metadata: parsed.metadata ?? { version: '1.0.0', format: 'openspec' as const },
+        };
+        console.log(JSON.stringify(output, null, 2));
+      } else {
+        printSpecTextRaw(specPath);
+      }
+    } catch (error) {
+      console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      process.exitCode = 1;
+    }
+  }
+}
+
 export function registerSpecCommand(rootProgram: typeof program) {
   const specCommand = rootProgram
     .command('spec')
@@ -70,43 +118,16 @@ export function registerSpecCommand(rootProgram: typeof program) {
   }
 
   specCommand
-    .command('show <spec-id>')
+    .command('show [spec-id]')
     .description('Display a specific specification')
     .option('--json', 'Output as JSON')
     .option('--requirements', 'JSON only: Show only requirements (exclude scenarios)')
     .option('--no-scenarios', 'JSON only: Exclude scenario content')
     .option('-r, --requirement <id>', 'JSON only: Show specific requirement by ID (1-based)')
-    .action((specId: string, options: ShowOptions) => {
-      try {
-        const specPath = join(SPECS_DIR, specId, 'spec.md');
-        
-        if (!existsSync(specPath)) {
-          throw new Error(`Spec '${specId}' not found at openspec/specs/${specId}/spec.md`);
-        }
-
-        if (options.json) {
-          if (options.requirements && options.requirement) {
-            throw new Error('Options --requirements and --requirement cannot be used together');
-          }
-          const parsed = parseSpecFromFile(specPath, specId);
-          const filtered = filterSpec(parsed, options);
-          const output = {
-            id: specId,
-            title: parsed.name,
-            overview: parsed.overview,
-            requirementCount: filtered.requirements.length,
-            requirements: filtered.requirements,
-            metadata: parsed.metadata ?? { version: '1.0.0', format: 'openspec' as const },
-          };
-          console.log(JSON.stringify(output, null, 2));
-        } else {
-          // raw-first text: print raw file
-          printSpecTextRaw(specPath);
-        }
-      } catch (error) {
-        console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        process.exitCode = 1;
-      }
+    .option('--no-interactive', 'Disable interactive prompts')
+    .action(async (specId: string | undefined, options: ShowOptions & { noInteractive?: boolean }) => {
+      const cmd = new SpecCommand();
+      await cmd.show(specId, options as any);
     });
 
   specCommand
