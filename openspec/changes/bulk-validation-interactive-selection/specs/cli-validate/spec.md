@@ -106,6 +106,8 @@ Where `Issue` follows the existing per-item validation report shape `{ level: "E
 
 ### Requirement: Item type detection and ambiguity handling
 
+The validate command SHALL handle ambiguous names and explicit type overrides to ensure clear, deterministic behavior.
+
 #### Scenario: Direct item validation with automatic type detection
 
 - **WHEN** executing `openspec validate <item-name>`
@@ -139,3 +141,9 @@ Where `Issue` follows the existing per-item validation report shape `{ level: "E
 - The CLI SHALL respect `--no-interactive` to disable prompts.
 - The CLI SHALL respect `OPEN_SPEC_INTERACTIVE=0` to disable prompts globally.
 - Interactive prompts SHALL only be shown when stdin is a TTY and interactivity is not disabled.
+
+#### Scenario: Disabling prompts via flags or environment
+
+- **WHEN** `openspec validate` is executed with `--no-interactive` or with environment `OPEN_SPEC_INTERACTIVE=0`
+- **THEN** the CLI SHALL not display interactive prompts
+- **AND** SHALL print non-interactive hints or chosen outputs as appropriate

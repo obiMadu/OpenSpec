@@ -129,8 +129,6 @@ The spec update confirmation SHALL provide clear visibility into changes before 
 - **AND** display message: "Archive cancelled. No changes were made."
 - **AND** exit with non-zero status code
 
-## Error Handling
-
 ### Requirement: Error Conditions
 
 The command SHALL handle various error conditions gracefully.
