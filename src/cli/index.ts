@@ -9,6 +9,7 @@ import { ListCommand } from '../core/list.js';
 import { ArchiveCommand } from '../core/archive.js';
 import { registerSpecCommand } from '../commands/spec.js';
 import { ChangeCommand } from '../commands/change.js';
+import { ValidateCommand } from '../commands/validate.js';
 
 const program = new Command();
 
@@ -146,7 +147,8 @@ changeCmd
   .description('Validate a change proposal')
   .option('--strict', 'Enable strict validation mode')
   .option('--json', 'Output validation report as JSON')
-  .action(async (changeName?: string, options?: { strict?: boolean; json?: boolean }) => {
+  .option('--no-interactive', 'Disable interactive prompts')
+  .action(async (changeName?: string, options?: { strict?: boolean; json?: boolean; noInteractive?: boolean }) => {
     try {
       const changeCommand = new ChangeCommand();
       await changeCommand.validate(changeName, options);
@@ -174,5 +176,27 @@ program
   });
 
 registerSpecCommand(program);
+
+// Top-level validate command
+program
+  .command('validate [item-name]')
+  .description('Validate changes and specs')
+  .option('--all', 'Validate all changes and specs')
+  .option('--changes', 'Validate all changes')
+  .option('--specs', 'Validate all specs')
+  .option('--type <type>', 'Specify item type when ambiguous: change|spec')
+  .option('--strict', 'Enable strict validation mode')
+  .option('--json', 'Output validation results as JSON')
+  .option('--no-interactive', 'Disable interactive prompts')
+  .action(async (itemName?: string, options?: { all?: boolean; changes?: boolean; specs?: boolean; type?: string; strict?: boolean; json?: boolean; noInteractive?: boolean }) => {
+    try {
+      const validateCommand = new ValidateCommand();
+      await validateCommand.execute(itemName, options);
+    } catch (error) {
+      console.log();
+      ora().fail(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
 
 program.parse();

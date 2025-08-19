@@ -1,9 +1,12 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { select } from '@inquirer/prompts';
 import { JsonConverter } from '../core/converters/json-converter.js';
 import { Validator } from '../core/validation/validator.js';
 import { ChangeParser } from '../core/parsers/change-parser.js';
 import { Change } from '../core/schemas/index.js';
+import { isInteractive } from '../utils/interactive.js';
+import { getActiveChangeIds } from '../utils/item-discovery.js';
 
 // Constants for better maintainability
 const ARCHIVE_DIR = 'archive';
@@ -170,19 +173,28 @@ export class ChangeCommand {
     }
   }
 
-  async validate(changeName?: string, options?: { strict?: boolean; json?: boolean }): Promise<void> {
+  async validate(changeName?: string, options?: { strict?: boolean; json?: boolean; noInteractive?: boolean }): Promise<void> {
     const changesPath = path.join(process.cwd(), 'openspec', 'changes');
     
     if (!changeName) {
-      const changes = await this.getActiveChanges(changesPath);
-      if (changes.length === 0) {
-        console.error('No change specified. No active changes found.');
+      const canPrompt = isInteractive(options?.noInteractive);
+      const changes = await getActiveChangeIds();
+      if (canPrompt && changes.length > 0) {
+        const selected = await select({
+          message: 'Select a change to validate',
+          choices: changes.map(id => ({ name: id, value: id })),
+        });
+        changeName = selected;
       } else {
-        console.error(`No change specified. Available IDs: ${changes.join(', ')}`);
+        if (changes.length === 0) {
+          console.error('No change specified. No active changes found.');
+        } else {
+          console.error(`No change specified. Available IDs: ${changes.join(', ')}`);
+        }
+        console.error('Hint: use "openspec change list" to view available changes.');
+        process.exitCode = 1;
+        return;
       }
-      console.error('Hint: use "openspec change list" to view available changes.');
-      process.exitCode = 1;
-      return;
     }
     
     const proposalPath = path.join(changesPath, changeName, 'proposal.md');

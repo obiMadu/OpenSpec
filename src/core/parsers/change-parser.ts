@@ -94,7 +94,8 @@ export class ChangeParser extends MarkdownParser {
           spec: specName,
           operation: 'ADDED' as DeltaOperation,
           description: `Add requirement: ${req.text}`,
-          // Use plural form to satisfy validators that expect an array
+          // Provide both single and plural forms for compatibility
+          requirement: req,
           requirements: [req],
         });
       });
@@ -109,6 +110,7 @@ export class ChangeParser extends MarkdownParser {
           spec: specName,
           operation: 'MODIFIED' as DeltaOperation,
           description: `Modify requirement: ${req.text}`,
+          requirement: req,
           requirements: [req],
         });
       });
@@ -123,6 +125,7 @@ export class ChangeParser extends MarkdownParser {
           spec: specName,
           operation: 'REMOVED' as DeltaOperation,
           description: `Remove requirement: ${req.text}`,
+          requirement: req,
           requirements: [req],
         });
       });
