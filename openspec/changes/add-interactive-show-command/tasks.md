@@ -124,7 +124,7 @@ Acceptance:
 ---
 
 ## 8) Documentation (optional but recommended)
-- [ ] Update `openspec/README.md` usage examples to include the new `show` command with type detection and flags.
+- [x] Update `openspec/README.md` usage examples to include the new `show` command with type detection and flags.
 
 ---
 

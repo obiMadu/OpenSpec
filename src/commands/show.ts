@@ -8,6 +8,9 @@ import { nearestMatches } from '../utils/match.js';
 
 type ItemType = 'change' | 'spec';
 
+const CHANGE_FLAG_KEYS = new Set(['deltasOnly', 'requirementsOnly']);
+const SPEC_FLAG_KEYS = new Set(['requirements', 'scenarios', 'requirement']);
+
 export class ShowCommand {
   async execute(itemName?: string, options: { json?: boolean; type?: string; noInteractive?: boolean; [k: string]: any } = {}): Promise<void> {
     const interactive = isInteractive(options.noInteractive);
@@ -66,9 +69,22 @@ export class ShowCommand {
   }
 
   private async showDirect(itemName: string, params: { typeOverride?: ItemType; options: { json?: boolean; [k: string]: any } }): Promise<void> {
-    const [changes, specs] = await Promise.all([getActiveChangeIds(), getSpecIds()]);
-    const isChange = changes.includes(itemName);
-    const isSpec = specs.includes(itemName);
+    // Optimize lookups when type is pre-specified
+    let isChange = false;
+    let isSpec = false;
+    let changes: string[] = [];
+    let specs: string[] = [];
+    if (params.typeOverride === 'change') {
+      changes = await getActiveChangeIds();
+      isChange = changes.includes(itemName);
+    } else if (params.typeOverride === 'spec') {
+      specs = await getSpecIds();
+      isSpec = specs.includes(itemName);
+    } else {
+      [changes, specs] = await Promise.all([getActiveChangeIds(), getSpecIds()]);
+      isChange = changes.includes(itemName);
+      isSpec = specs.includes(itemName);
+    }
 
     const resolvedType = params.typeOverride ?? (isChange ? 'change' : isSpec ? 'spec' : undefined);
 
@@ -87,7 +103,7 @@ export class ShowCommand {
       return;
     }
 
-    const warned = this.warnIrrelevantFlags(resolvedType, params.options);
+    this.warnIrrelevantFlags(resolvedType, params.options);
     if (resolvedType === 'change') {
       const cmd = new ChangeCommand();
       await cmd.show(itemName, params.options as any);
@@ -106,13 +122,11 @@ export class ShowCommand {
   }
 
   private warnIrrelevantFlags(type: ItemType, options: { [k: string]: any }): boolean {
-    const changeOnly = new Set(['deltasOnly', 'requirementsOnly']);
-    const specOnly = new Set(['requirements', 'scenarios', 'requirement']);
     const irrelevant: string[] = [];
     if (type === 'change') {
-      for (const k of specOnly) if (k in options) irrelevant.push(k);
+      for (const k of SPEC_FLAG_KEYS) if (k in options) irrelevant.push(k);
     } else {
-      for (const k of changeOnly) if (k in options) irrelevant.push(k);
+      for (const k of CHANGE_FLAG_KEYS) if (k in options) irrelevant.push(k);
     }
     if (irrelevant.length > 0) {
       console.error(`Warning: Ignoring flags not applicable to ${type}: ${irrelevant.join(', ')}`);
