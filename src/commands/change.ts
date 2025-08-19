@@ -206,16 +206,16 @@ export class ChangeCommand {
       }
     }
     
-    const proposalPath = path.join(changesPath, changeName, 'proposal.md');
+    const changeDir = path.join(changesPath, changeName);
     
     try {
-      await fs.access(proposalPath);
+      await fs.access(changeDir);
     } catch {
-      throw new Error(`Change "${changeName}" not found at ${proposalPath}`);
+      throw new Error(`Change "${changeName}" not found at ${changeDir}`);
     }
     
     const validator = new Validator(options?.strict || false);
-    const report = await validator.validateChange(proposalPath);
+    const report = await validator.validateChangeDeltaSpecs(changeDir);
     
     if (options?.json) {
       console.log(JSON.stringify(report, null, 2));
@@ -223,12 +223,17 @@ export class ChangeCommand {
       if (report.valid) {
         console.log(`Change "${changeName}" is valid`);
       } else {
-        console.error(`Change "${changeName}" has validation issues`);
+        console.error(`Change "${changeName}" has issues`);
         report.issues.forEach(issue => {
           const label = issue.level === 'ERROR' ? 'ERROR' : 'WARNING';
           const prefix = issue.level === 'ERROR' ? '✗' : '⚠';
           console.error(`${prefix} [${label}] ${issue.path}: ${issue.message}`);
         });
+        // Next steps footer to guide fixing issues
+        this.printNextSteps();
+        if (!options?.json) {
+          process.exitCode = 1;
+        }
       }
     }
   }
@@ -265,5 +270,14 @@ export class ChangeCommand {
     }
     
     return { total, completed };
+  }
+
+  private printNextSteps(): void {
+    const bullets: string[] = [];
+    bullets.push('- Ensure change has deltas in specs/: use headers ## ADDED/MODIFIED/REMOVED/RENAMED Requirements');
+    bullets.push('- Each requirement MUST include at least one #### Scenario: block');
+    bullets.push('- Debug parsed deltas: openspec change show <id> --json --deltas-only');
+    console.error('Next steps:');
+    bullets.forEach(b => console.error(`  ${b}`));
   }
 }

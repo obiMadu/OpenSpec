@@ -10,9 +10,7 @@ openspec archive [change-name] [--yes|-y]
 
 Options:
 - `--yes`, `-y`: Skip confirmation prompts (for automation)
-
 ## Requirements
-
 ### Requirement: Change Selection
 
 The command SHALL support both interactive and direct change selection methods.
@@ -72,26 +70,25 @@ The archive operation SHALL follow a structured process to safely move changes t
 
 ### Requirement: Spec Update Process
 
-Before moving the change to archive, the command SHALL update main specs to reflect the deployed reality.
+Before moving the change to archive, the command SHALL apply delta changes to main specs to reflect the deployed reality.
 
-#### Scenario: Updating specs from change
+#### Scenario: Applying delta changes
 
-- **WHEN** the change contains specs in `changes/[name]/specs/`
-- **THEN** execute these steps:
-  1. Analyze which specs will be affected by comparing with existing specs
-  2. Display a summary of spec updates to the user (see Confirmation Behavior below)
-  3. Prompt for confirmation unless `--yes` flag is provided
-  4. If confirmed, for each capability spec in the change directory:
-     - Copy the spec from `changes/[name]/specs/[capability]/spec.md` to `openspec/specs/[capability]/spec.md`
-     - Create the target directory structure if it doesn't exist
-     - Overwrite existing spec files (specs represent current reality, change specs are the new reality)
-     - Track which specs were updated for the success message
+- **WHEN** archiving a change with delta-based specs
+- **THEN** parse and apply delta changes as defined in openspec-conventions
+- **AND** validate all operations before applying
 
-#### Scenario: No specs in change
+#### Scenario: Validating delta changes
 
-- **WHEN** no specs exist in the change
-- **THEN** skip the spec update step
-- **AND** proceed with archiving
+- **WHEN** processing delta changes
+- **THEN** perform validations as specified in openspec-conventions
+- **AND** if validation fails, show specific errors and abort
+
+#### Scenario: Conflict detection
+
+- **WHEN** applying deltas would create duplicate requirement headers
+- **THEN** abort with error message showing the conflict
+- **AND** suggest manual resolution
 
 ### Requirement: Confirmation Behavior
 
@@ -141,6 +138,66 @@ The command SHALL handle various error conditions gracefully.
   - Change not found
   - Archive target already exists
   - File system permissions issues
+
+### Requirement: Skip Specs Option
+
+The archive command SHALL support a `--skip-specs` flag that skips all spec update operations and proceeds directly to archiving.
+
+#### Scenario: Skipping spec updates with flag
+
+- **WHEN** executing `openspec archive <change> --skip-specs`
+- **THEN** skip spec discovery and update confirmation
+- **AND** proceed directly to moving the change to archive
+- **AND** display a message indicating specs were skipped
+
+### Requirement: Non-blocking confirmation
+
+The archive operation SHALL proceed when the user declines spec updates instead of cancelling the entire operation.
+
+#### Scenario: User declines spec update confirmation
+
+- **WHEN** the user declines spec update confirmation
+- **THEN** skip spec updates
+- **AND** continue with the archive operation
+- **AND** display a success message indicating specs were not updated
+
+### Requirement: Display Output
+
+The command SHALL provide clear feedback about delta operations.
+
+#### Scenario: Showing delta application
+
+- **WHEN** applying delta changes
+- **THEN** display for each spec:
+  - Number of requirements added
+  - Number of requirements modified
+  - Number of requirements removed
+  - Number of requirements renamed
+- **AND** use standard output symbols (+ ~ - →) as defined in openspec-conventions:
+  ```
+  Applying changes to specs/user-auth/spec.md:
+    + 2 added
+    ~ 3 modified
+    - 1 removed
+    → 1 renamed
+  ```
+
+### Requirement: Archive Validation
+
+The archive command SHALL validate changes before applying them to ensure data integrity.
+
+#### Scenario: Pre-archive validation
+
+- **WHEN** executing `openspec archive change-name`
+- **THEN** validate the change structure first
+- **AND** only proceed if validation passes
+- **AND** show validation errors if it fails
+
+#### Scenario: Force archive without validation
+
+- **WHEN** executing `openspec archive change-name --no-validate`
+- **THEN** skip validation (unsafe mode)
+- **AND** show warning about skipping validation
 
 ## Why These Decisions
 

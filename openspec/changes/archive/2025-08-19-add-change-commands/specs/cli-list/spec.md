@@ -1,6 +1,6 @@
 ## MODIFIED Requirements
 
-### Requirement: List Command Behavior
+### Requirement: Command Execution
 
 The current `list` command behavior SHALL be preserved but marked as deprecated.
 
