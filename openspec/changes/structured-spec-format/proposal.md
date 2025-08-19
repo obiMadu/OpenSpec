@@ -37,12 +37,4 @@ OpenSpec specifications lack a consistent structure that makes sections visually
 
 ## ADDED Requirements
 
-### Requirement: Structured Format Adoption
-
-OpenSpec conventions SHALL adopt the structured format with `### Requirement:` and `#### Scenario:` headers as the default for behavioral specifications.
-
-#### Scenario: Use structured headings
-
-- **WHEN** documenting behavioral requirements
-- **THEN** use `### Requirement:` for requirements
-- **AND** use `#### Scenario:` for scenarios with bold WHEN/THEN/AND keywords
+Removed from proposal to follow conventions. See `specs/openspec-conventions/spec.md` for the delta requirements content.

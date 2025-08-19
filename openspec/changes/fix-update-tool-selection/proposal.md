@@ -37,23 +37,4 @@ Users need predictable, tool-agnostic behavior from `openspec update`. Creating 
 
 ## ADDED Requirements
 
-### Requirement: Tool-Agnostic Update Behavior
-
-The update command SHALL update only existing AI tool configuration files and SHALL NOT create new ones.
-
-#### Scenario: Update only existing tool files
-
-- **WHEN** running `openspec update`
-- **THEN** update each AI tool configuration file that exists
-- **AND** do not create missing tool configuration files
-
-### Requirement: Preserve OpenSpec Files
-
-The update command SHALL always update core OpenSpec files and display a clear, ASCII-safe success message.
-
-#### Scenario: Successful update
-
-- **WHEN** the update completes successfully
-- **THEN** replace `openspec/README.md`
-- **AND** update existing AI tool configuration files within markers
-- **AND** display the message: "Updated OpenSpec instructions"
+Removed from proposal to follow conventions. See `specs/cli-update/spec.md` for the delta requirements content.
