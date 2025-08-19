@@ -188,7 +188,7 @@ export class ArchiveCommand {
           const prepared: Array<{ update: SpecUpdate; rebuilt: string; counts: { added: number; modified: number; removed: number; renamed: number } }> = [];
           try {
             for (const update of specUpdates) {
-              const built = await this.buildUpdatedSpec(update);
+              const built = await this.buildUpdatedSpec(update, changeName!);
               prepared.push({ update, rebuilt: built.rebuilt, counts: built.counts });
             }
           } catch (err: any) {
@@ -328,12 +328,95 @@ export class ArchiveCommand {
     return updates;
   }
 
-  private async buildUpdatedSpec(update: SpecUpdate): Promise<{ rebuilt: string; counts: { added: number; modified: number; removed: number; renamed: number } }> {
+  private async buildUpdatedSpec(update: SpecUpdate, changeName: string): Promise<{ rebuilt: string; counts: { added: number; modified: number; removed: number; renamed: number } }> {
     // Read change spec content (delta-format expected)
     const changeContent = await fs.readFile(update.source, 'utf-8');
 
     // Parse deltas from the change spec file
     const plan = parseDeltaSpec(changeContent);
+    const specName = path.basename(path.dirname(update.target));
+
+    // Pre-validate duplicates within sections
+    const addedNames = new Set<string>();
+    for (const add of plan.added) {
+      const name = normalizeRequirementName(add.name);
+      if (addedNames.has(name)) {
+        throw new Error(
+          `${specName} validation failed - duplicate requirement in ADDED for header "### Requirement: ${add.name}"`
+        );
+      }
+      addedNames.add(name);
+    }
+    const modifiedNames = new Set<string>();
+    for (const mod of plan.modified) {
+      const name = normalizeRequirementName(mod.name);
+      if (modifiedNames.has(name)) {
+        throw new Error(
+          `${specName} validation failed - duplicate requirement in MODIFIED for header "### Requirement: ${mod.name}"`
+        );
+      }
+      modifiedNames.add(name);
+    }
+    const removedNamesSet = new Set<string>();
+    for (const rem of plan.removed) {
+      const name = normalizeRequirementName(rem);
+      if (removedNamesSet.has(name)) {
+        throw new Error(
+          `${specName} validation failed - duplicate requirement in REMOVED for header "### Requirement: ${rem}"`
+        );
+      }
+      removedNamesSet.add(name);
+    }
+    const renamedFromSet = new Set<string>();
+    const renamedToSet = new Set<string>();
+    for (const { from, to } of plan.renamed) {
+      const fromNorm = normalizeRequirementName(from);
+      const toNorm = normalizeRequirementName(to);
+      if (renamedFromSet.has(fromNorm)) {
+        throw new Error(
+          `${specName} validation failed - duplicate FROM in RENAMED for header "### Requirement: ${from}"`
+        );
+      }
+      if (renamedToSet.has(toNorm)) {
+        throw new Error(
+          `${specName} validation failed - duplicate TO in RENAMED for header "### Requirement: ${to}"`
+        );
+      }
+      renamedFromSet.add(fromNorm);
+      renamedToSet.add(toNorm);
+    }
+
+    // Pre-validate cross-section conflicts
+    const conflicts: Array<{ name: string; a: string; b: string }> = [];
+    for (const n of modifiedNames) {
+      if (removedNamesSet.has(n)) conflicts.push({ name: n, a: 'MODIFIED', b: 'REMOVED' });
+      if (addedNames.has(n)) conflicts.push({ name: n, a: 'MODIFIED', b: 'ADDED' });
+    }
+    for (const n of addedNames) {
+      if (removedNamesSet.has(n)) conflicts.push({ name: n, a: 'ADDED', b: 'REMOVED' });
+    }
+    // Renamed interplay: MODIFIED must reference the NEW header, not FROM
+    for (const { from, to } of plan.renamed) {
+      const fromNorm = normalizeRequirementName(from);
+      const toNorm = normalizeRequirementName(to);
+      if (modifiedNames.has(fromNorm)) {
+        throw new Error(
+          `${specName} validation failed - when a rename exists, MODIFIED must reference the NEW header "### Requirement: ${to}"`
+        );
+      }
+      // Detect ADDED colliding with a RENAMED TO
+      if (addedNames.has(toNorm)) {
+        throw new Error(
+          `${specName} validation failed - RENAMED TO header collides with ADDED for "### Requirement: ${to}"`
+        );
+      }
+    }
+    if (conflicts.length > 0) {
+      const c = conflicts[0];
+      throw new Error(
+        `${specName} validation failed - requirement present in multiple sections (${c.a} and ${c.b}) for header "### Requirement: ${c.name}"`
+      );
+    }
     const hasAnyDelta = (plan.added.length + plan.modified.length + plan.removed.length + plan.renamed.length) > 0;
     if (!hasAnyDelta) {
       throw new Error(
@@ -350,11 +433,10 @@ export class ArchiveCommand {
       // Target spec does not exist; only ADDED operations are permitted
       if (plan.modified.length > 0 || plan.removed.length > 0 || plan.renamed.length > 0) {
         throw new Error(
-          `${path.basename(path.dirname(update.target))}: target spec does not exist; ` +
-          `only ADDED requirements are allowed for new specs.`
+          `${specName}: target spec does not exist; only ADDED requirements are allowed for new specs.`
         );
       }
-      targetContent = this.buildSpecSkeleton(path.basename(path.dirname(update.target)));
+      targetContent = this.buildSpecSkeleton(specName, changeName);
     }
 
     // Extract requirements section and build name->block map
@@ -371,12 +453,12 @@ export class ArchiveCommand {
       const to = normalizeRequirementName(r.to);
       if (!nameToBlock.has(from)) {
         throw new Error(
-          `${path.basename(path.dirname(update.target))} RENAMED failed for header "### Requirement: ${r.from}" — source not found`
+          `${specName} RENAMED failed for header "### Requirement: ${r.from}" - source not found`
         );
       }
       if (nameToBlock.has(to)) {
         throw new Error(
-          `${path.basename(path.dirname(update.target))} RENAMED failed for header "### Requirement: ${r.to}" — target already exists`
+          `${specName} RENAMED failed for header "### Requirement: ${r.to}" - target already exists`
         );
       }
       const block = nameToBlock.get(from)!;
@@ -397,7 +479,7 @@ export class ArchiveCommand {
       const key = normalizeRequirementName(name);
       if (!nameToBlock.has(key)) {
         throw new Error(
-          `${path.basename(path.dirname(update.target))} REMOVED failed for header "### Requirement: ${name}" — not found`
+          `${specName} REMOVED failed for header "### Requirement: ${name}" - not found`
         );
       }
       nameToBlock.delete(key);
@@ -408,14 +490,14 @@ export class ArchiveCommand {
       const key = normalizeRequirementName(mod.name);
       if (!nameToBlock.has(key)) {
         throw new Error(
-          `${path.basename(path.dirname(update.target))} MODIFIED failed for header "### Requirement: ${mod.name}" — not found`
+          `${specName} MODIFIED failed for header "### Requirement: ${mod.name}" - not found`
         );
       }
       // Replace block with provided raw (ensure header line matches key)
       const modHeaderMatch = mod.raw.split('\n')[0].match(/^###\s*Requirement:\s*(.+)\s*$/);
       if (!modHeaderMatch || normalizeRequirementName(modHeaderMatch[1]) !== key) {
         throw new Error(
-          `${path.basename(path.dirname(update.target))} MODIFIED failed for header "### Requirement: ${mod.name}" — header mismatch in content`
+          `${specName} MODIFIED failed for header "### Requirement: ${mod.name}" - header mismatch in content`
         );
       }
       nameToBlock.set(key, mod);
@@ -426,18 +508,13 @@ export class ArchiveCommand {
       const key = normalizeRequirementName(add.name);
       if (nameToBlock.has(key)) {
         throw new Error(
-          `${path.basename(path.dirname(update.target))} ADDED failed for header "### Requirement: ${add.name}" — already exists`
+          `${specName} ADDED failed for header "### Requirement: ${add.name}" - already exists`
         );
       }
       nameToBlock.set(key, add);
     }
 
-    // Validate duplicates
-    if (nameToBlock.size !== new Set(Array.from(nameToBlock.keys())).size) {
-      throw new Error(
-        `${path.basename(path.dirname(update.target))} validation failed — duplicate requirement headers detected`
-      );
-    }
+    // Duplicates within resulting map are implicitly prevented by key uniqueness.
 
     // Recompose requirements section preserving original ordering where possible
     const keptOrder: RequirementBlock[] = [];
@@ -500,9 +577,9 @@ export class ArchiveCommand {
     if (counts.renamed) console.log(`  → ${counts.renamed} renamed`);
   }
 
-  private buildSpecSkeleton(specFolderName: string): string {
+  private buildSpecSkeleton(specFolderName: string, changeName: string): string {
     const titleBase = specFolderName;
-    return `# ${titleBase} Specification\n\n## Purpose\nTBD — created by archiving change. Update Purpose after archive.\n\n## Requirements\n`;
+    return `# ${titleBase} Specification\n\n## Purpose\nTBD - created by archiving change ${changeName}. Update Purpose after archive.\n\n## Requirements\n`;
   }
 
   private getArchiveDate(): string {

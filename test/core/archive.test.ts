@@ -93,7 +93,7 @@ describe('ArchiveCommand', () => {
       );
     });
 
-    it('should update specs when archiving (delta-based ADDED)', async () => {
+    it('should update specs when archiving (delta-based ADDED) and include change name in skeleton', async () => {
       const changeName = 'spec-feature';
       const changeDir = path.join(tempDir, 'openspec', 'changes', changeName);
       const changeSpecDir = path.join(changeDir, 'specs', 'test-capability');
@@ -120,6 +120,7 @@ Then expected result happens`;
       const updatedContent = await fs.readFile(mainSpecPath, 'utf-8');
       expect(updatedContent).toContain('# test-capability Specification');
       expect(updatedContent).toContain('## Purpose');
+      expect(updatedContent).toContain(`created by archiving change ${changeName}`);
       expect(updatedContent).toContain('## Requirements');
       expect(updatedContent).toContain('### Requirement: The system SHALL provide test capability');
       expect(updatedContent).toContain('#### Scenario: Basic test');
@@ -392,7 +393,7 @@ new text
       await expect(fs.access(changeDir)).resolves.not.toThrow();
     });
 
-    it('should require MODIFIED to reference the NEW header when a rename exists', async () => {
+    it('should require MODIFIED to reference the NEW header when a rename exists (error format)', async () => {
       const changeName = 'rename-modify-new-header';
       const changeDir = path.join(tempDir, 'openspec', 'changes', changeName);
       const changeSpecDir = path.join(changeDir, 'specs', 'delta');
@@ -427,6 +428,13 @@ new body`;
       await archiveCommand.execute(changeName, { yes: true, noValidate: true });
       const unchanged = await fs.readFile(path.join(mainSpecDir, 'spec.md'), 'utf-8');
       expect(unchanged).toBe(mainContent);
+      // Assert error message format and abort notice
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining('delta validation failed')
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining('Aborted. No files were changed.')
+      );
 
       // Fix MODIFIED to reference New (should succeed)
       const goodDelta = `# Delta - Changes
@@ -501,6 +509,35 @@ E1 updated`);
       expect(z1).toContain('### Requirement: Z1');
       // changeDir should still exist
       await expect(fs.access(changeDir)).resolves.not.toThrow();
+    });
+
+    it('should display aggregated totals across multiple specs', async () => {
+      const changeName = 'multi-spec-totals';
+      const changeDir = path.join(tempDir, 'openspec', 'changes', changeName);
+      const spec1Dir = path.join(changeDir, 'specs', 'omega');
+      const spec2Dir = path.join(changeDir, 'specs', 'psi');
+      await fs.mkdir(spec1Dir, { recursive: true });
+      await fs.mkdir(spec2Dir, { recursive: true });
+
+      // Existing main specs
+      const omegaMain = path.join(tempDir, 'openspec', 'specs', 'omega', 'spec.md');
+      await fs.mkdir(path.dirname(omegaMain), { recursive: true });
+      await fs.writeFile(omegaMain, `# omega Specification\n\n## Purpose\nOmega purpose.\n\n## Requirements\n\n### Requirement: O1\no1`);
+
+      const psiMain = path.join(tempDir, 'openspec', 'specs', 'psi', 'spec.md');
+      await fs.mkdir(path.dirname(psiMain), { recursive: true });
+      await fs.writeFile(psiMain, `# psi Specification\n\n## Purpose\nPsi purpose.\n\n## Requirements\n\n### Requirement: P1\np1`);
+
+      // Deltas: omega add one, psi rename and modify -> totals: +1, ~1, -0, →1
+      await fs.writeFile(path.join(spec1Dir, 'spec.md'), `# Omega - Changes\n\n## ADDED Requirements\n\n### Requirement: O2\nnew`);
+      await fs.writeFile(path.join(spec2Dir, 'spec.md'), `# Psi - Changes\n\n## RENAMED Requirements\n- FROM: \`### Requirement: P1\`\n- TO: \`### Requirement: P2\`\n\n## MODIFIED Requirements\n### Requirement: P2\nupdated`);
+
+      await archiveCommand.execute(changeName, { yes: true, noValidate: true });
+
+      // Verify aggregated totals line was printed
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining('Totals: + 1, ~ 1, - 0, → 1')
+      );
     });
   });
 
