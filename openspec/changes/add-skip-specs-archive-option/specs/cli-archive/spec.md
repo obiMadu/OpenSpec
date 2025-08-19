@@ -165,3 +165,27 @@ The command SHALL handle various error conditions gracefully.
 **Non-blocking confirmation**: Declining spec updates doesn't cancel archiving - users can review specs and choose to update them separately if needed
 **--yes flag for automation**: Allows CI/CD pipelines to archive without interactive prompts while maintaining safety by default for manual use
 **--skip-specs flag**: Enables archiving of changes that don't modify specs (like infrastructure, tooling, or documentation changes) without unnecessary spec update prompts or operations
+
+## ADDED Requirements
+
+### Requirement: Skip Specs Option
+
+The archive command SHALL support a `--skip-specs` flag that skips all spec update operations and proceeds directly to archiving.
+
+#### Scenario: Skipping spec updates with flag
+
+- **WHEN** executing `openspec archive <change> --skip-specs`
+- **THEN** skip spec discovery and update confirmation
+- **AND** proceed directly to moving the change to archive
+- **AND** display a message indicating specs were skipped
+
+### Requirement: Non-blocking confirmation
+
+The archive operation SHALL proceed when the user declines spec updates instead of cancelling the entire operation.
+
+#### Scenario: User declines spec update confirmation
+
+- **WHEN** the user declines spec update confirmation
+- **THEN** skip spec updates
+- **AND** continue with the archive operation
+- **AND** display a success message indicating specs were not updated

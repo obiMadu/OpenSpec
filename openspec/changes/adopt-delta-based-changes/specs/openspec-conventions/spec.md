@@ -104,6 +104,14 @@ The archive process SHALL programmatically apply delta changes to current specif
 
 ### Requirement: Future State Storage
 
+The system SHALL no longer store complete future-state specifications in change proposals.
+
 **Reason for removal**: Replaced by delta-based change storage which provides better review experience and clearer change tracking.
 
 **Migration path**: All new changes must use delta format.
+
+#### Scenario: Deprecate future state storage
+
+- **WHEN** creating a new change proposal
+- **THEN** do not include full future-state specs
+- **AND** include only ADDED/MODIFIED/REMOVED/RENAMED requirements under the change's `specs/` directory
