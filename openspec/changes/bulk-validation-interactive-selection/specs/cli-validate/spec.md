@@ -13,6 +13,13 @@ The CLI SHALL provide a top-level `validate` command for validating changes and 
 - **AND** perform validation based on selection
 - **AND** display results with appropriate formatting
 
+#### Scenario: Non-interactive environments do not prompt
+
+- **GIVEN** stdin is not a TTY or `--no-interactive` is provided or environment variable `OPEN_SPEC_INTERACTIVE=0`
+- **WHEN** executing `openspec validate` without arguments
+- **THEN** do not prompt interactively
+- **AND** print a helpful hint listing available commands/flags and exit with code 1
+
 #### Scenario: Direct item validation
 
 - **WHEN** executing `openspec validate <item-name>`
@@ -31,6 +38,15 @@ The validate command SHALL support flags for bulk validation (--all) and filtere
 - **AND** validate all specs in openspec/specs/
 - **AND** display a summary showing passed/failed items
 - **AND** exit with code 1 if any validation fails
+
+#### Scenario: Scope of bulk validation
+
+- **WHEN** validating with `--all` or `--changes`
+- **THEN** include all change proposals under `openspec/changes/`
+- **AND** exclude the `openspec/changes/archive/` directory
+
+- **WHEN** validating with `--specs`
+- **THEN** include all specs that have a `spec.md` under `openspec/specs/<id>/spec.md`
 
 #### Scenario: Validate all changes
 
@@ -64,9 +80,62 @@ The validate command SHALL support standard validation options (--strict, --json
 - **AND** include detailed issues for each item
 - **AND** include summary statistics
 
+#### Scenario: JSON output schema for bulk validation
+
+- **WHEN** executing `openspec validate --all --json` (or `--changes` / `--specs`)
+- **THEN** output a JSON object with the following shape:
+  - `items`: Array of objects with fields `{ id: string, type: "change"|"spec", valid: boolean, issues: Issue[], durationMs: number }`
+  - `summary`: Object `{ totals: { items: number, passed: number, failed: number }, byType: { change?: { items: number, passed: number, failed: number }, spec?: { items: number, passed: number, failed: number } } }`
+  - `version`: String identifier for the schema (e.g., `"1.0"`)
+- **AND** exit with code 1 if any `items[].valid === false`
+
+Where `Issue` follows the existing per-item validation report shape `{ level: "ERROR"|"WARNING"|"INFO", path: string, message: string }`.
+
 #### Scenario: Show validation progress
 
 - **WHEN** validating multiple items (--all, --changes, or --specs)
 - **THEN** show progress indicator or status updates
 - **AND** indicate which item is currently being validated
 - **AND** display running count of passed/failed items
+
+#### Scenario: Concurrency limits for performance
+
+- **WHEN** validating multiple items
+- **THEN** run validations with a bounded concurrency (e.g., 4–8 in parallel)
+- **AND** ensure progress indicators remain responsive
+
+### Requirement: Item type detection and ambiguity handling
+
+#### Scenario: Direct item validation with automatic type detection
+
+- **WHEN** executing `openspec validate <item-name>`
+- **THEN** if `<item-name>` uniquely matches a change or a spec, validate that item
+
+#### Scenario: Ambiguity between change and spec names
+
+- **GIVEN** `<item-name>` exists both as a change and as a spec
+- **WHEN** executing `openspec validate <item-name>`
+- **THEN** print an ambiguity error explaining both matches
+- **AND** suggest passing `--type change` or `--type spec`, or using `openspec change validate` / `openspec spec validate`
+- **AND** exit with code 1 without performing validation
+
+#### Scenario: Unknown item name
+
+- **WHEN** the `<item-name>` matches neither a change nor a spec
+- **THEN** print a not-found error
+- **AND** show nearest-match suggestions when available
+- **AND** exit with code 1
+
+#### Scenario: Explicit type override
+
+- **WHEN** executing `openspec validate --type change <item>`
+- **THEN** treat `<item>` as a change ID and validate it (skipping auto-detection)
+
+- **WHEN** executing `openspec validate --type spec <item>`
+- **THEN** treat `<item>` as a spec ID and validate it (skipping auto-detection)
+
+### Requirement: Interactivity controls
+
+- The CLI SHALL respect `--no-interactive` to disable prompts.
+- The CLI SHALL respect `OPEN_SPEC_INTERACTIVE=0` to disable prompts globally.
+- Interactive prompts SHALL only be shown when stdin is a TTY and interactivity is not disabled.

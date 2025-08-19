@@ -13,3 +13,11 @@ The change show command SHALL support interactive selection when no change name 
 - **AND** allow the user to select a change to show
 - **AND** display the selected change content
 - **AND** maintain all existing show options (--json, --deltas-only)
+
+#### Scenario: Non-interactive fallback keeps current behavior
+
+- **GIVEN** stdin is not a TTY or `--no-interactive` is provided or environment variable `OPEN_SPEC_INTERACTIVE=0`
+- **WHEN** executing `openspec change show` without a change name
+- **THEN** do not prompt interactively
+- **AND** print the existing hint including available change IDs
+- **AND** set `process.exitCode = 1`
