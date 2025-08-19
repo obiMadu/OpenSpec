@@ -10,6 +10,7 @@ import { ArchiveCommand } from '../core/archive.js';
 import { registerSpecCommand } from '../commands/spec.js';
 import { ChangeCommand } from '../commands/change.js';
 import { ValidateCommand } from '../commands/validate.js';
+import { ShowCommand } from '../commands/show.js';
 
 const program = new Command();
 
@@ -117,7 +118,8 @@ changeCmd
   .option('--json', 'Output as JSON')
   .option('--deltas-only', 'Show only deltas (JSON only)')
   .option('--requirements-only', 'Alias for --deltas-only (deprecated)')
-  .action(async (changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean; deltasOnly?: boolean }) => {
+  .option('--no-interactive', 'Disable interactive prompts')
+  .action(async (changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean; deltasOnly?: boolean; noInteractive?: boolean }) => {
     try {
       const changeCommand = new ChangeCommand();
       await changeCommand.show(changeName, options);
@@ -193,6 +195,33 @@ program
     try {
       const validateCommand = new ValidateCommand();
       await validateCommand.execute(itemName, options);
+    } catch (error) {
+      console.log();
+      ora().fail(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+// Top-level show command
+program
+  .command('show [item-name]')
+  .description('Show a change or spec')
+  .option('--json', 'Output as JSON')
+  .option('--type <type>', 'Specify item type when ambiguous: change|spec')
+  .option('--no-interactive', 'Disable interactive prompts')
+  // change-only flags
+  .option('--deltas-only', 'Show only deltas (JSON only, change)')
+  .option('--requirements-only', 'Alias for --deltas-only (deprecated, change)')
+  // spec-only flags
+  .option('--requirements', 'JSON only: Show only requirements (exclude scenarios)')
+  .option('--no-scenarios', 'JSON only: Exclude scenario content')
+  .option('-r, --requirement <id>', 'JSON only: Show specific requirement by ID (1-based)')
+  // allow unknown options to pass-through to underlying command implementation
+  .allowUnknownOption(true)
+  .action(async (itemName?: string, options?: { json?: boolean; type?: string; noInteractive?: boolean; [k: string]: any }) => {
+    try {
+      const showCommand = new ShowCommand();
+      await showCommand.execute(itemName, options ?? {});
     } catch (error) {
       console.log();
       ora().fail(`Error: ${(error as Error).message}`);

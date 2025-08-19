@@ -49,6 +49,64 @@ openspec/
 │   └── archive/            # Completed changes (dated)
 ```
 
+## CLI Usage: show command
+
+Use the `show` command to display change proposals or specs with automatic detection and interactive selection.
+
+- Interactive (no args, in a TTY):
+
+```bash
+openspec show
+# → prompts to pick change/spec, then item
+```
+
+- Direct item (auto-detect type):
+
+```bash
+openspec show demo            # shows change 'demo'
+openspec show auth            # shows spec 'auth'
+```
+
+- Disambiguation when names collide:
+
+```bash
+openspec show foo             # if both change/spec exist → error suggests --type
+openspec show foo --type spec # forces spec
+openspec show foo --type change
+```
+
+- Common flags:
+
+```bash
+# JSON output (both types)
+openspec show <item> --json
+
+# Change-only flags
+openspec show <change-id> --json --deltas-only
+openspec show <change-id> --json --requirements-only  # deprecated alias of --deltas-only
+
+# Spec-only flags
+openspec show <spec-id> --json --requirements
+openspec show <spec-id> --json --no-scenarios
+openspec show <spec-id> --json -r 1                  # show requirement 1 only (1-based)
+```
+
+- Interactivity controls:
+
+```bash
+openspec show --no-interactive  # never prompt
+
+# or via env
+OPEN_SPEC_INTERACTIVE=0 openspec show
+```
+
+- Backwards compatibility (subcommands also support interactive selection when no arg):
+
+```bash
+openspec change show [change-id] [--json] [--deltas-only]
+openspec spec show [spec-id] [--json] [--requirements] [--no-scenarios] [-r N]
+```
+
 ### Capability Organization
 
 **Use capabilities, not features** - Each directory under `specs/` represents a single, focused responsibility:
