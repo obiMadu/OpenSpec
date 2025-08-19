@@ -7,13 +7,13 @@ Currently, users must validate changes and specs individually by specifying each
 
 ## What Changes
 
-- Add new top-level CLI commands (`validate-all`, `validate`, `show`) for bulk operations and interactive selection
-- Create new spec files to define these commands' behavior
-- Enhance existing spec and change subcommands to support interactive selection when no arguments provided
+- Add new `validate-all` command for bulk validation of all changes and specs
+- Enhance `change validate` and `change show` to support interactive selection when no arguments provided
+- Enhance `spec validate` and `spec show` to support interactive selection when no arguments provided  
 - Maintain backward compatibility - all existing commands with arguments work unchanged
 
 ## Impact
 
-- New specs to create: cli-validate-all, cli-validate, cli-show
-- Specs to modify in other changes: cli-change, cli-spec
-- Affected code: src/cli/index.ts, src/commands/spec.ts, src/commands/change.ts, src/commands/validate-all.ts (new), src/commands/validate.ts (new), src/commands/show.ts (new)
+- New specs to create: cli-validate-all
+- Specs to enhance: cli-change, cli-spec
+- Affected code: src/cli/index.ts, src/commands/spec.ts, src/commands/change.ts, src/commands/validate-all.ts (new)
