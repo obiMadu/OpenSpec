@@ -34,7 +34,3 @@ OpenSpec specifications lack a consistent structure that makes sections visually
 - Affected code: None initially - this is a documentation standard enhancement
 - Migration: Gradual - existing specs migrate as they're modified
 - Tooling: Enables future parsing tools but doesn't require them
-
-## ADDED Requirements
-
-Removed from proposal to follow conventions. See `specs/openspec-conventions/spec.md` for the delta requirements content.
