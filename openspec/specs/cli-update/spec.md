@@ -4,7 +4,7 @@
 
 As a developer using OpenSpec, I want to update the OpenSpec instructions in my project when new versions are released, so that I can benefit from improvements to AI agent instructions.
 
-## Core Requirements
+## Requirements
 
 ### Requirement: Update Behavior
 
