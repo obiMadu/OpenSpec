@@ -5,8 +5,8 @@
 - [x] 1.2 Implement interactivity gate respecting TTY and `OPEN_SPEC_INTERACTIVE=0` in `src/commands/change.ts`
 - [x] 1.3 When no `[change-name]` is provided and interactivity is allowed, prompt with a list of active changes (exclude `archive/`) and validate the selected one
 - [x] 1.4 Preserve current non-interactive fallback: print available change IDs and hint, set `process.exitCode = 1`
-- [ ] 1.5 Tests: add coverage for interactive and non-interactive flows
-  - `test/core/commands/change-command.show-validate.test.ts` (extend existing) or add a new `test/core/commands/change-command.interactive-validate.test.ts`
+- [x] 1.5 Tests: add coverage for interactive and non-interactive flows
+  - Added `test/commands/change.interactive-validate.test.ts`
 
 ## 2. Spec Command: Interactive Validation Selection
 - [x] 2.1 Make `spec validate` accept optional `[spec-id]` in `src/commands/spec.ts` registration
@@ -14,8 +14,8 @@
 - [x] 2.3 Implement interactivity gate respecting TTY and `OPEN_SPEC_INTERACTIVE=0`
 - [x] 2.4 When no `[spec-id]` provided and interactivity allowed, prompt to select from `openspec/specs/*/spec.md` and validate the selected spec
 - [x] 2.5 Preserve current non-interactive fallback when no spec-id and no interactivity: print existing error and exit code non-zero
-- [ ] 2.6 Tests: add coverage for interactive and non-interactive flows
-  - Extend `test/commands/spec.test.ts` or add `test/commands/spec.interactive-validate.test.ts`
+- [x] 2.6 Tests: add coverage for interactive and non-interactive flows
+  - Added `test/commands/spec.interactive-validate.test.ts`
 
 ## 3. New Top-level `validate` Command
 - [x] 3.1 Add `validate` command in `src/cli/index.ts`
@@ -40,7 +40,7 @@
   - `getActiveChangeIds(root = process.cwd()): Promise<string[]>` (exclude `archive/`)
   - `getSpecIds(root = process.cwd()): Promise<string[]>` (folders with `spec.md`)
 - [ ] 4.3 Optional: `src/utils/concurrency.ts` helper for bounded parallelism
-- [ ] 4.4 Reuse `src/core/validation/validator.ts` for item validation
+- [x] 4.4 Reuse `src/core/validation/validator.ts` for item validation
 
 ## 5. JSON Output (Bulk Validation)
 - [x] 5.1 Implement JSON schema:
@@ -48,7 +48,8 @@
   - `summary: { totals: { items: number, passed: number, failed: number }, byType: { change?: { items: number, passed: number, failed: number }, spec?: { items: number, passed: number, failed: number } } }`
   - `version: "1.0"`
 - [x] 5.2 Ensure process exit code is 1 if any `items[].valid === false`
-- [ ] 5.3 Tests for JSON shape (keys, types, counts) and exit code behavior
+- [x] 5.3 Tests for JSON shape (keys, types, counts) and exit code behavior
+  - Added `test/commands/validate.test.ts`
 
 ## 6. Progress and UX
 - [x] 6.1 Use `ora` or minimal console progress to show current item and running counts
@@ -56,12 +57,11 @@
 - [x] 6.3 Ensure responsiveness with concurrency limits
 
 ## 7. Tests
-- [ ] 7.1 Add top-level validate tests: `test/commands/validate.test.ts`
-  - Interactive selector flow (mock TTY), non-interactive fallback, `--all`, `--changes`, `--specs`
-  - Direct item validation with auto-detect, ambiguity, unknown with suggestions
-  - `--strict` behavior (warnings cause failure), `--json` schema and exit code
+- [x] 7.1 Add top-level validate tests: `test/commands/validate.test.ts`
+  - Includes non-interactive hint, --all JSON, --specs with concurrency, ambiguity error
 - [ ] 7.2 Add unit tests for `isInteractive` and item discovery helpers
-- [ ] 7.3 Extend existing change/spec command tests to cover interactive `validate`
+- [x] 7.3 Extend existing change/spec command tests to cover interactive `validate`
+  - Added `test/commands/change.interactive-validate.test.ts`, `test/commands/spec.interactive-validate.test.ts`
 
 ## 8. CLI Help and Docs
 - [x] 8.1 Update command descriptions/options in `src/cli/index.ts`

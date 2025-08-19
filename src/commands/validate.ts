@@ -15,6 +15,7 @@ interface ExecuteOptions {
   strict?: boolean;
   json?: boolean;
   noInteractive?: boolean;
+  concurrency?: string;
 }
 
 interface BulkItemResult {
@@ -34,14 +35,14 @@ export class ValidateCommand {
       await this.runBulkValidation({
         changes: !!options.all || !!options.changes,
         specs: !!options.all || !!options.specs,
-      }, { strict: !!options.strict, json: !!options.json });
+      }, { strict: !!options.strict, json: !!options.json, concurrency: options.concurrency });
       return;
     }
 
     // No item and no flags
     if (!itemName) {
       if (interactive) {
-        await this.runInteractiveSelector({ strict: !!options.strict, json: !!options.json });
+        await this.runInteractiveSelector({ strict: !!options.strict, json: !!options.json, concurrency: options.concurrency });
         return;
       }
       this.printNonInteractiveHint();
@@ -61,7 +62,7 @@ export class ValidateCommand {
     return undefined;
   }
 
-  private async runInteractiveSelector(opts: { strict: boolean; json: boolean }): Promise<void> {
+  private async runInteractiveSelector(opts: { strict: boolean; json: boolean; concurrency?: string }): Promise<void> {
     const choice = await select({
       message: 'What would you like to validate?',
       choices: [
@@ -161,14 +162,16 @@ export class ValidateCommand {
     }
   }
 
-  private async runBulkValidation(scope: { changes: boolean; specs: boolean }, opts: { strict: boolean; json: boolean }): Promise<void> {
+  private async runBulkValidation(scope: { changes: boolean; specs: boolean }, opts: { strict: boolean; json: boolean; concurrency?: string }): Promise<void> {
     const spinner = !opts.json ? ora('Validating...').start() : undefined;
     const [changeIds, specIds] = await Promise.all([
       scope.changes ? getActiveChangeIds() : Promise.resolve<string[]>([]),
       scope.specs ? getSpecIds() : Promise.resolve<string[]>([]),
     ]);
 
-    const concurrency = 6;
+    const DEFAULT_CONCURRENCY = 6;
+    const maxSuggestions = 5; // used by nearestMatches
+    const concurrency = normalizeConcurrency(opts.concurrency) ?? normalizeConcurrency(process.env.OPENSPEC_CONCURRENCY) ?? DEFAULT_CONCURRENCY;
     const validator = new Validator(opts.strict);
     const queue: Array<() => Promise<BulkItemResult>> = [];
 
@@ -209,8 +212,9 @@ export class ValidateCommand {
               results.push(res);
               if (res.valid) passed++; else failed++;
             })
-            .catch(() => {
-              const res: BulkItemResult = { id: 'unknown', type: 'change', valid: false, issues: [{ level: 'ERROR', path: 'file', message: 'Unknown error' }], durationMs: 0 };
+            .catch((error: any) => {
+              const message = error?.message || 'Unknown error';
+              const res: BulkItemResult = { id: getPlannedId(currentIndex, changeIds, specIds) ?? 'unknown', type: getPlannedType(currentIndex, changeIds, specIds) ?? 'change', valid: false, issues: [{ level: 'ERROR', path: 'file', message }], durationMs: 0 };
               results.push(res);
               failed++;
             })
@@ -281,6 +285,28 @@ function levenshtein(a: string, b: string): number {
     }
   }
   return dp[m][n];
+}
+
+function normalizeConcurrency(value?: string): number | undefined {
+  if (!value) return undefined;
+  const n = parseInt(value, 10);
+  if (Number.isNaN(n) || n <= 0) return undefined;
+  return n;
+}
+
+function getPlannedId(index: number, changeIds: string[], specIds: string[]): string | undefined {
+  const totalChanges = changeIds.length;
+  if (index < totalChanges) return changeIds[index];
+  const specIndex = index - totalChanges;
+  return specIds[specIndex];
+}
+
+function getPlannedType(index: number, changeIds: string[], specIds: string[]): ItemType | undefined {
+  const totalChanges = changeIds.length;
+  if (index < totalChanges) return 'change';
+  const specIndex = index - totalChanges;
+  if (specIndex >= 0 && specIndex < specIds.length) return 'spec';
+  return undefined;
 }
 
 
