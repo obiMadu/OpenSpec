@@ -2,11 +2,12 @@
 
 ## Approach
 
-### Instruction Brevity
-- Reduce total instruction length by ~50% while maintaining all critical information
-- Use imperative mood ("Create proposal" vs "You should create a proposal")
-- Replace verbose explanations with concise bullet points
-- Consolidate related sections to avoid repetition
+### Information Architecture
+- **Front-load critical information** - Three-stage workflow comes first
+- **Clear hierarchy** - Core Workflow → Quick Start → Commands → Details → Edge Cases
+- **50% length reduction** - Target ~285 lines from current ~575 lines
+- **Imperative mood** - "Create proposal" vs "You should create a proposal"
+- **Bullet points over paragraphs** - Scannable, concise information
 
 ### Three-Stage Workflow Documentation
 The workflow is now prominently featured as a core concept:
@@ -22,12 +23,49 @@ This structure helps agents understand the lifecycle and their role at each stag
 - Include all current flags and options
 - Remove references to deprecated noun-first commands
 
-### Best Practices Section
-Added explicit guidance for AI agents:
-- Be concise (avoid preambles)
-- Be specific (use exact references)
-- Start simple (minimal first implementation)
-- Justify complexity (require data/metrics)
+### Agent-Specific Enhancements
+Based on industry best practices for coding agents (Claude Code, Cursor, etc.):
+
+**Decision Clarity**
+- Clear decision trees eliminating ambiguous conditions
+- Concrete examples for each decision branch
+- Simplified bug vs feature determination
+
+**Tool Usage Guidance**
+- Tool selection matrix (when to use Grep vs Glob vs Read)
+- Error recovery patterns for common failures
+- Verification workflows to confirm correctness
+
+**Context Management**
+- "Before Any Task" checklist for gathering context
+- What to read before starting any work
+- How to maintain state across interactions
+
+**Best Practices**
+- Be concise (one-line answers when appropriate)
+- Be specific (file.ts:42 line references)
+- Start simple (<100 lines, single-file defaults)
+- Justify complexity (require metrics/data)
+
+## Design Rationale
+
+### Why These Changes Matter
+
+**Cognitive Load Reduction**
+- Agents process instructions better with clear structure
+- Front-loading critical info reduces scanning time
+- Decision trees eliminate analysis paralysis
+
+**Industry Alignment**
+- Follows patterns proven effective in Claude Code, Cursor, GitHub Copilot
+- Addresses common failure modes (ambiguous decisions, missing context)
+- Optimizes for LLM strengths (pattern matching) vs weaknesses (calculations)
+
+**Practical Impact**
+- Faster agent comprehension of tasks
+- Fewer misinterpretations of requirements
+- More consistent implementation quality
+- Better error recovery when things go wrong
 
 ## Trade-offs
 

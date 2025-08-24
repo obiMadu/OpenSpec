@@ -1,25 +1,41 @@
 # Implementation Tasks
 
-## 1. Update OpenSpec README.md
-- [ ] 1.1 Replace current README.md content with streamlined version
-- [ ] 1.2 Ensure three-stage workflow is clearly documented
-- [ ] 1.3 Update CLI command documentation to match current implementation
-- [ ] 1.4 Add best practices section for AI agents
-- [ ] 1.5 Remove redundant or verbose sections
+## 1. Restructure OpenSpec README.md
+- [ ] 1.1 Front-load the three-stage workflow as primary content
+- [ ] 1.2 Restructure with hierarchy: Core Workflow → Quick Start → Commands → Details → Edge Cases
+- [ ] 1.3 Reduce total length by 50% (target: ~285 lines from current ~575)
+- [ ] 1.4 Add "Before Any Task" context-gathering checklist
 
-## 2. Update CLAUDE.md Template
-- [ ] 2.1 Update `src/core/templates/claude-template.ts` with new template content
-- [ ] 2.2 Include three-stage workflow documentation
-- [ ] 2.3 Add quick CLI reference section
-- [ ] 2.4 Ensure complexity management section is retained
+## 2. Add Decision Clarity
+- [ ] 2.1 Create clear decision trees for "Create Proposal?" scenarios
+- [ ] 2.2 Remove ambiguous conditions that confuse agents
+- [ ] 2.3 Add concrete examples for each decision branch
+- [ ] 2.4 Simplify bug vs feature determination logic
 
-## 3. Testing and Validation
-- [ ] 3.1 Run `openspec init` in a test directory to verify new CLAUDE.md generation
-- [ ] 3.2 Validate that all CLI commands documented actually work
-- [ ] 3.3 Run `openspec validate` to ensure no structural issues
+## 3. Update CLI Documentation
+- [ ] 3.1 Document `openspec show` with all flags and interactive mode
+- [ ] 3.2 Document `openspec archive` with --skip-specs option
+- [ ] 3.3 Document `openspec validate` with --strict and batch modes
+- [ ] 3.4 Remove all deprecated noun-first command references
+- [ ] 3.5 Add concrete usage examples for each command variation
 
-## 4. Documentation Review
-- [ ] 4.1 Ensure all instructions are concise and action-oriented
-- [ ] 4.2 Remove any ambiguous language
-- [ ] 4.3 Verify file paths and examples are accurate
-- [ ] 4.4 Check that the instructions are <50% of original length while retaining all critical information
+## 4. Add Agent-Specific Sections
+- [ ] 4.1 Create tool selection matrix (Grep vs Glob vs Read)
+- [ ] 4.2 Add error recovery patterns section
+- [ ] 4.3 Add context management guide
+- [ ] 4.4 Add verification workflows section
+- [ ] 4.5 Add best practices section (concise, specific, simple)
+
+## 5. Update CLAUDE.md Template
+- [ ] 5.1 Update `src/core/templates/claude-template.ts` with streamlined content
+- [ ] 5.2 Include three-stage workflow prominently
+- [ ] 5.3 Add quick CLI reference
+- [ ] 5.4 Add "Before Any Task" checklist
+- [ ] 5.5 Keep complexity management principles
+
+## 6. Testing and Validation
+- [ ] 6.1 Test all documented CLI commands for accuracy
+- [ ] 6.2 Run `openspec init` to verify CLAUDE.md generation
+- [ ] 6.3 Validate instruction clarity with example scenarios
+- [ ] 6.4 Ensure no critical information was lost in streamlining
+- [ ] 6.5 Verify decision trees eliminate ambiguity

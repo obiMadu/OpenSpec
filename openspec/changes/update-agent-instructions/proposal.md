@@ -6,19 +6,38 @@ The current OpenSpec agent instructions need updates to follow best practices fo
 
 ## What Changes
 
-- **Streamline agent instructions** in README.md to be more concise and action-oriented
-- **Update CLAUDE.md template** to include the complete workflow documentation
-- **Document the 3-stage workflow clearly**:
+### Core Structure Improvements
+- **Front-load the 3-stage workflow** as the primary mental model:
   1. Creating a change proposal (proposal.md, spec deltas, design.md, tasks.md)
   2. Implementing a change proposal (following tasks, marking completion)
   3. Archiving the change proposal (using archive command after deployment)
-- **Update CLI command documentation** to match current implementation:
-  - Document `openspec show` command with proper flags and interactive mode
-  - Document `openspec archive` command with --skip-specs flag
-  - Document `openspec validate` command options
-  - Remove references to deprecated commands
-- **Add best practices section** for AI agents on being brief and avoiding ambiguity
-- **Consolidate redundant sections** to reduce overall instruction length
+- **Reduce instruction length by 50%** while maintaining all critical information
+- **Restructure with clear hierarchy**: Core Workflow → Quick Start → Commands → Details → Edge Cases
+
+### Decision Clarity Enhancements
+- **Add clear decision trees** for common scenarios (bug vs feature, proposal needed vs not)
+- **Remove ambiguous conditions** that confuse agent decision-making
+- **Add "Before Any Task" checklist** for context gathering
+
+### CLI Documentation Updates
+- **Document current commands** with all flags and interactive modes:
+  - `openspec show` - unified display with auto-detection
+  - `openspec archive` - with --skip-specs for tooling changes
+  - `openspec validate` - with --strict and batch modes
+- **Remove deprecated command references** (noun-first patterns)
+- **Add concrete examples** for each command variation
+
+### Agent-Specific Improvements
+- **Tool selection matrix** - When to use Grep vs Glob vs Read
+- **Error recovery patterns** - How to handle common failures
+- **Context management guide** - What to read before starting tasks
+- **Verification workflows** - How to confirm changes are correct
+
+### Best Practices Section
+- **Be concise** - One-line answers when appropriate
+- **Be specific** - Use exact file paths and line numbers (file.ts:42)
+- **Start simple** - Default to <100 lines, single-file implementations
+- **Justify complexity** - Require data/metrics for any optimization
 
 ## Impact
 
