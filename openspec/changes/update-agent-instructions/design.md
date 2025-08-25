@@ -18,13 +18,20 @@ The workflow is now prominently featured as a core concept:
 This structure helps agents understand the lifecycle and their role at each stage.
 
 ### CLI Documentation Updates
-- Focus on the unified `openspec show` command as primary interface
-- Document interactive mode capabilities
-- Include all current flags and options
-- Remove references to deprecated noun-first commands
+- **Comprehensive command coverage** - All 9 primary commands documented
+- **`openspec list` prominence** - Essential for discovering changes and specs
+- **Interactive mode documentation** - How agents can use prompts effectively
+- **Complete flag documentation** - All options like --json, --type, --skip-specs
+- **Deprecation cleanup** - Remove noun-first patterns (openspec change show)
 
 ### Agent-Specific Enhancements
 Based on industry best practices for coding agents (Claude Code, Cursor, etc.):
+
+**Spec Discovery Workflow**
+- Always check existing specs before creating new ones
+- Use `openspec list --specs` to discover current capabilities
+- Prefer modifying existing specs over creating duplicates
+- Prevents fragmentation and maintains coherent architecture
 
 **Decision Clarity**
 - Clear decision trees eliminating ambiguous conditions

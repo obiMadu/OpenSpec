@@ -18,16 +18,33 @@ The current OpenSpec agent instructions need updates to follow best practices fo
 - **Add clear decision trees** for common scenarios (bug vs feature, proposal needed vs not)
 - **Remove ambiguous conditions** that confuse agent decision-making
 - **Add "Before Any Task" checklist** for context gathering
+- **Add "Before Creating Specs" rule** - Always check existing specs first to avoid duplicates
 
 ### CLI Documentation Updates
-- **Document current commands** with all flags and interactive modes:
-  - `openspec show` - unified display with auto-detection
-  - `openspec archive` - with --skip-specs for tooling changes
-  - `openspec validate` - with --strict and batch modes
-- **Remove deprecated command references** (noun-first patterns)
+- **Complete command documentation** with all current functionality:
+  - `openspec init [path]` - Initialize OpenSpec in a project
+  - `openspec list` - List all active changes (default)
+  - `openspec list --specs` - List all specifications
+  - `openspec show [item]` - Display change or spec with auto-detection
+  - `openspec show` - Interactive mode for selection
+  - `openspec diff [change]` - Show spec differences for a change
+  - `openspec validate [item]` - Validate changes or specs
+  - `openspec archive [change]` - Archive completed change after deployment
+  - `openspec update [path]` - Update OpenSpec instruction files
+- **Document all flags and options**:
+  - `--json` output format for programmatic use
+  - `--type change|spec` for disambiguation
+  - `--skip-specs` for tooling-only archives
+  - `--strict` for strict validation mode
+  - `--no-interactive` to disable prompts
+- **Remove deprecated command references** (noun-first patterns like `openspec change show`)
 - **Add concrete examples** for each command variation
 
 ### Agent-Specific Improvements
+- **Spec discovery workflow** - Always check existing specs before creating new ones:
+  - Use `openspec list --specs` to see all current specs
+  - Check if capability already exists before creating
+  - Prefer modifying existing specs over creating duplicates
 - **Tool selection matrix** - When to use Grep vs Glob vs Read
 - **Error recovery patterns** - How to handle common failures
 - **Context management guide** - What to read before starting tasks
