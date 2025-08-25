@@ -7,11 +7,12 @@
 - [ ] 1.4 Add "Before Any Task" context-gathering checklist
 - [ ] 1.5 Add "Before Creating Specs" rule to check existing specs first
 
-## 2. Add Decision Clarity
+## 2. Add Decision Clarity  
 - [ ] 2.1 Create clear decision trees for "Create Proposal?" scenarios
 - [ ] 2.2 Remove ambiguous conditions that confuse agents
 - [ ] 2.3 Add concrete examples for each decision branch
 - [ ] 2.4 Simplify bug vs feature determination logic
+- [ ] 2.5 Add explicit Stage 2 implementation steps (read → implement → mark complete)
 
 ## 3. Update CLI Documentation
 - [ ] 3.1 Document `openspec list` and `openspec list --specs` commands
@@ -25,12 +26,13 @@
 - [ ] 3.9 Document all flags: --json, --type, --no-interactive, etc.
 
 ## 4. Add Agent-Specific Sections
-- [ ] 4.1 Add spec discovery workflow (check existing before creating)
-- [ ] 4.2 Create tool selection matrix (Grep vs Glob vs Read)
-- [ ] 4.3 Add error recovery patterns section
-- [ ] 4.4 Add context management guide
-- [ ] 4.5 Add verification workflows section
-- [ ] 4.6 Add best practices section (concise, specific, simple)
+- [ ] 4.1 Add implementation workflow (read docs → implement tasks → mark complete)
+- [ ] 4.2 Add spec discovery workflow (check existing before creating)
+- [ ] 4.3 Create tool selection matrix (Grep vs Glob vs Read)
+- [ ] 4.4 Add error recovery patterns section
+- [ ] 4.5 Add context management guide
+- [ ] 4.6 Add verification workflows section
+- [ ] 4.7 Add best practices section (concise, specific, simple)
 
 ## 5. Update CLAUDE.md Template
 - [ ] 5.1 Update `src/core/templates/claude-template.ts` with streamlined content

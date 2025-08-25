@@ -12,10 +12,15 @@
 ### Three-Stage Workflow Documentation
 The workflow is now prominently featured as a core concept:
 1. **Creating** - Proposal generation phase
-2. **Implementing** - Code development phase  
+2. **Implementing** - Code development phase with explicit steps:
+   - Read proposal.md for understanding
+   - Read design.md for technical context
+   - Read tasks.md for checklist
+   - Implement tasks sequentially
+   - Mark complete immediately after each task
 3. **Archiving** - Post-deployment finalization phase
 
-This structure helps agents understand the lifecycle and their role at each stage.
+This structure helps agents understand the lifecycle and their role at each stage. The implementation phase is particularly detailed to prevent common mistakes like skipping documentation or batching task completion.
 
 ### CLI Documentation Updates
 - **Comprehensive command coverage** - All 9 primary commands documented
@@ -26,6 +31,13 @@ This structure helps agents understand the lifecycle and their role at each stag
 
 ### Agent-Specific Enhancements
 Based on industry best practices for coding agents (Claude Code, Cursor, etc.):
+
+**Implementation Workflow**
+- Explicit steps prevent skipping critical context
+- Reading proposal/design first ensures understanding before coding
+- Sequential task completion maintains focus
+- Immediate marking prevents losing track of progress
+- Addresses common failure mode: jumping straight to code
 
 **Spec Discovery Workflow**
 - Always check existing specs before creating new ones

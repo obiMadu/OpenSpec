@@ -9,7 +9,12 @@ The current OpenSpec agent instructions need updates to follow best practices fo
 ### Core Structure Improvements
 - **Front-load the 3-stage workflow** as the primary mental model:
   1. Creating a change proposal (proposal.md, spec deltas, design.md, tasks.md)
-  2. Implementing a change proposal (following tasks, marking completion)
+  2. Implementing a change proposal:
+     - First read proposal.md to understand the change
+     - Read design.md if it exists for technical context
+     - Read tasks.md for the implementation checklist
+     - Complete tasks one by one
+     - Mark each task complete immediately after finishing
   3. Archiving the change proposal (using archive command after deployment)
 - **Reduce instruction length by 50%** while maintaining all critical information
 - **Restructure with clear hierarchy**: Core Workflow → Quick Start → Commands → Details → Edge Cases
@@ -41,6 +46,13 @@ The current OpenSpec agent instructions need updates to follow best practices fo
 - **Add concrete examples** for each command variation
 
 ### Agent-Specific Improvements
+- **Implementation workflow** - Clear step-by-step process:
+  1. Read proposal.md to understand what's being built
+  2. Read design.md (if exists) for technical decisions
+  3. Read tasks.md for the implementation checklist
+  4. Implement tasks one by one in order
+  5. Mark each task complete immediately: `- [x] Task completed`
+  6. Never skip ahead or batch task completion
 - **Spec discovery workflow** - Always check existing specs before creating new ones:
   - Use `openspec list --specs` to see all current specs
   - Check if capability already exists before creating
