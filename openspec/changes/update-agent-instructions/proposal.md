@@ -44,6 +44,43 @@ The current OpenSpec agent instructions need updates to follow best practices fo
   - `--no-interactive` to disable prompts
 - **Remove deprecated command references** (noun-first patterns like `openspec change show`)
 - **Add concrete examples** for each command variation
+- **Document debugging commands**:
+  - `openspec show [change] --json --deltas-only` for inspecting deltas
+  - `openspec validate [change] --strict` for comprehensive validation
+
+### Spec File Structure Documentation
+- **Complete spec file examples** showing proper structure:
+  ```markdown
+  ## ADDED Requirements
+  ### Requirement: Clear requirement statement
+  The system SHALL provide the functionality...
+  
+  #### Scenario: Descriptive scenario name
+  - **WHEN** condition occurs
+  - **THEN** expected outcome
+  - **AND** additional outcomes
+  ```
+- **Scenario formatting requirements** (critical - most common error):
+  - MUST use `#### Scenario:` headers (4 hashtags)
+  - NOT bullet lists or bold text
+  - Each requirement MUST have at least one scenario
+- **Delta file location** - Clear explanation:
+  - Spec files go in `changes/{name}/specs/` directory
+  - Deltas are automatically extracted from these files
+  - Use operation prefixes: ADDED, MODIFIED, REMOVED, RENAMED
+
+### Troubleshooting Section
+- **Common errors and solutions**:
+  - "Change must have at least one delta" → Check specs/ directory exists with .md files
+  - "Requirement must have at least one scenario" → Check scenario uses `#### Scenario:` format
+  - Silent scenario parsing failures → Verify exact header format
+- **Delta detection debugging**:
+  - Use `openspec show [change] --json --deltas-only` to inspect parsed deltas
+  - Check that spec files have operation prefixes (## ADDED Requirements)
+  - Verify specs/ subdirectory structure
+- **Validation best practices**:
+  - Always use `--strict` flag for comprehensive checks
+  - Use JSON output for debugging: `--json | jq '.deltas'`
 
 ### Agent-Specific Improvements
 - **Implementation workflow** - Clear step-by-step process:

@@ -60,6 +60,19 @@ Based on industry best practices for coding agents (Claude Code, Cursor, etc.):
 - What to read before starting any work
 - How to maintain state across interactions
 
+**Spec File Structure Documentation**
+- Complete examples with ADDED/MODIFIED/REMOVED sections
+- Critical scenario formatting (#### Scenario: headers)
+- Delta file location clarity (changes/{name}/specs/)
+- Addresses most common creation errors from retrospective
+
+**Troubleshooting and Debugging**
+- Common error messages with solutions
+- Delta detection debugging steps
+- Validation best practices
+- JSON output for inspection
+- Prevents hours of frustration from silent failures
+
 **Best Practices**
 - Be concise (one-line answers when appropriate)
 - Be specific (file.ts:42 line references)
@@ -80,11 +93,18 @@ Based on industry best practices for coding agents (Claude Code, Cursor, etc.):
 - Addresses common failure modes (ambiguous decisions, missing context)
 - Optimizes for LLM strengths (pattern matching) vs weaknesses (calculations)
 
+**Addressing Critical Pain Points (from Retrospective)**
+- **Scenario formatting** - Biggest struggle, now explicitly documented with examples
+- **Complete spec structure** - Full examples prevent structural errors
+- **Delta detection issues** - Debugging commands help diagnose problems
+- **Silent parsing failures** - Troubleshooting section explains common issues
+
 **Practical Impact**
 - Faster agent comprehension of tasks
 - Fewer misinterpretations of requirements
 - More consistent implementation quality
 - Better error recovery when things go wrong
+- Prevents the most common errors identified in user experience
 
 ## Trade-offs
 
