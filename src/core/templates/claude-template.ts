@@ -1,26 +1,95 @@
 export const claudeTemplate = `# OpenSpec Project
 
-This document provides instructions for AI coding assistants on how to use OpenSpec conventions for spec-driven development. Follow these rules precisely when working on OpenSpec-enabled projects.
-
 This project uses OpenSpec for spec-driven development. Specifications are the source of truth.
 
 See @openspec/README.md for detailed conventions and guidelines.
 
+## Three-Stage Workflow
+
+### Stage 1: Creating Changes
+Create proposal for: features, breaking changes, architecture changes
+Skip proposal for: bug fixes, typos, non-breaking updates
+
+### Stage 2: Implementing Changes
+1. Read proposal.md to understand the change
+2. Read design.md if it exists for technical context
+3. Read tasks.md for implementation checklist
+4. Complete tasks one by one
+5. Mark each task complete immediately: \`- [x]\`
+
+### Stage 3: Archiving
+After deployment, use \`openspec archive [change]\` (add \`--skip-specs\` for tooling-only changes)
+
+## Before Any Task
+
+**Always:**
+- Check existing specs: \`openspec list --specs\`
+- Check active changes: \`openspec list\`
+- Read relevant specs before creating new ones
+- Prefer modifying existing specs over creating duplicates
+
+## CLI Quick Reference
+
+\`\`\`bash
+# Essential
+openspec list              # Active changes
+openspec list --specs      # Existing specifications
+openspec show [item]       # View details
+openspec diff [change]     # Show spec differences
+openspec validate --strict # Validate thoroughly
+openspec archive [change]  # Archive after deployment
+
+# Interactive
+openspec show              # Prompts for selection
+openspec validate          # Bulk validation
+
+# Debugging
+openspec show [change] --json --deltas-only
+\`\`\`
+
+## Creating Changes
+
+1. **Directory:** \`changes/[descriptive-name]/\`
+2. **Files:**
+   - \`proposal.md\` - Why, what, impact
+   - \`tasks.md\` - Implementation checklist
+   - \`specs/[capability]/spec.md\` - Delta changes (ADDED/MODIFIED/REMOVED)
+
+## Critical: Scenario Format
+
+**CORRECT:**
+\`\`\`markdown
+#### Scenario: User login
+- **WHEN** valid credentials
+- **THEN** return token
+\`\`\`
+
+**WRONG:** Using bullets (- **Scenario**), bold (**Scenario:**), or ### headers
+
+Every requirement MUST have scenarios using \`#### Scenario:\` format.
+
 ## Complexity Management
 
-**Default to minimal solutions:**
-- Propose <100 lines of new code for features
-- Prefer single-file implementations until proven insufficient
-- Avoid frameworks, abstractions, and optimizations without clear justification
-- Choose boring, well-understood patterns over novel approaches
+**Default to minimal:**
+- <100 lines of new code
+- Single-file implementations
+- No frameworks without justification
+- Boring, proven patterns
 
-**Question requests for complexity:**
-- Caching? → Ask for performance data and targets
-- New framework? → Suggest plain code first
-- Extra layers? → Start with the thinnest viable design
+**Only add complexity with:**
+- Performance data showing need
+- Concrete scale requirements (>1000 users)
+- Multiple proven use cases
 
-**Justify complexity with data:**
-- Performance metrics showing current solution is too slow
-- Concrete scale requirements (e.g., >1000 users, >100MB data)
-- Multiple proven use cases requiring an abstraction
+## Troubleshooting
+
+**"Change must have at least one delta"**
+- Check \`changes/[name]/specs/\` exists
+- Verify operation prefixes (## ADDED Requirements)
+
+**"Requirement must have at least one scenario"**
+- Use \`#### Scenario:\` format (4 hashtags)
+- Don't use bullets or bold
+
+**Debug:** \`openspec show [change] --json --deltas-only\`
 `;

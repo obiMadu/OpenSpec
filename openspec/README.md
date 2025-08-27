@@ -1,575 +1,298 @@
 # OpenSpec Instructions
 
-This document provides instructions for AI coding assistants on how to use OpenSpec conventions for spec-driven development. Follow these rules precisely when working on OpenSpec-enabled projects.
+Instructions for AI coding assistants using OpenSpec for spec-driven development.
 
-## Core Principle
+## Three-Stage Workflow
 
-OpenSpec is an AI-native system for change-driven development where:
-- **Specs** (`specs/`) reflect what IS currently built and deployed
-- **Changes** (`changes/`) contain proposals for what SHOULD be changed
-- **AI drives the process** - You generate proposals, humans review and approve
-- **Specs are living documentation** - Always kept in sync with deployed code
+### Stage 1: Creating Changes
+Create proposal when you need to:
+- Add features or functionality
+- Make breaking changes (API, schema)
+- Change architecture or patterns  
+- Optimize performance (changes behavior)
+- Update security patterns
 
-## Start Simple
+Skip proposal for:
+- Bug fixes (restore intended behavior)
+- Typos, formatting, comments
+- Dependency updates (non-breaking)
+- Configuration changes
+- Tests for existing behavior
 
-**Default to minimal implementations:**
-- New features should be <100 lines of code initially
-- Use the simplest solution that works
-- Avoid premature optimization (no caching, parallelization, or complex patterns without proven need)
-- Choose boring technology over cutting-edge solutions
+### Stage 2: Implementing Changes
+1. **Read proposal.md** - Understand what's being built
+2. **Read design.md** (if exists) - Review technical decisions
+3. **Read tasks.md** - Get implementation checklist
+4. **Implement tasks sequentially** - Complete in order
+5. **Mark complete immediately** - Update `- [x]` after each task
 
-**Complexity triggers** - Only add complexity when you have:
-- **Performance data** showing current solution is too slow
-- **Scale requirements** with specific numbers (>1000 users, >100MB data)
-- **Multiple use cases** requiring the same abstraction
-- **Regulatory compliance** mandating specific patterns
-- **Security threats** that simple solutions cannot address
+### Stage 3: Archiving Changes
+After deployment, create separate PR to:
+- Move `changes/[name]/` → `changes/archive/YYYY-MM-DD-[name]/`
+- Update `specs/` if capabilities changed
+- Use `openspec archive [change] --skip-specs` for tooling-only changes
 
-When triggered, document the specific justification in your change proposal.
+## Before Any Task
+
+**Context Checklist:**
+- [ ] Read relevant specs in `specs/[capability]/spec.md`
+- [ ] Check pending changes in `changes/` for conflicts
+- [ ] Read `openspec/project.md` for conventions
+- [ ] Run `openspec list` to see active changes
+- [ ] Run `openspec list --specs` to see existing capabilities
+
+**Before Creating Specs:**
+- Always check if capability already exists
+- Prefer modifying existing specs over creating duplicates
+- Use `openspec show [spec]` to review current state
+
+## Quick Start
+
+### CLI Commands
+
+```bash
+# Essential commands
+openspec list                  # List active changes
+openspec list --specs          # List specifications
+openspec show [item]           # Display change or spec
+openspec diff [change]         # Show spec differences
+openspec validate [item]       # Validate changes or specs
+openspec archive [change]      # Archive after deployment
+
+# Project management
+openspec init [path]           # Initialize OpenSpec
+openspec update [path]         # Update instruction files
+
+# Interactive mode
+openspec show                  # Prompts for selection
+openspec validate              # Bulk validation mode
+
+# Debugging
+openspec show [change] --json --deltas-only
+openspec validate [change] --strict
+```
+
+### Command Flags
+
+- `--json` - Machine-readable output
+- `--type change|spec` - Disambiguate items
+- `--strict` - Comprehensive validation
+- `--no-interactive` - Disable prompts
+- `--skip-specs` - Archive without spec updates
 
 ## Directory Structure
 
 ```
 openspec/
-├── project.md              # Project-specific context (tech stack, conventions)
-├── README.md               # This file - OpenSpec instructions
+├── project.md              # Project conventions
 ├── specs/                  # Current truth - what IS built
-│   ├── [capability]/       # Single, focused capability
-│   │   ├── spec.md         # WHAT the capability does and WHY
-│   │   └── design.md       # HOW it's built (established patterns)
-│   └── ...
-├── changes/                # Proposed changes - what we're CHANGING
+│   └── [capability]/       # Single focused capability
+│       ├── spec.md         # Requirements and scenarios
+│       └── design.md       # Technical patterns
+├── changes/                # Proposals - what SHOULD change
 │   ├── [change-name]/
-│   │   ├── proposal.md     # Why, what, impact (consolidated)
+│   │   ├── proposal.md     # Why, what, impact
 │   │   ├── tasks.md        # Implementation checklist
-│   │   ├── design.md       # Technical decisions (optional, for complex changes)
-│   │   └── specs/          # Delta changes to specs
+│   │   ├── design.md       # Technical decisions (optional)
+│   │   └── specs/          # Delta changes
 │   │       └── [capability]/
-│   │           └── spec.md # Delta format (ADDED/MODIFIED/REMOVED/RENAMED)
-│   └── archive/            # Completed changes (dated)
+│   │           └── spec.md # ADDED/MODIFIED/REMOVED
+│   └── archive/            # Completed changes
 ```
 
-## CLI Usage: show command
+## Creating Change Proposals
 
-Use the `show` command to display change proposals or specs with automatic detection and interactive selection.
+### Decision Tree
 
-- Interactive (no args, in a TTY):
-
-```bash
-openspec show
-# → prompts to pick change/spec, then item
+```
+New request?
+├─ Bug fix restoring spec behavior? → Fix directly
+├─ Typo/format/comment? → Fix directly  
+├─ New feature/capability? → Create proposal
+├─ Breaking change? → Create proposal
+├─ Architecture change? → Create proposal
+└─ Unclear? → Create proposal (safer)
 ```
 
-- Direct item (auto-detect type):
+### Proposal Structure
 
-```bash
-openspec show demo            # shows change 'demo'
-openspec show auth            # shows spec 'auth'
+1. **Create directory:** `changes/[descriptive-name]/`
+
+2. **Write proposal.md:**
+```markdown
+## Why
+[1-2 sentences on problem/opportunity]
+
+## What Changes
+- [Bullet list of changes]
+- [Mark breaking changes with **BREAKING**]
+
+## Impact
+- Affected specs: [list capabilities]
+- Affected code: [key files/systems]
 ```
 
-- Disambiguation when names collide:
-
-```bash
-openspec show foo             # if both change/spec exist → error suggests --type
-openspec show foo --type spec # forces spec
-openspec show foo --type change
-```
-
-- Common flags:
-
-```bash
-# JSON output (both types)
-openspec show <item> --json
-
-# Change-only flags
-openspec show <change-id> --json --deltas-only
-openspec show <change-id> --json --requirements-only  # deprecated alias of --deltas-only
-
-# Spec-only flags
-openspec show <spec-id> --json --requirements
-openspec show <spec-id> --json --no-scenarios
-openspec show <spec-id> --json -r 1                  # show requirement 1 only (1-based)
-```
-
-- Interactivity controls:
-
-```bash
-openspec show --no-interactive  # never prompt
-
-# or via env
-OPEN_SPEC_INTERACTIVE=0 openspec show
-```
-
-- Backwards compatibility (subcommands also support interactive selection when no arg):
-
-```bash
-openspec change show [change-id] [--json] [--deltas-only]
-openspec spec show [spec-id] [--json] [--requirements] [--no-scenarios] [-r N]
-```
-
-### Capability Organization
-
-**Use capabilities, not features** - Each directory under `specs/` represents a single, focused responsibility:
-- **Verb-noun naming**: `user-auth`, `payment-capture`, `order-checkout`
-- **10-minute rule**: Each capability should be understandable in <10 minutes
-- **Single purpose**: If it needs "AND" to describe it, split it
-
-Examples:
-```
-✅ GOOD: user-auth, user-sessions, payment-capture, payment-refunds
-❌ BAD: users, payments, core, misc
-```
-
-## Key Behavioral Rules
-
-### 1. Always Start by Reading
-
-Before any task:
-1. **Read relevant specs** in `specs/[capability]/spec.md` to understand current state
-2. **Check pending changes** in `changes/` directory for potential conflicts
-3. **Read project.md** for project-specific conventions
-
-### 2. When to Create Change Proposals
-
-**ALWAYS create a change proposal for:**
-- New features or functionality
-- Breaking changes (API changes, schema updates)
-- Architecture changes or new patterns
-- Performance optimizations that change behavior
-- Security updates affecting auth/access patterns
-- Any change requiring multiple steps or affecting multiple systems
-
-**SKIP proposals for:**
-- Bug fixes that restore intended behavior
-- Typos, formatting, or comment updates
-- Dependency updates (unless breaking)
-- Configuration or environment variable changes
-- Adding tests for existing behavior
-- Documentation fixes
-
-**Complexity assessment:**
-- If your solution requires >100 lines of new code, justify the complexity
-- If adding dependencies, frameworks, or architectural patterns, document why simpler alternatives won't work
-- Default to single-file implementations until proven insufficient
-
-### 3. Delta-Based Change Format
-
-Changes use a delta format with clear sections:
-
+3. **Create spec deltas:** `specs/[capability]/spec.md`
 ```markdown
 ## ADDED Requirements
 ### Requirement: New Feature
-[Complete requirement content in structured format]
+The system SHALL provide...
 
-## MODIFIED Requirements  
+#### Scenario: Success case
+- **WHEN** user performs action
+- **THEN** expected result
+
+## MODIFIED Requirements
 ### Requirement: Existing Feature
-[Complete modified requirement (header must match current spec)]
+[Complete modified requirement]
 
 ## REMOVED Requirements
 ### Requirement: Old Feature
-**Reason for removal**: [Why removing]
-**Migration path**: [How to handle existing usage]
-
-## RENAMED Requirements
-- FROM: `### Requirement: Old Name`
-- TO: `### Requirement: New Name`
+**Reason**: [Why removing]
+**Migration**: [How to handle]
 ```
 
-Key rules:
-- Headers are matched using `normalize(header) = trim(header)`
-- Include complete requirements (not diffs)
-- Use standard symbols in CLI output: + (added), ~ (modified), - (removed), → (renamed)
+4. **Create tasks.md:**
+```markdown
+## 1. Implementation
+- [ ] 1.1 Create database schema
+- [ ] 1.2 Implement API endpoint
+- [ ] 1.3 Add frontend component
+- [ ] 1.4 Write tests
+```
 
-### 4. Creating a Change Proposal
+## Spec File Format
 
-When a user requests a significant change:
+### Critical: Scenario Formatting
+
+**CORRECT** (use #### headers):
+```markdown
+#### Scenario: User login success
+- **WHEN** valid credentials provided
+- **THEN** return JWT token
+```
+
+**WRONG** (don't use bullets or bold):
+```markdown
+- **Scenario: User login**  ❌
+**Scenario**: User login     ❌
+### Scenario: User login      ❌
+```
+
+Every requirement MUST have at least one scenario.
+
+### Delta Operations
+
+- `## ADDED Requirements` - New capabilities
+- `## MODIFIED Requirements` - Changed behavior
+- `## REMOVED Requirements` - Deprecated features
+- `## RENAMED Requirements` - Name changes
+
+Headers matched with `trim(header)` - whitespace ignored.
+
+## Troubleshooting
+
+### Common Errors
+
+**"Change must have at least one delta"**
+- Check `changes/[name]/specs/` exists with .md files
+- Verify files have operation prefixes (## ADDED Requirements)
+
+**"Requirement must have at least one scenario"**
+- Check scenarios use `#### Scenario:` format (4 hashtags)
+- Don't use bullet points or bold for scenario headers
+
+**Silent scenario parsing failures**
+- Exact format required: `#### Scenario: Name`
+- Debug with: `openspec show [change] --json --deltas-only`
+
+### Validation Tips
 
 ```bash
-# 1. Create the change directory
-openspec/changes/[descriptive-name]/
+# Always use strict mode for comprehensive checks
+openspec validate [change] --strict
 
-# 2. Generate proposal.md with all context
-## Why
-[1-2 sentences on the problem/opportunity]
+# Debug delta parsing
+openspec show [change] --json | jq '.deltas'
 
-## What Changes  
-[Bullet list of changes, including breaking changes]
-
-## Impact
-- Affected specs: [list capabilities that will change]
-- Affected code: [list key files/systems]
-
-# 3. Create delta specs for ALL affected capabilities
-# - Store only the changes (not complete future state)
-# - Use sections: ## ADDED, ## MODIFIED, ## REMOVED, ## RENAMED
-# - Include complete requirements in their final form
-# Example spec.md content:
-#   ## ADDED Requirements
-#   ### Requirement: Password Reset
-#   Users SHALL be able to reset passwords via email...
-#   
-#   ## MODIFIED Requirements
-#   ### Requirement: User Authentication
-#   [Complete modified requirement with new password reset hook]
-specs/
-└── [capability]/
-    └── spec.md  # Contains delta sections
-
-# 4. Create tasks.md with implementation steps
-## 1. [Task Group]
-- [ ] 1.1 [Specific task]
-- [ ] 1.2 [Specific task]
-
-# 5. For complex changes, add design.md
-[Technical decisions and trade-offs]
+# Check specific requirement
+openspec show [spec] --json -r 1
 ```
 
-### 5. The Change Lifecycle
+## Best Practices
 
-1. **Propose** → Create change directory with delta-based documentation
-2. **Review** → User reviews and approves the proposal
-3. **Implement** → Follow the approved tasks.md (can be multiple PRs)
-4. **Deploy** → User confirms deployment
-5. **Update Specs** → Apply deltas to sync specs/ with new reality (IF the change affects system capabilities)
-6. **Archive** → Move to `changes/archive/YYYY-MM-DD-[name]/`
+### Simplicity First
+- Default to <100 lines of new code
+- Single-file implementations until proven insufficient
+- Avoid frameworks without clear justification
+- Choose boring, proven patterns
 
-### 6. Implementing Changes
+### Complexity Triggers
+Only add complexity with:
+- Performance data showing current solution too slow
+- Concrete scale requirements (>1000 users, >100MB data)
+- Multiple proven use cases requiring abstraction
 
-When implementing an approved change:
-1. Follow the tasks.md checklist exactly
-2. **Mark completed tasks** in tasks.md as you finish them (e.g., `- [x] 1.1 Task completed`)
-3. Ensure code matches the proposed behavior
-4. Update any affected tests
-5. **Keep change in `changes/` directory** - do NOT archive in implementation PR
+### Clear References
+- Use `file.ts:42` format for code locations
+- Reference specs as `specs/auth/spec.md`
+- Link related changes and PRs
 
-**Multiple Implementation PRs:**
-- Changes can be implemented across multiple PRs
-- Each PR should update tasks.md to mark what was completed
-- Different developers can work on different task groups
-- Example: PR #1 completes tasks 1.1-1.3, PR #2 completes tasks 2.1-2.4
+### Capability Naming
+- Use verb-noun: `user-auth`, `payment-capture`
+- Single purpose per capability
+- 10-minute understandability rule
+- Split if description needs "AND"
 
-### 7. Updating Specs and Archiving After Deployment
+## Tool Selection Guide
 
-**Create a separate PR after deployment** that:
-1. Moves change to `changes/archive/YYYY-MM-DD-[name]/`
-2. Updates relevant files in `specs/` to reflect new reality (if needed)
-3. If design.md exists, incorporates proven patterns into `specs/[capability]/design.md`
+| Task | Tool | Why |
+|------|------|-----|
+| Find files by pattern | Glob | Fast pattern matching |
+| Search code content | Grep | Optimized regex search |
+| Read specific files | Read | Direct file access |
+| Explore unknown scope | Task | Multi-step investigation |
 
-This ensures changes are only archived when truly complete and deployed.
+## Error Recovery
 
-### 8. Types of Changes That Don't Require Specs
+### Change Conflicts
+1. Run `openspec list` to see active changes
+2. Check for overlapping specs
+3. Coordinate with change owners
+4. Consider combining proposals
 
-Some changes only affect development infrastructure and don't need specs:
-- Initial project setup (package.json, tsconfig.json, etc.)
-- Development tooling changes (linters, formatters, build tools)
-- CI/CD configuration
-- Development dependencies
+### Validation Failures
+1. Run with `--strict` flag
+2. Check JSON output for details
+3. Verify spec file format
+4. Ensure scenarios properly formatted
 
-For these changes:
-1. Implement → Deploy → Mark tasks complete → Archive
-2. Skip the "Update Specs" step entirely
+### Missing Context
+1. Read project.md first
+2. Check related specs
+3. Review recent archives
+4. Ask for clarification
 
-### What Deserves a Spec?
+## Quick Reference
 
-Ask yourself:
-- Is this a system capability that users or other systems interact with?
-- Does it have ongoing behavior that needs documentation?
-- Would a new developer need to understand this to work with the system?
+### Stage Indicators
+- `changes/` - Proposed, not yet built
+- `specs/` - Built and deployed
+- `archive/` - Completed changes
 
-If NO to all → No spec needed (likely just tooling/infrastructure)
+### File Purposes
+- `proposal.md` - Why and what
+- `tasks.md` - Implementation steps
+- `design.md` - Technical decisions
+- `spec.md` - Requirements and behavior
 
-## Understanding Specs vs Code
-
-### Specs Document WHAT and WHY
-```markdown
-# Authentication Spec
-
-Users SHALL authenticate with email and password.
-
-WHEN credentials are valid THEN issue JWT token.
-WHEN credentials are invalid THEN return generic error.
-
-WHY: Prevent user enumeration attacks.
+### CLI Essentials
+```bash
+openspec list              # What's in progress?
+openspec show [item]       # View details
+openspec diff [change]     # What's changing?
+openspec validate --strict # Is it correct?
+openspec archive [change]  # Mark complete
 ```
 
-### Code Documents HOW
-```javascript
-// Implementation details
-const user = await db.users.findOne({ email });
-const valid = await bcrypt.compare(password, user.hashedPassword);
-```
-
-**Key Distinction**: Specs capture intent, constraints, and decisions that aren't obvious from code.
-
-## Common Scenarios
-
-### New Feature Request
-```
-User: "Add password reset functionality"
-
-You should:
-1. Read specs/user-auth/spec.md
-2. Check changes/ for pending auth changes
-3. Create changes/add-password-reset/ with:
-   - proposal.md describing the change
-   - specs/user-auth/spec.md with:
-     ## ADDED Requirements
-     ### Requirement: Password Reset
-     [Complete requirement for password reset]
-     
-     ## MODIFIED Requirements
-     ### Requirement: User Authentication
-     [Updated to integrate with password reset]
-4. Wait for approval before implementing
-```
-
-### Bug Fix
-```
-User: "Getting null pointer error when bio is empty"
-
-You should:
-1. Check if spec says bios are optional
-2. If yes → Fix directly (it's a bug)
-3. If no → Create change proposal (it's a behavior change)
-```
-
-### Infrastructure Setup
-```
-User: "Initialize TypeScript project"
-
-You should:
-1. Create change proposal for TypeScript setup
-2. Implement configuration files (PR #1)
-3. Mark tasks complete in tasks.md
-4. After deployment, create separate PR to archive
-   (no specs update needed - this is tooling, not a capability)
-```
-
-## Summary Workflow
-
-1. **Receive request** → Determine if it needs a change proposal
-2. **Read current state** → Check specs and pending changes
-3. **Create proposal** → Generate complete change documentation
-4. **Get approval** → User reviews the proposal
-5. **Implement** → Follow approved tasks, mark completed items in tasks.md
-6. **Deploy** → User deploys the implementation
-7. **Archive PR** → Create separate PR to:
-   - Move change to archive
-   - Update specs if needed
-   - Mark change as complete
-
-## PR Workflow Examples
-
-### Single Developer, Simple Change
-```
-PR #1: Implementation
-- Implement all tasks
-- Update tasks.md marking items complete
-- Get merged and deployed
-
-PR #2: Archive (after deployment)
-- Move changes/feature-x/ → changes/archive/2025-01-15-feature-x/
-- Update specs if needed
-```
-
-### Multiple Developers, Complex Change
-```
-PR #1: Alice implements auth components
-- Complete tasks 1.1, 1.2, 1.3
-- Update tasks.md marking these complete
-
-PR #2: Bob implements UI components  
-- Complete tasks 2.1, 2.2
-- Update tasks.md marking these complete
-
-PR #3: Alice fixes integration issues
-- Complete remaining task 1.4
-- Update tasks.md
-
-[Deploy all changes]
-
-PR #4: Archive
-- Move to archive with deployment date
-- Update specs to reflect new auth flow
-```
-
-### Key Rules
-- **Never archive in implementation PRs** - changes aren't done until deployed
-- **Always update tasks.md** - shows accurate progress
-- **One archive PR per change** - clear completion boundary
-- **Archive PR includes spec updates** - keeps specs current
-
-## Capability Organization Best Practices
-
-### Naming Capabilities
-- Use **verb-noun** patterns: `user-auth`, `payment-capture`, `order-checkout`
-- Be specific: `payment-capture` not just `payments`
-- Keep flat: Avoid nesting capabilities within capabilities
-- Singular focus: If you need "AND" to describe it, split it
-
-### When to Split Capabilities
-Split when you have:
-- Multiple unrelated API endpoints
-- Different user personas or actors
-- Separate deployment considerations
-- Independent evolution paths
-
-#### Capability Boundary Guidelines
-- Would you import these separately? → Separate capabilities
-- Different deployment cadence? → Separate capabilities
-- Different teams own them? → Separate capabilities
-- Shared data models are OK, shared business logic means combine
-
-Examples:
-- user-auth (login/logout) vs user-sessions (token management) → SEPARATE
-- payment-capture vs payment-refunds → SEPARATE (different workflows)
-- user-profile vs user-settings → COMBINE (same data model, same owner)
-
-### Cross-Cutting Concerns
-For system-wide policies (rate limiting, error handling, security), document them in:
-- `project.md` for project-wide conventions
-- Within relevant capability specs where they apply
-- Or create a dedicated capability if complex enough (e.g., `api-rate-limiting/`)
-
-### Examples of Well-Organized Capabilities
-```
-specs/
-├── user-auth/              # Login, logout, password reset
-├── user-sessions/          # Token management, refresh
-├── user-profile/           # Profile CRUD operations
-├── payment-capture/        # Processing payments
-├── payment-refunds/        # Handling refunds
-└── order-checkout/         # Checkout workflow
-```
-
-For detailed guidance, see the [Capability Organization Guide](../docs/capability-organization.md).
-
-## Common Scenarios and Clarifications
-
-### Decision Ambiguity: Bug vs Behavior Change
-
-When specs are missing or ambiguous:
-- If NO spec exists → Treat current code behavior as implicit spec, require proposal
-- If spec is VAGUE → Require proposal to clarify spec alongside fix
-- If code and spec DISAGREE → Spec is truth, code is buggy (fix without proposal)
-- If unsure → Default to creating a proposal (safer option)
-
-Example:
-```
-User: "The API returns 404 for missing users but should return 400"
-AI: Is this a bug (spec says 400) or behavior change (spec says 404)?
-```
-
-### When You Don't Know the Scope
-It's OK to explore first! Tell the user you need to investigate, then create an informed proposal.
-
-### Exploration Phase (When Needed)
-
-BEFORE creating proposal, you may need exploration when:
-- User request is vague or high-level
-- Multiple implementation approaches exist
-- Scope is unclear without seeing code
-
-Exploration checklist:
-1. Tell user you need to explore first
-2. Use Grep/Read to understand current state
-3. Create initial proposal based on findings
-4. Refine with user feedback
-
-Example:
-```
-User: "Add caching to improve performance"
-AI: "Let me explore the codebase to understand the current architecture and identify caching opportunities."
-[After exploration]
-AI: "Based on my analysis, I've identified three areas where caching would help. Here's my proposal..."
-```
-
-### When No Specs Exist
-Treat current code as implicit spec. Your proposal should document current state AND proposed changes.
-
-### When in Doubt
-Default to creating a proposal. It's easier to skip an unnecessary proposal than fix an undocumented change.
-
-### AI Workflow Adaptations
-
-Task tracking with OpenSpec:
-- Track exploration tasks separately from implementation
-- Document proposal creation steps as you go
-- Keep implementation tasks separate until proposal approved
-
-Parallel operations encouraged:
-- Read multiple specs simultaneously
-- Check multiple pending changes at once
-- Batch related searches for efficiency
-
-Progress communication:
-- "Exploring codebase to understand scope..."
-- "Creating proposal based on findings..."
-- "Implementing approved changes..."
-
-### For AI Assistants
-- **Bias toward simplicity** - Propose the minimal solution that works
-- Use your exploration tools liberally before proposing
-- Batch operations for efficiency
-- Communicate your progress
-- It's OK to revise proposals based on discoveries
-- **Question complexity** - If your solution feels complex, simplify first
-
-## Edge Case Handling
-
-### Multi-Capability Changes
-Create ONE proposal that:
-- Lists all affected capabilities
-- Shows changes per capability
-- Has unified task list
-- Gets approved as a whole
-
-### Outdated Specs
-If specs clearly outdated:
-1. Create proposal to update specs to match reality
-2. Implement new feature in separate proposal
-3. OR combine both in one proposal with clear sections
-
-### Emergency Hotfixes
-For critical production issues:
-1. Announce: "This is an emergency fix"
-2. Implement fix immediately
-3. Create retroactive proposal
-4. Update specs after deployment
-5. Tag with [EMERGENCY] in archive
-
-### Pure Refactoring
-No proposal needed for:
-- Code formatting/style
-- Internal refactoring (same API)
-- Performance optimization (same behavior)
-- Adding types to untyped code
-
-Proposal REQUIRED for:
-- API changes (even if compatible)
-- Database schema changes
-- Architecture changes
-- New dependencies
-
-### Observability Additions
-No proposal needed for:
-- Adding log statements
-- New metrics/traces
-- Debugging additions
-- Error tracking
-
-Proposal REQUIRED if:
-- Changes log format/structure
-- Adds new monitoring service
-- Changes what's logged (privacy)
-
-## Remember
-
-- You are the process driver - automate documentation burden
-- Specs must always reflect deployed reality
-- Changes are proposed, not imposed
-- Impact analysis prevents surprises
-- Simplicity is the power - just markdown files, minimal solutions
-- Start simple, add complexity only when justified
-
-By following these conventions, you enable true spec-driven development where documentation stays current, changes are traceable, and evolution is intentional.
+Remember: Specs are truth. Changes are proposals. Keep them in sync.
