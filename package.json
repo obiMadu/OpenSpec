@@ -46,12 +46,14 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "prepare": "pnpm run build",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build",
+    "changeset": "changeset"
   },
   "engines": {
     "node": ">=20.19.0"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.7",
     "@types/node": "^24.2.0",
     "@vitest/ui": "^3.2.4",
     "typescript": "^5.9.2",
