@@ -1,6 +1,6 @@
 {
   "name": "openspec",
-  "version": "0.0.1",
+  "version": "0.1.0-beta.0",
   "description": "AI-native system for spec-driven development",
   "keywords": [
     "openspec",
@@ -17,6 +17,9 @@
   "license": "MIT",
   "author": "OpenSpec Contributors",
   "type": "module",
+  "publishConfig": {
+    "tag": "next"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -41,7 +44,8 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "prepare": "npm run build"
+    "prepare": "pnpm run build",
+    "prepublishOnly": "pnpm run build"
   },
   "engines": {
     "node": ">=20.19.0"
