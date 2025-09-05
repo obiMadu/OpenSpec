@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { createRequire } from 'module';
 import ora from 'ora';
 import path from 'path';
 import { promises as fs } from 'fs';
@@ -13,11 +14,13 @@ import { ValidateCommand } from '../commands/validate.js';
 import { ShowCommand } from '../commands/show.js';
 
 const program = new Command();
+const require = createRequire(import.meta.url);
+const { version } = require('../../package.json');
 
 program
   .name('openspec')
   .description('AI-native system for spec-driven development')
-  .version('0.0.1');
+  .version(version);
 
 // Global options
 program.option('--no-color', 'Disable color output');
