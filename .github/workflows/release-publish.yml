@@ -63,8 +63,8 @@ jobs:
           npm whoami
           npm ping
 
-      - run: pnpm test
       - run: pnpm run build
+      - run: pnpm test
 
       - name: Publish
         run: pnpm publish --access public --provenance --no-git-checks --tag next
