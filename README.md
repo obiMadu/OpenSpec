@@ -6,7 +6,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 
-AI-native system for spec-driven development. Keep living specifications alongside code, propose changes as deltas, and archive once reality matches the spec.
+**Supported AI Tools:** ✅ Claude Code | 🔜 Cursor (coming soon) | 🔜 AGENTS.md support (coming soon)
+
+Universal spec-driven development that works with your AI coding assistant. Keep living specifications alongside code, propose changes as deltas, and archive once reality matches the spec. **No API keys required.**
 
 OpenSpec turns specifications into living documentation that drives development. Your specs and code stay in sync—propose changes, track implementation, and know exactly when features are complete. No more outdated docs or unclear requirements.
 
@@ -24,10 +26,11 @@ OpenSpec turns specifications into living documentation that drives development.
 ## What You Get
 
 - **Better AI Code Generation** - Create specs first, get the code you actually want
+- **Universal Tool Support** - Works with any AI assistant - Claude Code, Cursor, or future tools
+- **No API Keys Required** - Integrates through context rules, not external services
 - **Alignment with AI** - Your AI assistant understands exactly what to build through clear specifications
 - **Plan Before You Build** - Clarify features and requirements before implementation
 - **Team Clarity** - Everyone reviews specs, not code changes
-- **No API Keys** - Works with your existing AI tools (Claude Code, Cursor) by adding context rules
 - **Track Progress** - See what changes are proposed, in progress, or completed
 
 ## How It Works
@@ -74,7 +77,7 @@ cd my-project
 # Initialize OpenSpec
 openspec init
 
-# You'll be asked:
+# Select your AI tool (more coming soon!):
 # "Which AI tool do you use?"
 #   > Claude Code
 #     Cursor (coming soon)
@@ -83,12 +86,12 @@ openspec init
 # openspec/
 #   ├── specs/       # Current specifications (truth)
 #   ├── changes/     # Proposed changes
-#   └── README.md    # AI instructions
+#   └── README.md    # AI instructions for your tool
 ```
 
 ### 2. Create Your First Change
 
-Jump straight into creating a change proposal with your AI assistant:
+Jump straight into creating a change proposal with your AI assistant (works with Claude Code, Cursor, or any AI tool):
 
 ```markdown
 // Quick win - Add a simple new feature:
@@ -234,7 +237,7 @@ OpenSpec creates **alignment** between you and your AI coding assistant:
 4. **AI implements** exactly what was specified
 5. **Everyone understands** what's being built through clear specs
 
-No API keys needed - OpenSpec works by adding context rules to your existing AI tools (Claude Code, Cursor, etc.).
+**True Interoperability:** OpenSpec is designed to be universal. No API keys, no vendor lock-in. It works by adding context rules to ANY AI coding tool - whether you use Claude Code today, switch to Cursor tomorrow, or adopt the next breakthrough AI assistant. Your specs remain portable and your workflow stays consistent.
 
 
 ## How OpenSpec Compares
@@ -254,7 +257,7 @@ Without specs, AI coding assistants generate code based on vague prompts, often 
 3. **Build incrementally** - Each new feature adds to your spec library
 4. **Future capability** - We're working on tools to generate specs from existing code
 
-`openspec update` is team-friendly: it updates instruction files without forcing tools on teammates. Multiple AI assistants can coexist without conflicts.
+**Tool Freedom:** Your team can use different AI assistants. One developer might use Claude Code while another uses Cursor - OpenSpec keeps everyone aligned through shared specifications. Run `openspec update` to configure for any supported tool without affecting others.
 
 
 ## Contributing
