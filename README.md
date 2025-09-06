@@ -10,7 +10,7 @@
 
 Create **alignment** between humans and AI coding assistants through spec-driven development. **No API keys required.**
 
-OpenSpec ensures you and your AI assistant agree on what to build before any code is written. By discussing and refining specifications first, you bring determinism to AI code generation—getting exactly what you want, not what the AI thinks you might want.
+OpenSpec ensures you and your AI assistant agree on what to build before any code is written. By discussing and refining specifications first, you bring determinism to AI code generation, getting exactly what you want, not what the AI thinks you might want.
 
 ## Why OpenSpec?
 
