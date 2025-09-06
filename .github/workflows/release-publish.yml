@@ -36,6 +36,9 @@ jobs:
           always-auth: true
 
       - run: pnpm install --frozen-lockfile
+      
+      - name: Build project
+        run: pnpm run build
 
       - name: Ensure running from a tag
         run: |
@@ -63,7 +66,6 @@ jobs:
           npm whoami
           npm ping
 
-      - run: pnpm run build
       - run: pnpm test
 
       - name: Publish
