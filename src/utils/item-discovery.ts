@@ -5,10 +5,18 @@ export async function getActiveChangeIds(root: string = process.cwd()): Promise<
   const changesPath = path.join(root, 'openspec', 'changes');
   try {
     const entries = await fs.readdir(changesPath, { withFileTypes: true });
-    return entries
-      .filter(entry => entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'archive')
-      .map(entry => entry.name)
-      .sort();
+    const result: string[] = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name === 'archive') continue;
+      const proposalPath = path.join(changesPath, entry.name, 'proposal.md');
+      try {
+        await fs.access(proposalPath);
+        result.push(entry.name);
+      } catch {
+        // skip directories without proposal.md
+      }
+    }
+    return result.sort();
   } catch {
     return [];
   }
@@ -34,5 +42,4 @@ export async function getSpecIds(root: string = process.cwd()): Promise<string[]
   }
   return result.sort();
 }
-
 
