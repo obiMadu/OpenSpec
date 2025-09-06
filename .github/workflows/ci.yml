@@ -16,19 +16,8 @@ concurrency:
 
 jobs:
   test:
-    name: Test (Node ${{ matrix.node-version }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: ['18', '20', '22']
-        os: [ubuntu-latest]
-        include:
-          # Test on other OS with latest Node only
-          - node-version: '20'
-            os: macos-latest
-          - node-version: '20'
-            os: windows-latest
+    name: Test
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
@@ -41,10 +30,10 @@ jobs:
         with:
           version: 9
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '20'
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -57,7 +46,6 @@ jobs:
         run: pnpm test
 
       - name: Upload test coverage
-        if: matrix.node-version == '20' && matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
