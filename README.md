@@ -8,50 +8,140 @@
 
 AI-native system for spec-driven development. Keep living specifications alongside code, propose changes as deltas, and archive once reality matches the spec.
 
+OpenSpec turns specifications into living documentation that drives development. Your specs and code stay in sync—propose changes, track implementation, and know exactly when features are complete. No more outdated docs or unclear requirements.
+
+## Why OpenSpec?
+
+**The Problem:** Documentation drifts from code. Requirements get lost in tickets. AI assistants lack context. Teams struggle to track what's actually built versus what's planned.
+
+**The Solution:** OpenSpec makes specifications the single source of truth:
+- **Living Documentation** - Specs stay next to code and evolve together
+- **Change Proposals** - Delta-based changes show exactly what's being modified
+- **AI-Friendly** - Structured format that AI assistants understand and follow
+- **Clear Workflow** - Know what's proposed, what's built, and what's archived
+- **Team Alignment** - Everyone sees the same requirements and changes
+
+## How It Works
+
+```
+┌─────────────┐       ┌─────────────┐       ┌──────────────┐
+│    SPECS    │       │   CHANGES   │       │   ARCHIVE    │
+│   (Truth)   │◀──────│ (Proposals) │──────▶│ (Completed)  │
+└─────────────┘       └─────────────┘       └──────────────┘
+      ▲                      │                      │
+      │                      ▼                      │
+      │               ┌─────────────┐               │
+      └───────────────│    CODE     │◀──────────────┘
+                      └─────────────┘
+
+1. SPECS define current capabilities (what IS built)
+2. CHANGES propose modifications using deltas (what SHOULD change)  
+3. CODE implements the changes following tasks
+4. ARCHIVE preserves completed changes after deployment
+```
+
 ## Overview
 
 - Specs are the current truth stored in `openspec/specs/<capability>/spec.md`.
 - Changes are proposals stored in `openspec/changes/<name>/` with delta-formatted spec updates.
 - The CLI favors verb-first commands: `list`, `show`, `validate`, `diff`, `archive`.
 
-## Prerequisites
-
-- Node.js >= 20.19.0
-- pnpm (project standard)
-
 ## Installation
 
-- Global: `pnpm add -g @fission-ai/openspec`
-- Local (per project):
-  - `pnpm add -D @fission-ai/openspec`
-  - Run with `pnpm exec openspec ...`
+### Prerequisites
 
-## Quick Start
+- Node.js >= 20.19.0
+
+### Install OpenSpec
+
+- Global: `npm install -g @fission-ai/openspec`
+- Local (per project):
+  - `npm install --save-dev @fission-ai/openspec`
+  - Run with `npx openspec ...`
+
+## Getting Started
+
+### 1. Initialize Your Project
 
 ```bash
-# Initialize OpenSpec in your project
+# Create a new project or navigate to existing one
+mkdir my-project && cd my-project
+
+# Initialize OpenSpec
 openspec init
 
-# Update OpenSpec instructions (team-friendly)
-openspec update
+# This creates:
+# openspec/
+#   ├── specs/       # Your specifications
+#   ├── changes/     # Proposed changes
+#   └── README.md    # Instructions for your team
+```
 
-# List items (IDs only). Use --specs to list specs
-openspec list                 # defaults to changes
-openspec list --specs
+### 2. Create Your First Spec
 
-# Show an item (raw text by default)
-openspec show <item>
-openspec show <item> --json   # automation-friendly output
+```bash
+# Create a capability spec
+mkdir -p openspec/specs/user-auth
+echo "# User Authentication Specification
 
-# Validate
-openspec validate --changes --strict
-openspec validate --specs --json
+## Purpose
+Handle user authentication and session management.
 
-# See diffs between a change and current specs
-openspec diff <change-id>
+## Requirements
+### Requirement: User Login
+The system SHALL authenticate users with email and password.
 
-# Archive a completed change
-openspec archive <change-id> [--skip-specs]
+#### Scenario: Valid credentials
+- WHEN a user submits valid credentials
+- THEN return a JWT token with 24-hour expiry" > openspec/specs/user-auth/spec.md
+
+# Validate the spec
+openspec validate --specs
+```
+
+### 3. Propose a Change
+
+```bash
+# When you need to add two-factor authentication:
+mkdir -p openspec/changes/add-2fa/specs/user-auth
+
+# Create the proposal
+echo "## Why
+Improve security by requiring a second authentication factor.
+
+## What Changes
+- Add OTP-based two-factor authentication
+- Require 2FA for admin accounts
+
+## Impact
+- Affected specs: user-auth
+- Affected code: auth service, login UI" > openspec/changes/add-2fa/proposal.md
+
+# Create the delta (what's being added)
+echo "## ADDED Requirements
+### Requirement: Two-Factor Authentication
+The system SHALL require OTP verification after password authentication.
+
+#### Scenario: OTP verification required
+- WHEN a user submits valid credentials
+- THEN prompt for OTP code
+- AND verify code before issuing JWT" > openspec/changes/add-2fa/specs/user-auth/spec.md
+
+# See what changes
+openspec diff add-2fa
+```
+
+### 4. Track Implementation
+
+```bash
+# View active changes
+openspec list
+
+# Show change details
+openspec show add-2fa
+
+# After implementing, archive the change
+openspec archive add-2fa
 ```
 
 ## Minimal Example
@@ -102,10 +192,22 @@ The system MUST require a second factor during login.
 - THEN an OTP challenge is required
 ```
 
-Critical formatting rules:
-- Use `### Requirement: <name>` for requirement headers.
-- Every requirement MUST include at least one `#### Scenario:` block.
-- Use SHALL/MUST in ADDED/MODIFIED requirement text.
+### Understanding Delta Format
+
+Deltas describe how specifications change using operation headers:
+
+- **`## ADDED Requirements`** - New capabilities being introduced
+- **`## MODIFIED Requirements`** - Changes to existing behavior (include the complete modified text)
+- **`## REMOVED Requirements`** - Features being deprecated (include reason and migration path)
+- **`## RENAMED Requirements`** - Simple name changes
+
+Each delta operation contains complete requirement blocks that will be merged into the main spec. Think of deltas as "patches" that transform your current specifications into the desired state.
+
+**Critical formatting rules:**
+- Use `### Requirement: <name>` for requirement headers
+- Every requirement MUST include at least one `#### Scenario:` block
+- Use SHALL/MUST in ADDED/MODIFIED requirement text
+- MODIFIED sections must contain the complete updated requirement, not just the changes
 
 ## Core Commands
 
@@ -155,14 +257,115 @@ Outputs shape:
 }
 ```
 
-## Team Workflow
+## AI Integration
 
-- `openspec update` is team-friendly: it updates `openspec/README.md` and only modifies AI config files that already exist (e.g., CLAUDE.md), never forcing tools on teammates.
-- Multiple AI tools can co-exist without conflicts.
+OpenSpec is designed to work seamlessly with AI coding assistants like Claude, GitHub Copilot, and Cursor.
 
-## Deprecation Note
+### How AI Assistants Use OpenSpec
 
-Noun-first commands (`openspec spec ...`, `openspec change ...`) are available but deprecated. Prefer verb-first commands: `openspec list`, `openspec show`, `openspec validate`.
+1. **Context Loading** - AI reads specs to understand current capabilities
+2. **Change Creation** - AI creates properly formatted proposals and deltas
+3. **Task Execution** - AI follows tasks.md to implement changes systematically
+4. **Validation** - AI uses CLI to validate changes before committing
+
+### Setting Up AI Integration
+
+```bash
+# Update AI configuration files (only modifies existing files)
+openspec update
+
+# This updates:
+# - openspec/README.md with latest conventions
+# - CLAUDE.md (if exists) with Claude-specific instructions
+# - .cursorrules (if exists) with Cursor rules
+# - Other AI config files as needed
+```
+
+### Example AI Workflow
+
+```markdown
+// Tell your AI assistant:
+"We use OpenSpec for spec-driven development. 
+Before making changes, check openspec/specs/ for current state.
+Create proposals in openspec/changes/ for new features."
+
+// AI will then:
+1. Run `openspec list --specs` to see capabilities
+2. Read relevant specs with `openspec show <spec>`
+3. Create change proposal if needed
+4. Implement following the tasks.md checklist
+5. Validate with `openspec validate --strict`
+```
+
+### Best Practices for AI Development
+
+- Always have AI read specs before implementing
+- Use `openspec validate` to catch formatting issues
+- Let AI create proposals for complex changes
+- Archive changes only after deployment
+
+## Comparison with Alternatives
+
+### OpenSpec vs Kiro.dev
+
+| Aspect | OpenSpec | Kiro |
+|--------|----------|------|
+| **Approach** | CLI tool, works with any editor/IDE | Full IDE with built-in agents |
+| **Workflow** | Specs → Changes (deltas) → Archive | Requirements → Design → Tasks |
+| **File Format** | Markdown with specific headers | EARS notation for requirements |
+| **Change Tracking** | Delta-based proposals | Direct spec modification |
+| **AI Integration** | Works with any AI assistant | Built-in AI agents with hooks |
+| **Version Control** | Git-native, PR-friendly | Git-based with IDE integration |
+| **Learning Curve** | Simple CLI commands | New IDE and workflow |
+| **Team Adoption** | Drop into existing projects | Requires IDE adoption |
+
+### OpenSpec vs Traditional Docs
+
+| Aspect | OpenSpec | README/Wiki/Tickets |
+|--------|----------|--------------------|
+| **Location** | Next to code in repo | Separate systems |
+| **Drift Prevention** | Specs validated with code | Manual sync required |
+| **Change Process** | Structured proposals | Ad-hoc updates |
+| **AI Readability** | Structured, parseable | Varies widely |
+| **Completeness Tracking** | Archive shows when done | Manual status updates |
+
+## Team Adoption
+
+### Introducing to Existing Projects
+
+1. **Start Small** - Begin with one capability (e.g., authentication)
+2. **Document Current State** - Create specs for what exists today
+3. **Use for Next Feature** - Create your first change proposal
+4. **Iterate** - Refine the process based on team feedback
+
+### Migration Strategy
+
+```bash
+# Step 1: Initialize OpenSpec
+openspec init
+
+# Step 2: Create specs for existing features
+mkdir -p openspec/specs/existing-feature
+# Document current behavior in spec.md
+
+# Step 3: All new features use changes
+mkdir -p openspec/changes/new-feature
+# Team creates proposals before coding
+
+# Step 4: Gradually migrate docs
+# Move requirements from tickets/wikis to specs
+```
+
+### Team Workflow
+
+- **Product/PM** - Write requirements in proposal.md
+- **Engineers** - Create technical specs and implement
+- **AI Assistants** - Follow specs for consistent implementation
+- **QA** - Test against scenarios in specs
+- **Documentation** - Specs ARE the documentation
+
+`openspec update` is team-friendly: it updates instruction files without forcing tools on teammates. Multiple AI assistants can coexist without conflicts.
+
 
 ## Troubleshooting
 
@@ -177,10 +380,16 @@ Noun-first commands (`openspec spec ...`, `openspec change ...`) are available b
 
 ## Contributing
 
-- Use pnpm: `pnpm install`, `pnpm run build`, `pnpm test`.
-- Develop CLI locally: `pnpm dev` or `pnpm dev:cli`.
-- Conventional commits (one-line): `type(scope): subject`.
+- Install dependencies: `npm install`
+- Build: `npm run build`
+- Test: `npm test`
+- Develop CLI locally: `npm run dev` or `npm run dev:cli`
+- Conventional commits (one-line): `type(scope): subject`
 
 ## License
 
 MIT
+
+## Deprecation Note
+
+Noun-first commands (`openspec spec ...`, `openspec change ...`) are available but deprecated. Prefer verb-first commands: `openspec list`, `openspec show`, `openspec validate`.
