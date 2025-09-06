@@ -54,10 +54,11 @@ OpenSpec turns specifications into living documentation that drives development.
 
 ### Install OpenSpec
 
-- Global: `npm install -g @fission-ai/openspec`
-- Local (per project):
-  - `npm install --save-dev @fission-ai/openspec`
-  - Run with `npx openspec ...`
+Install globally:
+
+```bash
+npm install -g @fission-ai/openspec
+```
 
 ## Getting Started
 
@@ -74,8 +75,6 @@ openspec init
 # "Which AI tool do you use?"
 #   > Claude Code
 #     Cursor (coming soon)
-#     Aider (coming soon)
-#     Continue (coming soon)
 
 # This creates:
 # openspec/
@@ -84,25 +83,32 @@ openspec init
 #   └── README.md    # AI instructions
 ```
 
-### 2. Start Working with Your AI Assistant
+### 2. Create Your First Change Proposal
 
-After initialization, copy these prompts to your AI assistant (Claude Code, Cursor, etc.):
+After initialization, tell your AI assistant (Claude Code, Cursor, etc.):
 
 ```markdown
-// First, establish project context:
-"Please read openspec/project.md and help me fill it out
-with details about my project, tech stack, and conventions"
-
-// Then create your first change proposal:
+// Step 1: Create the change proposal
 "I want to add user authentication with JWT tokens.
 Please create an OpenSpec change proposal for this feature"
 
 // Your AI will:
 // 1. Create openspec/changes/add-user-auth/
-// 2. Write proposal.md explaining why and what
-// 3. Create tasks.md with implementation steps
+// 2. Write proposal.md explaining why and what  
+// 3. Create design.md with technical decisions (optional)
 // 4. Generate spec deltas showing what's being added
-// 5. Implement the code following the tasks
+// 5. Create tasks.md with implementation checklist
+
+// Step 2: Review the proposal
+// Look at the generated files and ensure they match your vision
+// Make any adjustments needed to the proposal or specs
+
+// Step 3: When ready, implement the change
+"The proposal looks good. Let's implement the user authentication 
+change following the tasks in openspec/changes/add-user-auth/tasks.md"
+
+// AI will then work through each task systematically,
+// marking them complete as it implements the feature
 ```
 
 ### 3. AI-Driven Development Workflow
