@@ -1,14 +1,29 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { ChangeCommand } from '../../../src/commands/change.js';
-
-// These tests assume the repository's own openspec/changes directory exists
-// and contains at least one active change (e.g., add-change-commands)
+import path from 'path';
+import { promises as fs } from 'fs';
+import os from 'os';
 
 describe('ChangeCommand.list', () => {
   let cmd: ChangeCommand;
+  let tempRoot: string;
+  let originalCwd: string;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     cmd = new ChangeCommand();
+    originalCwd = process.cwd();
+    tempRoot = path.join(os.tmpdir(), `openspec-change-command-list-${Date.now()}`);
+    const changeDir = path.join(tempRoot, 'openspec', 'changes', 'demo');
+    await fs.mkdir(changeDir, { recursive: true });
+    const proposal = `# Change: Demo\n\n## Why\nTest list.\n\n## What Changes\n- **auth:** Add requirement`;
+    await fs.writeFile(path.join(changeDir, 'proposal.md'), proposal, 'utf-8');
+    await fs.writeFile(path.join(changeDir, 'tasks.md'), '- [x] Task 1\n- [ ] Task 2\n', 'utf-8');
+    process.chdir(tempRoot);
+  });
+
+  afterAll(async () => {
+    process.chdir(originalCwd);
+    await fs.rm(tempRoot, { recursive: true, force: true });
   });
 
   it('returns JSON with expected shape', async () => {

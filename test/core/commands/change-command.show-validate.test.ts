@@ -1,34 +1,33 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { ChangeCommand } from '../../../src/commands/change.js';
 import path from 'path';
 import { promises as fs } from 'fs';
-
-async function findSingleActiveChange(root: string): Promise<string | undefined> {
-  const changesDir = path.join(root, 'openspec', 'changes');
-  try {
-    const entries = await fs.readdir(changesDir, { withFileTypes: true });
-    const names = entries
-      .filter((e) => e.isDirectory() && e.name !== 'archive')
-      .map((e) => e.name);
-    if (names.length === 1) return names[0];
-    return names.includes('add-change-commands') ? 'add-change-commands' : names[0];
-  } catch {
-    return undefined;
-  }
-}
+import os from 'os';
 
 describe('ChangeCommand.show/validate', () => {
   let cmd: ChangeCommand;
-  let changeName: string | undefined;
+  let changeName: string;
+  let tempRoot: string;
+  let originalCwd: string;
 
   beforeAll(async () => {
     cmd = new ChangeCommand();
-    changeName = await findSingleActiveChange(process.cwd());
+    originalCwd = process.cwd();
+    tempRoot = path.join(os.tmpdir(), `openspec-change-command-${Date.now()}`);
+    const changesDir = path.join(tempRoot, 'openspec', 'changes', 'sample-change');
+    await fs.mkdir(changesDir, { recursive: true });
+    const proposal = `# Change: Sample Change\n\n## Why\nConsistency in tests.\n\n## What Changes\n- **auth:** Add requirement`;
+    await fs.writeFile(path.join(changesDir, 'proposal.md'), proposal, 'utf-8');
+    process.chdir(tempRoot);
+    changeName = 'sample-change';
+  });
+
+  afterAll(async () => {
+    process.chdir(originalCwd);
+    await fs.rm(tempRoot, { recursive: true, force: true });
   });
 
   it('show --json prints JSON including deltas', async () => {
-    if (!changeName) return; // skip if no changes present
-
     const logs: string[] = [];
     const origLog = console.log;
     try {
@@ -67,8 +66,6 @@ describe('ChangeCommand.show/validate', () => {
   });
 
   it('show --json --requirements-only returns minimal object with deltas (deprecated alias)', async () => {
-    if (!changeName) return; // skip if no changes present
-
     const logs: string[] = [];
     const origLog = console.log;
     try {
@@ -93,8 +90,6 @@ describe('ChangeCommand.show/validate', () => {
   });
 
   it('validate --strict --json returns a report with valid boolean', async () => {
-    if (!changeName) return; // skip if no changes present
-
     const logs: string[] = [];
     const origLog = console.log;
     try {
