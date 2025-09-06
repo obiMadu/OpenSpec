@@ -16,6 +16,8 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -51,32 +53,18 @@ jobs:
           fi
 
       - name: Debug npm auth and context
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          test -n "$NPM_TOKEN" || (echo "NPM_TOKEN is missing" && exit 1)
-          echo "NPM_TOKEN present"
+          test -n "$NODE_AUTH_TOKEN" || (echo "NODE_AUTH_TOKEN is missing" && exit 1)
+          echo "NODE_AUTH_TOKEN present"
           npm --version
           pnpm --version
           node --version
           npm config get registry
-          # whoami will fail if not authenticated; after auth step below it should succeed
+          npm whoami
+          npm ping
 
       - run: pnpm test
       - run: pnpm run build
 
-      - name: Authenticate to npm
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          # Configure auth in user config; token value is not echoed
-          npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN" --location=user
-          # Sanity checks (should succeed now)
-          npm whoami
-          npm ping
-
       - name: Publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpm publish --access public --provenance --no-git-checks --tag next
