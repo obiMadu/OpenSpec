@@ -253,44 +253,6 @@ Each delta operation contains complete requirement blocks that will be merged in
 - diff: Show unified diff between a change’s deltas and current specs.
 - archive: Apply deltas to specs and move the change to `openspec/changes/archive/`. Supports `--skip-specs`.
 
-## JSON for Automation
-
-Specs:
-
-```bash
-openspec show auth --json --no-scenarios
-```
-
-Outputs shape:
-
-```json
-{
-  "id": "auth",
-  "title": "Auth Specification",
-  "overview": "...",
-  "requirementCount": 1,
-  "requirements": [{ "text": "...", "scenarios": [] }],
-  "metadata": { "version": "1.0.0", "format": "openspec" }
-}
-```
-
-Changes:
-
-```bash
-openspec show add-2fa --json --deltas-only
-```
-
-Outputs shape:
-
-```json
-{
-  "id": "add-2fa",
-  "title": "Add 2FA",
-  "deltaCount": 1,
-  "deltas": [{ "spec": "auth", "operation": "ADDED", "name": "Two-Factor Authentication", "raw": "..." }]
-}
-```
-
 ## AI Integration
 
 OpenSpec is built for AI-driven development. Your AI assistant creates and manages all specs and changes.
