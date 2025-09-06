@@ -8,30 +8,30 @@
 
 **Supported AI Tools:** ✅ Claude Code | 🔜 Cursor (coming soon) | 🔜 AGENTS.md support (coming soon)
 
-Universal spec-driven development that works with your AI coding assistant. Keep living specifications alongside code, propose changes as deltas, and archive once reality matches the spec. **No API keys required.**
+Create **alignment** between humans and AI coding assistants through spec-driven development. **No API keys required.**
 
-OpenSpec turns specifications into living documentation that drives development. Your specs and code stay in sync—propose changes, track implementation, and know exactly when features are complete. No more outdated docs or unclear requirements.
+OpenSpec ensures you and your AI assistant agree on what to build before any code is written. By discussing and refining specifications first, you bring determinism to AI code generation—getting exactly what you want, not what the AI thinks you might want.
 
 ## Why OpenSpec?
 
-**The Problem:** Documentation drifts from code. Requirements get lost in tickets. AI assistants lack context. Teams struggle to track what's actually built versus what's planned.
+**The Problem:** AI coding assistants are powerful but unpredictable. Without clear specifications, they generate code based on assumptions, often missing requirements or adding unwanted features. Teams waste time in review cycles because humans and AI aren't aligned on what to build.
 
-**The Solution:** OpenSpec makes specifications the single source of truth:
-- **Living Documentation** - Specs stay next to code and evolve together
-- **Change Proposals** - Delta-based changes show exactly what's being modified
-- **AI-Friendly** - Structured format that AI assistants understand and follow
-- **Clear Workflow** - Know what's proposed, what's built, and what's archived
-- **Team Alignment** - Everyone sees the same requirements and changes
+**The Solution:** OpenSpec creates alignment BEFORE code is written:
+- **Human-AI Alignment** - You and your AI agree on specifications before implementation
+- **Deterministic Output** - Clear specs lead to predictable code generation
+- **Team Alignment** - Everyone reviews specs, not code surprises
+- **Focus on What, Not How** - Define requirements while AI handles implementation
+- **Living Documentation** - Specs evolve with your code as a natural byproduct
 
 ## What You Get
 
-- **Better AI Code Generation** - Create specs first, get the code you actually want
+- **Alignment First** - Ensure humans and AI agree on what to build before writing code
+- **Predictable AI Output** - Turn non-deterministic AI into a reliable development partner
 - **Universal Tool Support** - Works with any AI assistant - Claude Code, Cursor, or future tools
 - **No API Keys Required** - Integrates through context rules, not external services
-- **Alignment with AI** - Your AI assistant understands exactly what to build through clear specifications
-- **Plan Before You Build** - Clarify features and requirements before implementation
-- **Team Clarity** - Everyone reviews specs, not code changes
-- **Track Progress** - See what changes are proposed, in progress, or completed
+- **Spec-Level Reviews** - Teams review intentions, not implementation details
+- **Clear Feature Scope** - Know exactly what you're building and what you're not
+- **Progress Tracking** - See what's proposed, in progress, or completed at a glance
 
 ## How It Works
 
