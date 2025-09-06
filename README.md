@@ -243,15 +243,6 @@ Each delta operation contains complete requirement blocks that will be merged in
 - Use SHALL/MUST in ADDED/MODIFIED requirement text
 - MODIFIED sections must contain the complete updated requirement, not just the changes
 
-## Core Commands
-
-- init: Initialize OpenSpec in the project.
-- update: Update OpenSpec instructions (team-friendly; only updates existing files, always refreshes `openspec/README.md`).
-- list: List changes (default) or specs with `--specs`.
-- show: Show a change or spec (raw text). Use `--json` for structured output; pass `--type change|spec` if ambiguous.
-- validate: Validate changes/specs. Supports `--changes`, `--specs`, `--all`, `--strict`, `--json`.
-- diff: Show unified diff between a change’s deltas and current specs.
-- archive: Apply deltas to specs and move the change to `openspec/changes/archive/`. Supports `--skip-specs`.
 
 ## AI Integration
 
@@ -296,106 +287,28 @@ AI: "I'll create an OpenSpec change proposal. Let me check the current auth spec
 openspec update
 ```
 
-### What Makes OpenSpec AI-Native
 
-- **Structured Format** - AI understands the exact format for specs and changes
-- **Clear Conventions** - Requirements use SHALL/MUST, scenarios follow patterns
-- **Validation Tools** - AI can verify its work with `openspec validate`
-- **Task Tracking** - AI marks tasks complete as it implements
-- **Context Aware** - AI reads existing specs before making changes
+## Comparison with Kiro.dev
 
-### Common AI Commands
+The key difference between OpenSpec and Kiro is **change management**:
 
-```markdown
-// Creating changes:
-"Create an OpenSpec change proposal for [feature]"
-"Add a new capability for [functionality]"
-"Modify the [spec-name] spec to include [enhancement]"
+- **OpenSpec**: Groups all changes for a feature in one place (`openspec/changes/feature-name/`). You can see exactly what specs, tasks, and code need to be modified for a single feature.
 
-// Implementation:
-"Implement the tasks in openspec/changes/[change-name]/tasks.md"
-"Continue with the next task"
-"Mark task 2.1 as complete"
+- **Kiro**: Changes affect multiple specs and create tasks across different folders. When implementing a feature that touches multiple capabilities, it's harder to track what needs to be done to complete that specific feature.
 
-// Validation:
-"Validate the current change with openspec"
-"Check if the spec formatting is correct"
-"Show me the diff for this change"
-```
-
-## Comparison with Alternatives
-
-### OpenSpec vs Kiro.dev
-
-| Aspect | OpenSpec | Kiro |
-|--------|----------|------|
-| **Approach** | CLI tool, works with any editor/IDE | Full IDE with built-in agents |
-| **Workflow** | Specs → Changes (deltas) → Archive | Requirements → Design → Tasks |
-| **File Format** | Markdown with specific headers | EARS notation for requirements |
-| **Change Tracking** | Delta-based proposals | Direct spec modification |
-| **AI Integration** | Works with any AI assistant | Built-in AI agents with hooks |
-| **Version Control** | Git-native, PR-friendly | Git-based with IDE integration |
-| **Learning Curve** | Simple CLI commands | New IDE and workflow |
-| **Team Adoption** | Drop into existing projects | Requires IDE adoption |
-
-### OpenSpec vs Traditional Docs
-
-| Aspect | OpenSpec | README/Wiki/Tickets |
-|--------|----------|--------------------|
-| **Location** | Next to code in repo | Separate systems |
-| **Drift Prevention** | Specs validated with code | Manual sync required |
-| **Change Process** | Structured proposals | Ad-hoc updates |
-| **AI Readability** | Structured, parseable | Varies widely |
-| **Completeness Tracking** | Archive shows when done | Manual status updates |
+This makes OpenSpec better for tracking feature completion and understanding the full scope of changes.
 
 ## Team Adoption
 
-### Introducing to Existing Projects
+### Getting Started with Your Team
 
-1. **Start Small** - Begin with one capability (e.g., authentication)
-2. **Document Current State** - Create specs for what exists today
-3. **Use for Next Feature** - Create your first change proposal
-4. **Iterate** - Refine the process based on team feedback
-
-### Migration Strategy
-
-```bash
-# Step 1: Initialize OpenSpec
-openspec init
-
-# Step 2: Create specs for existing features
-mkdir -p openspec/specs/existing-feature
-# Document current behavior in spec.md
-
-# Step 3: All new features use changes
-mkdir -p openspec/changes/new-feature
-# Team creates proposals before coding
-
-# Step 4: Gradually migrate docs
-# Move requirements from tickets/wikis to specs
-```
-
-### Team Workflow
-
-- **Product/PM** - Write requirements in proposal.md
-- **Engineers** - Create technical specs and implement
-- **AI Assistants** - Follow specs for consistent implementation
-- **QA** - Test against scenarios in specs
-- **Documentation** - Specs ARE the documentation
+1. **Initialize OpenSpec** - Run `openspec init` in your project
+2. **Start with new features** - Use OpenSpec for your next change proposal
+3. **Build incrementally** - Each new feature adds to your spec library
+4. **Future capability** - We're working on tools to generate specs from existing code
 
 `openspec update` is team-friendly: it updates instruction files without forcing tools on teammates. Multiple AI assistants can coexist without conflicts.
 
-
-## Troubleshooting
-
-- "Change must have at least one delta" → Ensure `## ADDED|MODIFIED|REMOVED|RENAMED Requirements` sections exist in `openspec/changes/<name>/specs/.../spec.md`.
-- "Requirement must have at least one scenario" → Add at least one `#### Scenario:` block under each requirement.
-- Missing SHALL/MUST in ADDED/MODIFIED → Add SHALL/MUST to requirement text.
-- Debug:
-  - `openspec validate <change-id> --strict --json`
-  - `openspec change show <change-id> --json --deltas-only`
-  - `openspec spec show <spec-id> --json -r 1`
-- Output control: `--no-color` disables ANSI (respects `NO_COLOR`).
 
 ## Contributing
 
@@ -409,6 +322,3 @@ mkdir -p openspec/changes/new-feature
 
 MIT
 
-## Deprecation Note
-
-Noun-first commands (`openspec spec ...`, `openspec change ...`) are available but deprecated. Prefer verb-first commands: `openspec list`, `openspec show`, `openspec validate`.
