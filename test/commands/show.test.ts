@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
@@ -10,9 +10,6 @@ describe('top-level show command', () => {
   const specsDir = path.join(testDir, 'openspec', 'specs');
   const openspecBin = path.join(projectRoot, 'bin', 'openspec.js');
 
-  beforeAll(() => {
-    execSync('pnpm -s build', { stdio: 'pipe' });
-  });
 
   beforeEach(async () => {
     await fs.mkdir(changesDir, { recursive: true });
