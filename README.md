@@ -61,107 +61,116 @@ OpenSpec turns specifications into living documentation that drives development.
 
 ## Getting Started
 
-### 1. Initialize Your Project
+### 1. Initialize OpenSpec in Your Project
 
 ```bash
-# Create a new project or navigate to existing one
-mkdir my-project && cd my-project
+# Navigate to your project
+cd my-project
 
 # Initialize OpenSpec
 openspec init
 
+# You'll be asked:
+# "Which AI tool do you use?"
+#   > Claude Code
+#     Cursor (coming soon)
+#     Aider (coming soon)
+#     Continue (coming soon)
+
 # This creates:
 # openspec/
-#   ├── specs/       # Your specifications
+#   ├── specs/       # Current specifications (truth)
 #   ├── changes/     # Proposed changes
-#   └── README.md    # Instructions for your team
+#   └── README.md    # AI instructions
 ```
 
-### 2. Create Your First Spec
+### 2. Start Working with Your AI Assistant
 
-```bash
-# Create a capability spec
-mkdir -p openspec/specs/user-auth
-echo "# User Authentication Specification
+After initialization, copy these prompts to your AI assistant (Claude Code, Cursor, etc.):
 
-## Purpose
-Handle user authentication and session management.
+```markdown
+// First, establish project context:
+"Please read openspec/project.md and help me fill it out
+with details about my project, tech stack, and conventions"
 
-## Requirements
-### Requirement: User Login
-The system SHALL authenticate users with email and password.
+// Then create your first change proposal:
+"I want to add user authentication with JWT tokens.
+Please create an OpenSpec change proposal for this feature"
 
-#### Scenario: Valid credentials
-- WHEN a user submits valid credentials
-- THEN return a JWT token with 24-hour expiry" > openspec/specs/user-auth/spec.md
-
-# Validate the spec
-openspec validate --specs
+// Your AI will:
+// 1. Create openspec/changes/add-user-auth/
+// 2. Write proposal.md explaining why and what
+// 3. Create tasks.md with implementation steps
+// 4. Generate spec deltas showing what's being added
+// 5. Implement the code following the tasks
 ```
 
-### 3. Propose a Change
+### 3. AI-Driven Development Workflow
 
-```bash
-# When you need to add two-factor authentication:
-mkdir -p openspec/changes/add-2fa/specs/user-auth
+```markdown
+// When starting a new feature:
+You: "I need to add two-factor authentication to our auth system"
 
-# Create the proposal
-echo "## Why
-Improve security by requiring a second authentication factor.
+AI: "I'll create an OpenSpec change proposal for 2FA. Let me first
+     check the current auth specs..."
+     *reads openspec/specs/user-auth/spec.md*
+     *creates openspec/changes/add-2fa/ with:*
+       - proposal.md (why and impact)
+       - tasks.md (implementation checklist)
+       - design.md (technical decisions)
+       - specs/user-auth/spec.md (ADDED requirements)
 
-## What Changes
-- Add OTP-based two-factor authentication
-- Require 2FA for admin accounts
+You: "Great, let's implement it"
 
-## Impact
-- Affected specs: user-auth
-- Affected code: auth service, login UI" > openspec/changes/add-2fa/proposal.md
-
-# Create the delta (what's being added)
-echo "## ADDED Requirements
-### Requirement: Two-Factor Authentication
-The system SHALL require OTP verification after password authentication.
-
-#### Scenario: OTP verification required
-- WHEN a user submits valid credentials
-- THEN prompt for OTP code
-- AND verify code before issuing JWT" > openspec/changes/add-2fa/specs/user-auth/spec.md
-
-# See what changes
-openspec diff add-2fa
+AI: "Following the tasks in openspec/changes/add-2fa/tasks.md:
+     Task 1.1: Create OTP model..."
+     *implements each task, marking complete*
 ```
 
-### 4. Track Implementation
+### 4. Track and Complete Changes
 
 ```bash
-# View active changes
+# View active changes (what's being worked on)
 openspec list
 
-# Show change details
-openspec show add-2fa
+# See the difference between proposed and current specs
+openspec diff add-2fa
 
-# After implementing, archive the change
+# Validate your changes are properly formatted
+openspec validate add-2fa --strict
+
+# After deployment, archive the completed change
 openspec archive add-2fa
+# This moves the change to archive/ and updates specs/
 ```
 
-## Minimal Example
+### Key Points
 
-Directory structure:
+- **You don't write spec files manually** - Your AI assistant creates them
+- **Specs are living documentation** - They evolve with your code
+- **Changes are proposals** - They show what will be modified before implementation
+- **AI follows the specs** - Ensuring consistent, documented development
+
+## Example: How AI Creates OpenSpec Files
+
+When you ask your AI assistant to "add two-factor authentication", it creates:
 
 ```
 openspec/
 ├── specs/
 │   └── auth/
-│       └── spec.md
+│       └── spec.md           # Current auth spec (if exists)
 └── changes/
-    └── add-2fa/
-        ├── proposal.md
+    └── add-2fa/              # AI creates this entire structure
+        ├── proposal.md       # Why and what changes
+        ├── tasks.md          # Implementation checklist
+        ├── design.md         # Technical decisions (optional)
         └── specs/
             └── auth/
-                └── spec.md   # delta format
+                └── spec.md   # Delta showing additions
 ```
 
-Spec format (`openspec/specs/auth/spec.md`):
+### AI-Generated Spec (created in `openspec/specs/auth/spec.md`):
 
 ```markdown
 # Auth Specification
@@ -178,7 +187,7 @@ The system SHALL issue a JWT on successful login.
 - THEN a JWT is returned
 ```
 
-Change delta format (`openspec/changes/add-2fa/specs/auth/spec.md`):
+### AI-Generated Change Delta (created in `openspec/changes/add-2fa/specs/auth/spec.md`):
 
 ```markdown
 # Delta for Auth
@@ -191,6 +200,25 @@ The system MUST require a second factor during login.
 - WHEN a user submits valid credentials
 - THEN an OTP challenge is required
 ```
+
+### AI-Generated Tasks (created in `openspec/changes/add-2fa/tasks.md`):
+
+```markdown
+## 1. Database Setup
+- [ ] 1.1 Add OTP secret column to users table
+- [ ] 1.2 Create OTP verification logs table
+
+## 2. Backend Implementation  
+- [ ] 2.1 Add OTP generation endpoint
+- [ ] 2.2 Modify login flow to require OTP
+- [ ] 2.3 Add OTP verification endpoint
+
+## 3. Frontend Updates
+- [ ] 3.1 Create OTP input component
+- [ ] 3.2 Update login flow UI
+```
+
+**Important:** You don't create these files manually. Your AI assistant generates them based on your requirements and the existing codebase.
 
 ### Understanding Delta Format
 
@@ -259,50 +287,73 @@ Outputs shape:
 
 ## AI Integration
 
-OpenSpec is designed to work seamlessly with AI coding assistants like Claude, GitHub Copilot, and Cursor.
+OpenSpec is built for AI-driven development. Your AI assistant creates and manages all specs and changes.
 
-### How AI Assistants Use OpenSpec
+### The AI Workflow
 
-1. **Context Loading** - AI reads specs to understand current capabilities
-2. **Change Creation** - AI creates properly formatted proposals and deltas
-3. **Task Execution** - AI follows tasks.md to implement changes systematically
-4. **Validation** - AI uses CLI to validate changes before committing
+1. **You describe what you want** - "Add user authentication" or "Improve performance"
+2. **AI creates the change proposal** - Generates proposal.md, tasks.md, and spec deltas
+3. **AI implements following specs** - Works through tasks.md systematically
+4. **You deploy and archive** - Once deployed, archive the change to update specs
 
-### Setting Up AI Integration
-
-```bash
-# Update AI configuration files (only modifies existing files)
-openspec update
-
-# This updates:
-# - openspec/README.md with latest conventions
-# - CLAUDE.md (if exists) with Claude-specific instructions
-# - .cursorrules (if exists) with Cursor rules
-# - Other AI config files as needed
-```
-
-### Example AI Workflow
+### How Your AI Assistant Works with OpenSpec
 
 ```markdown
-// Tell your AI assistant:
-"We use OpenSpec for spec-driven development. 
-Before making changes, check openspec/specs/ for current state.
-Create proposals in openspec/changes/ for new features."
+// Starting a new feature:
+You: "Add password reset functionality"
 
-// AI will then:
-1. Run `openspec list --specs` to see capabilities
-2. Read relevant specs with `openspec show <spec>`
-3. Create change proposal if needed
-4. Implement following the tasks.md checklist
-5. Validate with `openspec validate --strict`
+AI: "I'll create an OpenSpec change proposal. Let me check the current auth specs first..."
+    *Runs: openspec list --specs*
+    *Reads: openspec/specs/auth/spec.md*
+    *Creates: openspec/changes/add-password-reset/*
+    
+// AI automatically:
+- Checks existing specs to understand current state
+- Creates properly structured change proposals
+- Generates spec deltas showing what's being added/modified
+- Implements code following the tasks checklist
+- Validates changes with openspec validate
 ```
 
-### Best Practices for AI Development
+### Setting Up Your AI Assistant
 
-- Always have AI read specs before implementing
-- Use `openspec validate` to catch formatting issues
-- Let AI create proposals for complex changes
-- Archive changes only after deployment
+```bash
+# After running 'openspec init', your AI is configured
+# The init command:
+# 1. Asks which AI tool you use (Claude Code, Cursor, etc.)
+# 2. Creates the appropriate configuration files
+# 3. Sets up AI-specific instructions
+
+# To update AI configurations later:
+openspec update
+```
+
+### What Makes OpenSpec AI-Native
+
+- **Structured Format** - AI understands the exact format for specs and changes
+- **Clear Conventions** - Requirements use SHALL/MUST, scenarios follow patterns
+- **Validation Tools** - AI can verify its work with `openspec validate`
+- **Task Tracking** - AI marks tasks complete as it implements
+- **Context Aware** - AI reads existing specs before making changes
+
+### Common AI Commands
+
+```markdown
+// Creating changes:
+"Create an OpenSpec change proposal for [feature]"
+"Add a new capability for [functionality]"
+"Modify the [spec-name] spec to include [enhancement]"
+
+// Implementation:
+"Implement the tasks in openspec/changes/[change-name]/tasks.md"
+"Continue with the next task"
+"Mark task 2.1 as complete"
+
+// Validation:
+"Validate the current change with openspec"
+"Check if the spec formatting is correct"
+"Show me the diff for this change"
+```
 
 ## Comparison with Alternatives
 
