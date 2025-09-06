@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
-import { ensureBuild } from '../helpers/ensure-build.js';
 import path from 'path';
 import { execSync } from 'child_process';
 
@@ -10,10 +9,6 @@ describe('validate command enriched human output', () => {
   const changesDir = path.join(testDir, 'openspec', 'changes');
   const bin = path.join(projectRoot, 'bin', 'openspec.js');
 
-  beforeAll(() => {
-    // Build once so the bin can resolve dist
-    try { ensureBuild(); } catch {}
-  });
 
   beforeEach(async () => {
     await fs.mkdir(changesDir, { recursive: true });
