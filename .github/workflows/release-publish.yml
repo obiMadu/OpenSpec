@@ -30,8 +30,17 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
+          scope: '@fission-ai'
+          always-auth: true
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Ensure running from a tag
+        run: |
+          if [[ "$GITHUB_REF" != refs/tags/* ]]; then
+            echo "This workflow must run from a tag (got: $GITHUB_REF)";
+            exit 1;
+          fi
 
       - name: Verify release tag matches package.json
         run: |
@@ -41,14 +50,33 @@ jobs:
             echo "Tag v$TAG does not match package.json $PKG_VERSION"; exit 1
           fi
 
+      - name: Debug npm auth and context
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          test -n "$NPM_TOKEN" || (echo "NPM_TOKEN is missing" && exit 1)
+          echo "NPM_TOKEN present"
+          npm --version
+          pnpm --version
+          node --version
+          npm config get registry
+          # whoami will fail if not authenticated; after auth step below it should succeed
+
       - run: pnpm test
       - run: pnpm run build
 
       - name: Authenticate to npm
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Configure auth in user config; token value is not echoed
+          npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN" --location=user
+          # Sanity checks (should succeed now)
+          npm whoami
+          npm ping
 
       - name: Publish
-        run: pnpm publish --access public --provenance --no-git-checks
-
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm publish --access public --provenance --no-git-checks --tag next
