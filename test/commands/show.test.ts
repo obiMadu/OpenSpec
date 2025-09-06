@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
+import { ensureBuild } from '../helpers/ensure-build.js';
 
 describe('top-level show command', () => {
   const projectRoot = process.cwd();
@@ -11,7 +12,7 @@ describe('top-level show command', () => {
   const openspecBin = path.join(projectRoot, 'bin', 'openspec.js');
 
   beforeAll(() => {
-    execSync('pnpm -s build', { stdio: 'pipe' });
+    ensureBuild();
   });
 
   beforeEach(async () => {

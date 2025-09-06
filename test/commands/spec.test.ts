@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
+import { ensureBuild } from '../helpers/ensure-build.js';
 
 describe('spec command', () => {
   const projectRoot = process.cwd();
@@ -11,7 +12,7 @@ describe('spec command', () => {
   
   beforeAll(() => {
     // Ensure CLI is built so bin/openspec.js loads latest logic from dist/
-    execSync('pnpm -s build', { stdio: 'pipe' });
+    ensureBuild();
   });
   
   beforeEach(async () => {
