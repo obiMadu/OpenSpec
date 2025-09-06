@@ -241,10 +241,18 @@ export class ChangeCommand {
   private async getActiveChanges(changesPath: string): Promise<string[]> {
     try {
       const entries = await fs.readdir(changesPath, { withFileTypes: true });
-      return entries
-        .filter(entry => entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== ARCHIVE_DIR)
-        .map(entry => entry.name)
-        .sort();
+      const result: string[] = [];
+      for (const entry of entries) {
+        if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name === ARCHIVE_DIR) continue;
+        const proposalPath = path.join(changesPath, entry.name, 'proposal.md');
+        try {
+          await fs.access(proposalPath);
+          result.push(entry.name);
+        } catch {
+          // skip directories without proposal.md
+        }
+      }
+      return result.sort();
     } catch {
       return [];
     }
