@@ -1,12 +1,24 @@
 # OpenSpec
 
-A specification-driven development system for maintaining living documentation alongside your code.
+AI-native system for spec-driven development. Keep living specifications alongside code, propose changes as deltas, and archive once reality matches the spec.
+
+## Overview
+
+- Specs are the current truth stored in `openspec/specs/<capability>/spec.md`.
+- Changes are proposals stored in `openspec/changes/<name>/` with delta-formatted spec updates.
+- The CLI favors verb-first commands: `list`, `show`, `validate`, `diff`, `archive`.
+
+## Prerequisites
+
+- Node.js >= 20.19.0
+- pnpm (project standard)
 
 ## Installation
 
-```bash
-npm install -g openspec
-```
+- Global: `pnpm add -g @fission-ai/openspec`
+- Local (per project):
+  - `pnpm add -D @fission-ai/openspec`
+  - Run with `pnpm exec openspec ...`
 
 ## Quick Start
 
@@ -14,105 +26,154 @@ npm install -g openspec
 # Initialize OpenSpec in your project
 openspec init
 
-# Update existing OpenSpec instructions (team-friendly)
+# Update OpenSpec instructions (team-friendly)
 openspec update
 
-# List specs or changes
-openspec spec list        # specs (IDs by default; use --long for details)
-openspec change list      # changes (IDs by default; use --long for details)
+# List items (IDs only). Use --specs to list specs
+openspec list                 # defaults to changes
+openspec list --specs
 
-# Show differences between specs and proposed changes
-openspec diff [change-name]
+# Show an item (raw text by default)
+openspec show <item>
+openspec show <item> --json   # automation-friendly output
 
-# Archive completed changes
-openspec archive [change-name]
+# Validate
+openspec validate --changes --strict
+openspec validate --specs --json
+
+# See diffs between a change and current specs
+openspec diff <change-id>
+
+# Archive a completed change
+openspec archive <change-id> [--skip-specs]
 ```
 
-## Commands
+## Minimal Example
 
-### `openspec init`
+Directory structure:
 
-Initializes OpenSpec in your project by creating:
-- `openspec/` directory structure
-- `openspec/README.md` with OpenSpec instructions
-- AI tool configuration files (based on your selection)
+```
+openspec/
+├── specs/
+│   └── auth/
+│       └── spec.md
+└── changes/
+    └── add-2fa/
+        ├── proposal.md
+        └── specs/
+            └── auth/
+                └── spec.md   # delta format
+```
 
-### `openspec update`
+Spec format (`openspec/specs/auth/spec.md`):
 
-Updates OpenSpec instructions to the latest version. This command is **team-friendly** and only updates files that already exist:
+```markdown
+# Auth Specification
 
-- Always updates `openspec/README.md` with the latest OpenSpec instructions
-- **Only updates existing AI tool configuration files** (e.g., CLAUDE.md, CURSOR.md)
-- **Never creates new AI tool configuration files**
-- Preserves content outside of OpenSpec markers in AI tool files
+## Purpose
+Authentication and session management.
 
-This allows team members to use different AI tools without conflicts. Each developer can maintain their preferred AI tool configuration file, and `openspec update` will respect their choice.
+## Requirements
+### Requirement: User Authentication
+The system SHALL issue a JWT on successful login.
 
-### `openspec spec`
+#### Scenario: Valid credentials
+- WHEN a user submits valid credentials
+- THEN a JWT is returned
+```
 
-Manage and view specifications.
+Change delta format (`openspec/changes/add-2fa/specs/auth/spec.md`):
 
-Examples:
-- `openspec spec show <spec-id>`
-  - Text mode: prints raw `spec.md` content
-  - JSON mode (`--json`): returns minimal, stable shape
-    - Filters are JSON-only: `--requirements`, `--no-scenarios`, `-r/--requirement <1-based>`
-- `openspec spec list`
-  - Prints IDs only by default
-  - Use `--long` to include `title` and `[requirements N]`
-- `openspec spec validate <spec-id>`
-  - Text: human-readable summary to stdout/stderr
-  - `--json` for structured report
+```markdown
+# Delta for Auth
 
-### `openspec change`
+## ADDED Requirements
+### Requirement: Two-Factor Authentication
+The system MUST require a second factor during login.
 
-Manage and view change proposals.
+#### Scenario: OTP required
+- WHEN a user submits valid credentials
+- THEN an OTP challenge is required
+```
 
-Examples:
-- `openspec change show <change-id>`
-  - Text mode: prints raw `proposal.md` content
-  - JSON mode (`--json`): `{ id, title, deltaCount, deltas }`
-  - Filtering is JSON-only: `--deltas-only` (alias: `--requirements-only`, deprecated)
-- `openspec change list`
-  - Prints IDs only by default
-  - Use `--long` to include `title` and counts `[deltas N] [tasks x/y]`
-- `openspec change validate <change-id>`
-  - Text: human-readable result
-  - `--json` for structured report
+Critical formatting rules:
+- Use `### Requirement: <name>` for requirement headers.
+- Every requirement MUST include at least one `#### Scenario:` block.
+- Use SHALL/MUST in ADDED/MODIFIED requirement text.
 
-### `openspec diff [change-name]`
+## Core Commands
 
-Shows the differences between current specs and proposed changes:
-- Displays a unified diff format
-- Helps review what will change before implementation
-- Useful for pull request reviews
+- init: Initialize OpenSpec in the project.
+- update: Update OpenSpec instructions (team-friendly; only updates existing files, always refreshes `openspec/README.md`).
+- list: List changes (default) or specs with `--specs`.
+- show: Show a change or spec (raw text). Use `--json` for structured output; pass `--type change|spec` if ambiguous.
+- validate: Validate changes/specs. Supports `--changes`, `--specs`, `--all`, `--strict`, `--json`.
+- diff: Show unified diff between a change’s deltas and current specs.
+- archive: Apply deltas to specs and move the change to `openspec/changes/archive/`. Supports `--skip-specs`.
 
-### `openspec archive [change-name]`
+## JSON for Automation
 
-Archives a completed change:
-- Moves change from `openspec/changes/` to `openspec/changes/archive/`
-- Adds a date prefix to the archived change
-- Updates specs to reflect the new state
-- Use `--skip-specs` to archive without updating specs (for abandoned changes)
+Specs:
 
-## Team Collaboration
+```bash
+openspec show auth --json --no-scenarios
+```
 
-OpenSpec is designed for team collaboration:
+Outputs shape:
 
-1. **AI Tool Flexibility**: Each team member can use their preferred AI assistant (Claude, Cursor, etc.)
-2. **Non-Invasive Updates**: The `update` command only modifies existing files, never forcing tools on team members
-3. **Specification Sharing**: The `openspec/` directory contains shared specifications that all team members work from
-4. **Change Tracking**: Proposed changes are visible to all team members for review before implementation
+```json
+{
+  "id": "auth",
+  "title": "Auth Specification",
+  "overview": "...",
+  "requirementCount": 1,
+  "requirements": [{ "text": "...", "scenarios": [] }],
+  "metadata": { "version": "1.0.0", "format": "openspec" }
+}
+```
+
+Changes:
+
+```bash
+openspec show add-2fa --json --deltas-only
+```
+
+Outputs shape:
+
+```json
+{
+  "id": "add-2fa",
+  "title": "Add 2FA",
+  "deltaCount": 1,
+  "deltas": [{ "spec": "auth", "operation": "ADDED", "name": "Two-Factor Authentication", "raw": "..." }]
+}
+```
+
+## Team Workflow
+
+- `openspec update` is team-friendly: it updates `openspec/README.md` and only modifies AI config files that already exist (e.g., CLAUDE.md), never forcing tools on teammates.
+- Multiple AI tools can co-exist without conflicts.
+
+## Deprecation Note
+
+Noun-first commands (`openspec spec ...`, `openspec change ...`) are available but deprecated. Prefer verb-first commands: `openspec list`, `openspec show`, `openspec validate`.
+
+## Troubleshooting
+
+- "Change must have at least one delta" → Ensure `## ADDED|MODIFIED|REMOVED|RENAMED Requirements` sections exist in `openspec/changes/<name>/specs/.../spec.md`.
+- "Requirement must have at least one scenario" → Add at least one `#### Scenario:` block under each requirement.
+- Missing SHALL/MUST in ADDED/MODIFIED → Add SHALL/MUST to requirement text.
+- Debug:
+  - `openspec validate <change-id> --strict --json`
+  - `openspec change show <change-id> --json --deltas-only`
+  - `openspec spec show <spec-id> --json -r 1`
+- Output control: `--no-color` disables ANSI (respects `NO_COLOR`).
 
 ## Contributing
 
-See `openspec/specs/` for the current system specifications and `openspec/changes/` for pending improvements.
-
-## Notes
-
-- The legacy `openspec list` command is deprecated. Use `openspec spec list` and `openspec change list`.
-- Text output is raw-first (no formatting or filtering). Prefer `--json` for tooling-friendly output.
-- Global `--no-color` disables ANSI colors and respects `NO_COLOR`.
+- Use pnpm: `pnpm install`, `pnpm run build`, `pnpm test`.
+- Develop CLI locally: `pnpm dev` or `pnpm dev:cli`.
+- Conventional commits (one-line): `type(scope): subject`.
 
 ## License
 
