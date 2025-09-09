@@ -29,7 +29,7 @@ When triggered, document the specific justification in your change proposal.
 
 ## TL;DR Quick Checklist
 
-- Search existing work: \`rg -n "^#|Requirement:|## ADDED|## MODIFIED" openspec/specs openspec/changes\`
+- Search existing work: \`openspec spec list --long\`, \`openspec list\` (use \`rg\` only for full-text search)
 - Decide scope: new capability vs modify existing capability
 - Pick a unique \`change-id\`: kebab-case, verb-led (\`add-\`, \`update-\`, \`remove-\`, \`refactor-\`)
 - Scaffold: \`proposal.md\`, \`tasks.md\`, \`design.md\` (only if needed), and delta specs per affected capability
@@ -256,9 +256,12 @@ When implementing an approved change:
 This ensures changes are only archived when truly complete and deployed.
 
 ### Search Guidance
-- Prefer ripgrep for speed: \`rg -n "Requirement:|Scenario:" openspec/specs\`
-- Find existing capabilities by topic: \`rg -n "auth|payment|profile" openspec/specs\`
-- Check active changes quickly: \`rg -n "^#|Requirement:" openspec/changes\`
+- Enumerate specs: \`openspec spec list --long\` (or \`--json\` for scripts)
+- Enumerate changes: \`openspec list\` (or \`openspec change list --json\` - deprecated but available)
+- Show details:
+  - Spec: \`openspec show <spec-id> --type spec\` (use \`--json\` for filters)
+  - Change: \`openspec show <change-id> --json --deltas-only\`
+- Full-text search (use ripgrep): \`rg -n "Requirement:|Scenario:" openspec/specs\`
 
 ### 8. Types of Changes That Don't Require Specs
 
@@ -607,8 +610,11 @@ notifications/spec.md
 
 \`\`\`bash
 # 1) Explore current state
-rg -n "Requirement:|Scenario:" openspec/specs
-rg -n "^#|Requirement:" openspec/changes
+openspec spec list --long
+openspec list
+# Optional full-text search:
+# rg -n "Requirement:|Scenario:" openspec/specs
+# rg -n "^#|Requirement:" openspec/changes
 
 # 2) Choose change id and scaffold
 CHANGE=add-two-factor-auth

@@ -61,9 +61,10 @@ openspec show [change] --json --deltas-only
 3. **If ambiguous:** ask 1–2 clarifying questions before scaffolding
 
 ## Search Guidance
-- Prefer ripgrep for speed: \`rg -n "Requirement:|Scenario:" openspec/specs\`
-- Find existing capabilities by topic: \`rg -n "auth|payment|profile" openspec/specs\`
-- Check active changes: \`rg -n "^#|Requirement:" openspec/changes\`
+- Enumerate specs: \`openspec spec list --long\` (or \`--json\`)
+- Enumerate changes: \`openspec list\`
+- Show details: \`openspec show <spec-id> --type spec\`, \`openspec show <change-id> --json --deltas-only\`
+- Full-text search (use ripgrep): \`rg -n "Requirement:|Scenario:" openspec/specs\`
 
 ## Critical: Scenario Format
 
