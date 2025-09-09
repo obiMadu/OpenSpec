@@ -21,9 +21,6 @@ openspec update
 openspec spec list        # specs (IDs by default; use --long for details)
 openspec change list      # changes (IDs by default; use --long for details)
 
-# Show differences between specs and proposed changes
-openspec diff [change-name]
-
 # Archive completed changes
 openspec archive [change-name]
 ```
@@ -79,13 +76,6 @@ Examples:
 - `openspec change validate <change-id>`
   - Text: human-readable result
   - `--json` for structured report
-
-### `openspec diff [change-name]`
-
-Shows the differences between current specs and proposed changes:
-- Displays a unified diff format
-- Helps review what will change before implementation
-- Useful for pull request reviews
 
 ### `openspec archive [change-name]`
 

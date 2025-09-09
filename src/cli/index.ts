@@ -5,7 +5,6 @@ import path from 'path';
 import { promises as fs } from 'fs';
 import { InitCommand } from '../core/init.js';
 import { UpdateCommand } from '../core/update.js';
-import { DiffCommand } from '../core/diff.js';
 import { ListCommand } from '../core/list.js';
 import { ArchiveCommand } from '../core/archive.js';
 import { registerSpecCommand } from '../commands/spec.js';
@@ -74,20 +73,6 @@ program
       const resolvedPath = path.resolve(targetPath);
       const updateCommand = new UpdateCommand();
       await updateCommand.execute(resolvedPath);
-    } catch (error) {
-      console.log(); // Empty line for spacing
-      ora().fail(`Error: ${(error as Error).message}`);
-      process.exit(1);
-    }
-  });
-
-program
-  .command('diff [change-name]')
-  .description('Show differences between proposed spec changes and current specs (includes validation warnings)')
-  .action(async (changeName?: string) => {
-    try {
-      const diffCommand = new DiffCommand();
-      await diffCommand.execute(changeName);
     } catch (error) {
       console.log(); // Empty line for spacing
       ora().fail(`Error: ${(error as Error).message}`);

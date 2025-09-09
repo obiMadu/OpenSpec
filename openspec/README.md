@@ -55,7 +55,6 @@ After deployment, create separate PR to:
 openspec list                  # List active changes
 openspec list --specs          # List specifications
 openspec show [item]           # Display change or spec
-openspec diff [change]         # Show spec differences
 openspec validate [item]       # Validate changes or specs
 openspec archive [change]      # Archive after deployment
 
@@ -290,7 +289,6 @@ Only add complexity with:
 ```bash
 openspec list              # What's in progress?
 openspec show [item]       # View details
-openspec diff [change]     # What's changing?
 openspec validate --strict # Is it correct?
 openspec archive [change]  # Mark complete
 ```
