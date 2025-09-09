@@ -94,6 +94,17 @@ Before any task:
 - If adding dependencies, frameworks, or architectural patterns, document why simpler alternatives won't work
 - Default to single-file implementations until proven insufficient
 
+### Triggers (examples)
+- "Help me create a change proposal"
+- "Help me plan a change"
+- "Help me create a proposal"
+- "I want to create a spec proposal"
+- "I want to create a spec"
+
+Loose matching guidance:
+- Contains one of: \`proposal\`, \`change\`, \`spec\`
+- With one of: \`create\`, \`plan\`, \`make\`, \`start\`, \`help\`
+
 ### 3. Delta-Based Change Format
 
 Changes use a delta format with clear sections:
@@ -127,8 +138,12 @@ Key rules:
 When a user requests a significant change:
 
 \`\`\`bash
-# 1. Create the change directory
-openspec/changes/[descriptive-name]/
+# 1. Create the change directory (choose a clear, unique ID)
+# Change ID naming
+# - Kebab-case, short and descriptive (e.g., add-two-factor-auth)
+# - Prefer verb-led prefixes: add-, update-, remove-, refactor-
+# - Ensure uniqueness; if taken, append -2, -3, etc.
+openspec/changes/[change-id]/
 
 # 2. Generate proposal.md with all context
 ## Why
@@ -162,7 +177,12 @@ specs/
 - [ ] 1.1 [Specific task]
 - [ ] 1.2 [Specific task]
 
-# 5. For complex changes, add design.md
+# 5. Add design.md ONLY when needed
+# Create design.md if any apply:
+# - Cross-cutting change (multiple services/modules) or new architectural pattern
+# - New external dependency or significant data model changes
+# - Security, performance, or migration complexity
+# - Ambiguity that benefits from technical decisions before coding
 [Technical decisions and trade-offs]
 \`\`\`
 
@@ -183,6 +203,7 @@ When implementing an approved change:
 3. Ensure code matches the proposed behavior
 4. Update any affected tests
 5. **Keep change in \`changes/\` directory** - do NOT archive in implementation PR
+6. **Validate strictly** - Run \`openspec validate [change] --strict\` and address issues
 
 **Multiple Implementation PRs:**
 - Changes can be implemented across multiple PRs

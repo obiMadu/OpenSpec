@@ -12,6 +12,17 @@ Create proposal when you need to:
 - Optimize performance (changes behavior)
 - Update security patterns
 
+Triggers (examples):
+- "Help me create a change proposal"
+- "Help me plan a change"
+- "Help me create a proposal"
+- "I want to create a spec proposal"
+- "I want to create a spec"
+
+Loose matching guidance:
+- Contains one of: `proposal`, `change`, `spec`
+- With one of: `create`, `plan`, `make`, `start`, `help`
+
 Skip proposal for:
 - Bug fixes (restore intended behavior)
 - Typos, formatting, comments
@@ -25,6 +36,7 @@ Skip proposal for:
 3. **Read tasks.md** - Get implementation checklist
 4. **Implement tasks sequentially** - Complete in order
 5. **Mark complete immediately** - Update `- [x]` after each task
+6. **Validate strictly** - Run `openspec validate [change] --strict` and address issues
 
 ### Stage 3: Archiving Changes
 After deployment, create separate PR to:
@@ -45,6 +57,7 @@ After deployment, create separate PR to:
 - Always check if capability already exists
 - Prefer modifying existing specs over creating duplicates
 - Use `openspec show [spec]` to review current state
+- If request is ambiguous, ask 1–2 clarifying questions before scaffolding
 
 ## Quick Start
 
@@ -93,7 +106,7 @@ openspec/
 │   ├── [change-name]/
 │   │   ├── proposal.md     # Why, what, impact
 │   │   ├── tasks.md        # Implementation checklist
-│   │   ├── design.md       # Technical decisions (optional)
+│   │   ├── design.md       # Technical decisions (optional; see criteria)
 │   │   └── specs/          # Delta changes
 │   │       └── [capability]/
 │   │           └── spec.md # ADDED/MODIFIED/REMOVED
@@ -116,7 +129,7 @@ New request?
 
 ### Proposal Structure
 
-1. **Create directory:** `changes/[descriptive-name]/`
+1. **Create directory:** `changes/[change-id]/` (kebab-case, verb-led, unique)
 
 2. **Write proposal.md:**
 ```markdown
@@ -151,6 +164,7 @@ The system SHALL provide...
 **Reason**: [Why removing]
 **Migration**: [How to handle]
 ```
+If multiple capabilities are affected, create multiple delta files under `changes/[change-id]/specs/<capability>/spec.md`—one per capability.
 
 4. **Create tasks.md:**
 ```markdown
@@ -244,6 +258,11 @@ Only add complexity with:
 - 10-minute understandability rule
 - Split if description needs "AND"
 
+### Change ID Naming
+- Use kebab-case, short and descriptive: `add-two-factor-auth`
+- Prefer verb-led prefixes: `add-`, `update-`, `remove-`, `refactor-`
+- Ensure uniqueness; if taken, append `-2`, `-3`, etc.
+
 ## Tool Selection Guide
 
 | Task | Tool | Why |
@@ -291,6 +310,12 @@ Only add complexity with:
 openspec list              # What's in progress?
 openspec show [item]       # View details
 openspec diff [change]     # What's changing?
+5. **Create design.md when needed:**
+Create `design.md` if any of the following apply; otherwise omit it:
+- Cross-cutting change (multiple services/modules) or a new architectural pattern
+- New external dependency or significant data model changes
+- Security, performance, or migration complexity
+- Ambiguity that benefits from technical decisions before coding
 openspec validate --strict # Is it correct?
 openspec archive [change]  # Mark complete
 ```
