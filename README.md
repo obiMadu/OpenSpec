@@ -118,9 +118,6 @@ AI: "Following the tasks in openspec/changes/add-user-profile-api/tasks.md:
 # View active changes (what's being worked on)
 openspec list
 
-# See the difference between proposed and current specs
-openspec diff add-2fa
-
 # Validate your changes are properly formatted
 openspec validate add-2fa --strict
 
@@ -137,7 +134,6 @@ openspec list              # See what changes you're working on
 openspec archive <change>  # Mark a change as complete after deployment
 
 # Also useful:
-openspec diff <change>     # See what specs will change
 openspec validate <change> # Check formatting before committing
 openspec show <change>     # View change details
 ```

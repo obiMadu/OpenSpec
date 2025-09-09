@@ -35,7 +35,6 @@ After deployment, use \`openspec archive [change]\` (add \`--skip-specs\` for to
 openspec list              # Active changes
 openspec list --specs      # Existing specifications
 openspec show [item]       # View details
-openspec diff [change]     # Show spec differences
 openspec validate --strict # Validate thoroughly
 openspec archive [change]  # Archive after deployment
 
