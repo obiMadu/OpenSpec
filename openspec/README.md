@@ -2,6 +2,16 @@
 
 Instructions for AI coding assistants using OpenSpec for spec-driven development.
 
+## TL;DR Quick Checklist
+
+- Search existing work: `rg -n "^#|Requirement:|## ADDED|## MODIFIED" openspec/specs openspec/changes`
+- Decide scope: new capability vs modify existing capability
+- Pick a unique `change-id`: kebab-case, verb-led (`add-`, `update-`, `remove-`, `refactor-`)
+- Scaffold: `proposal.md`, `tasks.md`, `design.md` (only if needed), and delta specs per affected capability
+- Write deltas: use `## ADDED|MODIFIED|REMOVED|RENAMED Requirements`; include at least one `#### Scenario:` per requirement
+- Validate: `openspec validate [change-id] --strict` and fix issues
+- Request approval: Do not start implementation until proposal is approved
+
 ## Three-Stage Workflow
 
 ### Stage 1: Creating Changes
@@ -37,6 +47,7 @@ Skip proposal for:
 4. **Implement tasks sequentially** - Complete in order
 5. **Mark complete immediately** - Update `- [x]` after each task
 6. **Validate strictly** - Run `openspec validate [change] --strict` and address issues
+7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
 
 ### Stage 3: Archiving Changes
 After deployment, create separate PR to:
@@ -58,6 +69,11 @@ After deployment, create separate PR to:
 - Prefer modifying existing specs over creating duplicates
 - Use `openspec show [spec]` to review current state
 - If request is ambiguous, ask 1–2 clarifying questions before scaffolding
+
+### Search Guidance
+- Prefer ripgrep for speed: `rg -n "Requirement:|Scenario:" openspec/specs`
+- Find existing capabilities by topic: `rg -n "auth|payment|profile" openspec/specs`
+- Check active changes quickly: `rg -n "^#|Requirement:" openspec/changes`
 
 ## Quick Start
 
@@ -175,6 +191,36 @@ If multiple capabilities are affected, create multiple delta files under `change
 - [ ] 1.4 Write tests
 ```
 
+5. **Create design.md when needed:**
+Create `design.md` if any of the following apply; otherwise omit it:
+- Cross-cutting change (multiple services/modules) or a new architectural pattern
+- New external dependency or significant data model changes
+- Security, performance, or migration complexity
+- Ambiguity that benefits from technical decisions before coding
+
+Minimal `design.md` skeleton:
+```markdown
+## Context
+[Background, constraints, stakeholders]
+
+## Goals / Non-Goals
+- Goals: [...]
+- Non-Goals: [...]
+
+## Decisions
+- Decision: [What and why]
+- Alternatives considered: [Options + rationale]
+
+## Risks / Trade-offs
+- [Risk] → Mitigation
+
+## Migration Plan
+[Steps, rollback]
+
+## Open Questions
+- [...]
+```
+
 ## Spec File Format
 
 ### Critical: Scenario Formatting
@@ -195,6 +241,9 @@ If multiple capabilities are affected, create multiple delta files under `change
 
 Every requirement MUST have at least one scenario.
 
+### Requirement Wording
+- Use SHALL/MUST for normative requirements (avoid should/may unless intentionally non-normative)
+
 ### Delta Operations
 
 - `## ADDED Requirements` - New capabilities
@@ -203,6 +252,13 @@ Every requirement MUST have at least one scenario.
 - `## RENAMED Requirements` - Name changes
 
 Headers matched with `trim(header)` - whitespace ignored.
+
+Example for RENAMED:
+```markdown
+## RENAMED Requirements
+- FROM: `### Requirement: Login`
+- TO: `### Requirement: User Authentication`
+```
 
 ## Troubleshooting
 
@@ -231,6 +287,61 @@ openspec show [change] --json | jq '.deltas'
 
 # Check specific requirement
 openspec show [spec] --json -r 1
+```
+
+## Happy Path Script
+
+```bash
+# 1) Explore current state
+rg -n "Requirement:|Scenario:" openspec/specs
+rg -n "^#|Requirement:" openspec/changes
+
+# 2) Choose change id and scaffold
+CHANGE=add-two-factor-auth
+mkdir -p openspec/changes/$CHANGE/{specs/auth}
+printf "## Why\n...\n\n## What Changes\n- ...\n\n## Impact\n- ...\n" > openspec/changes/$CHANGE/proposal.md
+printf "## 1. Implementation\n- [ ] 1.1 ...\n" > openspec/changes/$CHANGE/tasks.md
+
+# 3) Add deltas (example)
+cat > openspec/changes/$CHANGE/specs/auth/spec.md << 'EOF'
+## ADDED Requirements
+### Requirement: Two-Factor Authentication
+Users MUST provide a second factor during login.
+
+#### Scenario: OTP required
+- **WHEN** valid credentials are provided
+- **THEN** an OTP challenge is required
+EOF
+
+# 4) Validate
+openspec validate $CHANGE --strict
+```
+
+## Multi-Capability Example
+
+```
+openspec/changes/add-2fa-notify/
+├── proposal.md
+├── tasks.md
+└── specs/
+    ├── auth/
+    │   └── spec.md   # ADDED: Two-Factor Authentication
+    └── notifications/
+        └── spec.md   # ADDED: OTP email notification
+```
+
+auth/spec.md
+```markdown
+## ADDED Requirements
+### Requirement: Two-Factor Authentication
+...
+```
+
+notifications/spec.md
+```markdown
+## ADDED Requirements
+### Requirement: OTP Email Notification
+...
 ```
 
 ## Best Practices
@@ -310,12 +421,6 @@ Only add complexity with:
 openspec list              # What's in progress?
 openspec show [item]       # View details
 openspec diff [change]     # What's changing?
-5. **Create design.md when needed:**
-Create `design.md` if any of the following apply; otherwise omit it:
-- Cross-cutting change (multiple services/modules) or a new architectural pattern
-- New external dependency or significant data model changes
-- Security, performance, or migration complexity
-- Ambiguity that benefits from technical decisions before coding
 openspec validate --strict # Is it correct?
 openspec archive [change]  # Mark complete
 ```

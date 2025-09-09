@@ -27,6 +27,16 @@ OpenSpec is an AI-native system for change-driven development where:
 
 When triggered, document the specific justification in your change proposal.
 
+## TL;DR Quick Checklist
+
+- Search existing work: \`rg -n "^#|Requirement:|## ADDED|## MODIFIED" openspec/specs openspec/changes\`
+- Decide scope: new capability vs modify existing capability
+- Pick a unique \`change-id\`: kebab-case, verb-led (\`add-\`, \`update-\`, \`remove-\`, \`refactor-\`)
+- Scaffold: \`proposal.md\`, \`tasks.md\`, \`design.md\` (only if needed), and delta specs per affected capability
+- Write deltas: use \`## ADDED|MODIFIED|REMOVED|RENAMED Requirements\`; include at least one \`#### Scenario:\` per requirement
+- Validate: \`openspec validate [change-id] --strict\` and fix issues
+- Request approval: Do not start implementation until proposal is approved
+
 ## Directory Structure
 
 \`\`\`
@@ -133,6 +143,9 @@ Key rules:
 - Include complete requirements (not diffs)
 - Use standard symbols in CLI output: + (added), ~ (modified), - (removed), → (renamed)
 
+Requirement wording:
+- Use SHALL/MUST for normative requirements (avoid should/may unless intentionally non-normative)
+
 ### 4. Creating a Change Proposal
 
 When a user requests a significant change:
@@ -184,6 +197,27 @@ specs/
 # - Security, performance, or migration complexity
 # - Ambiguity that benefits from technical decisions before coding
 [Technical decisions and trade-offs]
+
+# Minimal design.md skeleton:
+## Context
+[Background, constraints, stakeholders]
+
+## Goals / Non-Goals
+- Goals: [...]
+- Non-Goals: [...]
+
+## Decisions
+- Decision: [What and why]
+- Alternatives considered: [Options + rationale]
+
+## Risks / Trade-offs
+- [Risk] → Mitigation
+
+## Migration Plan
+[Steps, rollback]
+
+## Open Questions
+- [...]
 \`\`\`
 
 ### 5. The Change Lifecycle
@@ -204,6 +238,7 @@ When implementing an approved change:
 4. Update any affected tests
 5. **Keep change in \`changes/\` directory** - do NOT archive in implementation PR
 6. **Validate strictly** - Run \`openspec validate [change] --strict\` and address issues
+7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
 
 **Multiple Implementation PRs:**
 - Changes can be implemented across multiple PRs
@@ -219,6 +254,11 @@ When implementing an approved change:
 3. If design.md exists, incorporates proven patterns into \`specs/[capability]/design.md\`
 
 This ensures changes are only archived when truly complete and deployed.
+
+### Search Guidance
+- Prefer ripgrep for speed: \`rg -n "Requirement:|Scenario:" openspec/specs\`
+- Find existing capabilities by topic: \`rg -n "auth|payment|profile" openspec/specs\`
+- Check active changes quickly: \`rg -n "^#|Requirement:" openspec/changes\`
 
 ### 8. Types of Changes That Don't Require Specs
 
@@ -537,3 +577,56 @@ Proposal REQUIRED if:
 
 By following these conventions, you enable true spec-driven development where documentation stays current, changes are traceable, and evolution is intentional.
 `;
+### Multi-Capability Example
+\`\`\`
+openspec/changes/add-2fa-notify/
+├── proposal.md
+├── tasks.md
+└── specs/
+    ├── auth/
+    │   └── spec.md   # ADDED: Two-Factor Authentication
+    └── notifications/
+        └── spec.md   # ADDED: OTP email notification
+\`\`\`
+
+auth/spec.md
+\`\`\`markdown
+## ADDED Requirements
+### Requirement: Two-Factor Authentication
+...
+\`\`\`
+
+notifications/spec.md
+\`\`\`markdown
+## ADDED Requirements
+### Requirement: OTP Email Notification
+...
+\`\`\`
+
+## Happy Path Script
+
+\`\`\`bash
+# 1) Explore current state
+rg -n "Requirement:|Scenario:" openspec/specs
+rg -n "^#|Requirement:" openspec/changes
+
+# 2) Choose change id and scaffold
+CHANGE=add-two-factor-auth
+mkdir -p openspec/changes/$CHANGE/{specs/auth}
+printf "## Why\n...\n\n## What Changes\n- ...\n\n## Impact\n- ...\n" > openspec/changes/$CHANGE/proposal.md
+printf "## 1. Implementation\n- [ ] 1.1 ...\n" > openspec/changes/$CHANGE/tasks.md
+
+# 3) Add deltas (example)
+cat > openspec/changes/$CHANGE/specs/auth/spec.md << 'EOF'
+## ADDED Requirements
+### Requirement: Two-Factor Authentication
+Users MUST provide a second factor during login.
+
+#### Scenario: OTP required
+- **WHEN** valid credentials are provided
+- **THEN** an OTP challenge is required
+EOF
+
+# 4) Validate
+openspec validate $CHANGE --strict
+\`\`\`

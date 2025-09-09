@@ -16,6 +16,8 @@ Skip proposal for: bug fixes, typos, non-breaking updates
 3. Read tasks.md for implementation checklist
 4. Complete tasks one by one
 5. Mark each task complete immediately: \`- [x]\`
+6. Validate strictly: \`openspec validate [change] --strict\`
+7. Approval gate: Do not start implementation until the proposal is approved
 
 ### Stage 3: Archiving
 After deployment, use \`openspec archive [change]\` (add \`--skip-specs\` for tooling-only changes)
@@ -57,6 +59,11 @@ openspec show [change] --json --deltas-only
    - \`design.md\` - Only if needed (cross-cutting, new deps/data model, security/perf/migration complexity, or high ambiguity)
    - \`specs/[capability]/spec.md\` - Delta changes (ADDED/MODIFIED/REMOVED). For multiple capabilities, include multiple files.
 3. **If ambiguous:** ask 1–2 clarifying questions before scaffolding
+
+## Search Guidance
+- Prefer ripgrep for speed: \`rg -n "Requirement:|Scenario:" openspec/specs\`
+- Find existing capabilities by topic: \`rg -n "auth|payment|profile" openspec/specs\`
+- Check active changes: \`rg -n "^#|Requirement:" openspec/changes\`
 
 ## Critical: Scenario Format
 
