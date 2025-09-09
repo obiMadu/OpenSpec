@@ -52,7 +52,7 @@ openspec show [change] --json --deltas-only
 ## Creating Changes
 
 1. **Directory:** \`changes/[change-id]/\`
-   - Change ID naming: kebab-case, verb-led (`add-`, `update-`, `remove-`, `refactor-`), unique (append `-2`, `-3` if needed)
+   - Change ID naming: kebab-case, verb-led (\`add-\`, \`update-\`, \`remove-\`, \`refactor-\`), unique (append \`-2\`, \`-3\` if needed)
 2. **Files:**
    - \`proposal.md\` - Why, what, impact
    - \`tasks.md\` - Implementation checklist
