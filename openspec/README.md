@@ -2,6 +2,16 @@
 
 Instructions for AI coding assistants using OpenSpec for spec-driven development.
 
+## TL;DR Quick Checklist
+
+- Search existing work: `openspec spec list --long`, `openspec list` (use `rg` only for full-text search)
+- Decide scope: new capability vs modify existing capability
+- Pick a unique `change-id`: kebab-case, verb-led (`add-`, `update-`, `remove-`, `refactor-`)
+- Scaffold: `proposal.md`, `tasks.md`, `design.md` (only if needed), and delta specs per affected capability
+- Write deltas: use `## ADDED|MODIFIED|REMOVED|RENAMED Requirements`; include at least one `#### Scenario:` per requirement
+- Validate: `openspec validate [change-id] --strict` and fix issues
+- Request approval: Do not start implementation until proposal is approved
+
 ## Three-Stage Workflow
 
 ### Stage 1: Creating Changes
@@ -11,6 +21,17 @@ Create proposal when you need to:
 - Change architecture or patterns  
 - Optimize performance (changes behavior)
 - Update security patterns
+
+Triggers (examples):
+- "Help me create a change proposal"
+- "Help me plan a change"
+- "Help me create a proposal"
+- "I want to create a spec proposal"
+- "I want to create a spec"
+
+Loose matching guidance:
+- Contains one of: `proposal`, `change`, `spec`
+- With one of: `create`, `plan`, `make`, `start`, `help`
 
 Skip proposal for:
 - Bug fixes (restore intended behavior)
@@ -25,6 +46,8 @@ Skip proposal for:
 3. **Read tasks.md** - Get implementation checklist
 4. **Implement tasks sequentially** - Complete in order
 5. **Mark complete immediately** - Update `- [x]` after each task
+6. **Validate strictly** - Run `openspec validate [change] --strict` and address issues
+7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
 
 ### Stage 3: Archiving Changes
 After deployment, create separate PR to:
@@ -45,6 +68,15 @@ After deployment, create separate PR to:
 - Always check if capability already exists
 - Prefer modifying existing specs over creating duplicates
 - Use `openspec show [spec]` to review current state
+- If request is ambiguous, ask 1–2 clarifying questions before scaffolding
+
+### Search Guidance
+- Enumerate specs: `openspec spec list --long` (or `--json` for scripts)
+- Enumerate changes: `openspec list` (or `openspec change list --json` - deprecated but available)
+- Show details:
+  - Spec: `openspec show <spec-id> --type spec` (use `--json` for filters)
+  - Change: `openspec show <change-id> --json --deltas-only`
+- Full-text search (use ripgrep): `rg -n "Requirement:|Scenario:" openspec/specs`
 
 ## Quick Start
 
@@ -92,7 +124,7 @@ openspec/
 │   ├── [change-name]/
 │   │   ├── proposal.md     # Why, what, impact
 │   │   ├── tasks.md        # Implementation checklist
-│   │   ├── design.md       # Technical decisions (optional)
+│   │   ├── design.md       # Technical decisions (optional; see criteria)
 │   │   └── specs/          # Delta changes
 │   │       └── [capability]/
 │   │           └── spec.md # ADDED/MODIFIED/REMOVED
@@ -115,7 +147,7 @@ New request?
 
 ### Proposal Structure
 
-1. **Create directory:** `changes/[descriptive-name]/`
+1. **Create directory:** `changes/[change-id]/` (kebab-case, verb-led, unique)
 
 2. **Write proposal.md:**
 ```markdown
@@ -150,6 +182,7 @@ The system SHALL provide...
 **Reason**: [Why removing]
 **Migration**: [How to handle]
 ```
+If multiple capabilities are affected, create multiple delta files under `changes/[change-id]/specs/<capability>/spec.md`—one per capability.
 
 4. **Create tasks.md:**
 ```markdown
@@ -158,6 +191,36 @@ The system SHALL provide...
 - [ ] 1.2 Implement API endpoint
 - [ ] 1.3 Add frontend component
 - [ ] 1.4 Write tests
+```
+
+5. **Create design.md when needed:**
+Create `design.md` if any of the following apply; otherwise omit it:
+- Cross-cutting change (multiple services/modules) or a new architectural pattern
+- New external dependency or significant data model changes
+- Security, performance, or migration complexity
+- Ambiguity that benefits from technical decisions before coding
+
+Minimal `design.md` skeleton:
+```markdown
+## Context
+[Background, constraints, stakeholders]
+
+## Goals / Non-Goals
+- Goals: [...]
+- Non-Goals: [...]
+
+## Decisions
+- Decision: [What and why]
+- Alternatives considered: [Options + rationale]
+
+## Risks / Trade-offs
+- [Risk] → Mitigation
+
+## Migration Plan
+[Steps, rollback]
+
+## Open Questions
+- [...]
 ```
 
 ## Spec File Format
@@ -180,6 +243,9 @@ The system SHALL provide...
 
 Every requirement MUST have at least one scenario.
 
+### Requirement Wording
+- Use SHALL/MUST for normative requirements (avoid should/may unless intentionally non-normative)
+
 ### Delta Operations
 
 - `## ADDED Requirements` - New capabilities
@@ -188,6 +254,13 @@ Every requirement MUST have at least one scenario.
 - `## RENAMED Requirements` - Name changes
 
 Headers matched with `trim(header)` - whitespace ignored.
+
+Example for RENAMED:
+```markdown
+## RENAMED Requirements
+- FROM: `### Requirement: Login`
+- TO: `### Requirement: User Authentication`
+```
 
 ## Troubleshooting
 
@@ -218,6 +291,64 @@ openspec show [change] --json | jq '.deltas'
 openspec show [spec] --json -r 1
 ```
 
+## Happy Path Script
+
+```bash
+# 1) Explore current state
+openspec spec list --long
+openspec list
+# Optional full-text search:
+# rg -n "Requirement:|Scenario:" openspec/specs
+# rg -n "^#|Requirement:" openspec/changes
+
+# 2) Choose change id and scaffold
+CHANGE=add-two-factor-auth
+mkdir -p openspec/changes/$CHANGE/{specs/auth}
+printf "## Why\n...\n\n## What Changes\n- ...\n\n## Impact\n- ...\n" > openspec/changes/$CHANGE/proposal.md
+printf "## 1. Implementation\n- [ ] 1.1 ...\n" > openspec/changes/$CHANGE/tasks.md
+
+# 3) Add deltas (example)
+cat > openspec/changes/$CHANGE/specs/auth/spec.md << 'EOF'
+## ADDED Requirements
+### Requirement: Two-Factor Authentication
+Users MUST provide a second factor during login.
+
+#### Scenario: OTP required
+- **WHEN** valid credentials are provided
+- **THEN** an OTP challenge is required
+EOF
+
+# 4) Validate
+openspec validate $CHANGE --strict
+```
+
+## Multi-Capability Example
+
+```
+openspec/changes/add-2fa-notify/
+├── proposal.md
+├── tasks.md
+└── specs/
+    ├── auth/
+    │   └── spec.md   # ADDED: Two-Factor Authentication
+    └── notifications/
+        └── spec.md   # ADDED: OTP email notification
+```
+
+auth/spec.md
+```markdown
+## ADDED Requirements
+### Requirement: Two-Factor Authentication
+...
+```
+
+notifications/spec.md
+```markdown
+## ADDED Requirements
+### Requirement: OTP Email Notification
+...
+```
+
 ## Best Practices
 
 ### Simplicity First
@@ -242,6 +373,11 @@ Only add complexity with:
 - Single purpose per capability
 - 10-minute understandability rule
 - Split if description needs "AND"
+
+### Change ID Naming
+- Use kebab-case, short and descriptive: `add-two-factor-auth`
+- Prefer verb-led prefixes: `add-`, `update-`, `remove-`, `refactor-`
+- Ensure uniqueness; if taken, append `-2`, `-3`, etc.
 
 ## Tool Selection Guide
 

@@ -16,6 +16,8 @@ Skip proposal for: bug fixes, typos, non-breaking updates
 3. Read tasks.md for implementation checklist
 4. Complete tasks one by one
 5. Mark each task complete immediately: \`- [x]\`
+6. Validate strictly: \`openspec validate [change] --strict\`
+7. Approval gate: Do not start implementation until the proposal is approved
 
 ### Stage 3: Archiving
 After deployment, use \`openspec archive [change]\` (add \`--skip-specs\` for tooling-only changes)
@@ -48,11 +50,20 @@ openspec show [change] --json --deltas-only
 
 ## Creating Changes
 
-1. **Directory:** \`changes/[descriptive-name]/\`
+1. **Directory:** \`changes/[change-id]/\`
+   - Change ID naming: kebab-case, verb-led (\`add-\`, \`update-\`, \`remove-\`, \`refactor-\`), unique (append \`-2\`, \`-3\` if needed)
 2. **Files:**
    - \`proposal.md\` - Why, what, impact
    - \`tasks.md\` - Implementation checklist
-   - \`specs/[capability]/spec.md\` - Delta changes (ADDED/MODIFIED/REMOVED)
+   - \`design.md\` - Only if needed (cross-cutting, new deps/data model, security/perf/migration complexity, or high ambiguity)
+   - \`specs/[capability]/spec.md\` - Delta changes (ADDED/MODIFIED/REMOVED). For multiple capabilities, include multiple files.
+3. **If ambiguous:** ask 1–2 clarifying questions before scaffolding
+
+## Search Guidance
+- Enumerate specs: \`openspec spec list --long\` (or \`--json\`)
+- Enumerate changes: \`openspec list\`
+- Show details: \`openspec show <spec-id> --type spec\`, \`openspec show <change-id> --json --deltas-only\`
+- Full-text search (use ripgrep): \`rg -n "Requirement:|Scenario:" openspec/specs\`
 
 ## Critical: Scenario Format
 
