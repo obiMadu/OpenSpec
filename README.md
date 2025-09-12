@@ -3,7 +3,7 @@
     <picture>
       <source srcset="assets/openspec_pixel_dark.svg" media="(prefers-color-scheme: dark)">
       <source srcset="assets/openspec_pixel_light.svg" media="(prefers-color-scheme: light)">
-      <img src="assets/openspec_pixel_light.svg" alt="OpenSpec logo" height="96">
+      <img src="assets/openspec_pixel_light.svg" alt="OpenSpec logo" height="64">
     </picture>
   </a>
   
