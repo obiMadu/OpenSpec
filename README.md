@@ -1,10 +1,23 @@
-# OpenSpec
+<p align="center">
+  <a href="https://github.com/Fission-AI/OpenSpec">
+    <picture>
+      <source srcset="assets/openspec_pixel_dark.svg" media="(prefers-color-scheme: dark)">
+      <source srcset="assets/openspec_pixel_light.svg" media="(prefers-color-scheme: light)">
+      <img src="assets/openspec_pixel_light.svg" alt="OpenSpec logo" height="96">
+    </picture>
+  </a>
+  
+</p>
+<p align="center">Spec-driven development for AI coding assistants.</p>
+<p align="center">
+  <a href="https://github.com/Fission-AI/OpenSpec/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Fission-AI/OpenSpec/actions/workflows/ci.yml/badge.svg" /></a>
+  <a href="https://www.npmjs.com/package/@fission-ai/openspec"><img alt="npm version" src="https://img.shields.io/npm/v/@fission-ai/openspec?style=flat-square" /></a>
+  <a href="https://nodejs.org/"><img alt="node version" src="https://img.shields.io/node/v/@fission-ai/openspec?style=flat-square" /></a>
+  <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" /></a>
+  <a href="https://conventionalcommits.org"><img alt="Conventional Commits" src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=flat-square" /></a>
+</p>
 
-[![CI](https://github.com/Fission-AI/OpenSpec/actions/workflows/ci.yml/badge.svg)](https://github.com/Fission-AI/OpenSpec/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/@fission-ai/openspec)](https://www.npmjs.com/package/@fission-ai/openspec)
-[![node](https://img.shields.io/node/v/@fission-ai/openspec)](https://nodejs.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+# OpenSpec
 
 **Supported AI Tools:** ✅ Claude Code | 🔜 Cursor (coming soon) | 🔜 AGENTS.md support (coming soon)
 
@@ -267,4 +280,3 @@ Without specs, AI coding assistants generate code based on vague prompts, often 
 ## License
 
 MIT
-
