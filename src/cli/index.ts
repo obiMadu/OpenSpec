@@ -7,6 +7,7 @@ import { InitCommand } from '../core/init.js';
 import { UpdateCommand } from '../core/update.js';
 import { ListCommand } from '../core/list.js';
 import { ArchiveCommand } from '../core/archive.js';
+import { ViewCommand } from '../core/view.js';
 import { registerSpecCommand } from '../commands/spec.js';
 import { ChangeCommand } from '../commands/change.js';
 import { ValidateCommand } from '../commands/validate.js';
@@ -90,6 +91,20 @@ program
       const listCommand = new ListCommand();
       const mode: 'changes' | 'specs' = options?.specs ? 'specs' : 'changes';
       await listCommand.execute('.', mode);
+    } catch (error) {
+      console.log(); // Empty line for spacing
+      ora().fail(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('view')
+  .description('Display an interactive dashboard of specs and changes')
+  .action(async () => {
+    try {
+      const viewCommand = new ViewCommand();
+      await viewCommand.execute('.');
     } catch (error) {
       console.log(); // Empty line for spacing
       ora().fail(`Error: ${(error as Error).message}`);
