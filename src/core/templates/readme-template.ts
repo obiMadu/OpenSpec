@@ -256,6 +256,19 @@ Every requirement MUST have at least one scenario.
 
 Headers matched with \`trim(header)\` - whitespace ignored.
 
+#### When to use ADDED vs MODIFIED
+- ADDED: Introduces a new capability or sub-capability that can stand alone as a requirement. Prefer ADDED when the change is orthogonal (e.g., adding "Slash Command Configuration") rather than altering the semantics of an existing requirement.
+- MODIFIED: Changes the behavior, scope, or acceptance criteria of an existing requirement. Always paste the full, updated requirement content (header + all scenarios). The archiver will replace the entire requirement with what you provide here; partial deltas will drop previous details.
+- RENAMED: Use when only the name changes. If you also change behavior, use RENAMED (name) plus MODIFIED (content) referencing the new name.
+
+Common pitfall: Using MODIFIED to add a new concern without including the previous text. This causes loss of detail at archive time. If you aren’t explicitly changing the existing requirement, add a new requirement under ADDED instead.
+
+Authoring a MODIFIED requirement correctly:
+1) Locate the existing requirement in \`openspec/specs/<capability>/spec.md\`.
+2) Copy the entire requirement block (from \`### Requirement: ...\` through its scenarios).
+3) Paste it under \`## MODIFIED Requirements\` and edit to reflect the new behavior.
+4) Ensure the header text matches exactly (whitespace-insensitive) and keep at least one \`#### Scenario:\`.
+
 Example for RENAMED:
 \`\`\`markdown
 ## RENAMED Requirements
