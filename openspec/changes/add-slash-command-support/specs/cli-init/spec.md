@@ -1,5 +1,5 @@
-## MODIFIED Requirements
-### Requirement: AI Tool Configuration
+## ADDED Requirements
+### Requirement: Slash Command Configuration
 The init command SHALL generate slash command files for supported editors using shared templates.
 
 #### Scenario: Generating slash commands for Claude Code

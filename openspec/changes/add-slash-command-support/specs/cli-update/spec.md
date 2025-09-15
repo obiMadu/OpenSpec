@@ -1,5 +1,5 @@
-## MODIFIED Requirements
-### Requirement: Tool-Agnostic Updates
+## ADDED Requirements
+### Requirement: Slash Command Updates
 The update command SHALL refresh existing slash command files for configured tools without creating new ones.
 
 #### Scenario: Updating slash commands for Claude Code
