@@ -3,12 +3,12 @@
 The update command SHALL refresh existing slash command files for configured tools without creating new ones.
 
 #### Scenario: Updating slash commands for Claude Code
-- **WHEN** `.claude/commands/openspec/` contains `create-change.md`, `implement-change.md`, and `archive-change.md`
+- **WHEN** `.claude/commands/openspec/` contains `proposal.md`, `apply.md`, and `archive.md`
 - **THEN** refresh each file using shared templates
 - **AND** ensure templates include instructions for the relevant workflow stage
 
 #### Scenario: Updating slash commands for Cursor
-- **WHEN** `.cursor/commands/` contains `create-change.md`, `implement-change.md`, and `archive-change.md`
+- **WHEN** `.cursor/commands/` contains `openspec-proposal.md`, `openspec-apply.md`, and `openspec-archive.md`
 - **THEN** refresh each file using shared templates
 - **AND** ensure templates include instructions for the relevant workflow stage
 
