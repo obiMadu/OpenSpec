@@ -86,7 +86,7 @@ Old slash content
     expect(updated).not.toContain('Old slash content');
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (README.md)\nUpdated slash commands: .claude/commands/openspec/proposal.md'
+      'Updated OpenSpec instructions (AGENTS.md)\nUpdated slash commands: .claude/commands/openspec/proposal.md'
     );
 
     consoleSpy.mockRestore();
@@ -128,7 +128,7 @@ Old body
     expect(updated).not.toContain('Old body');
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (README.md)\nUpdated slash commands: .cursor/commands/openspec-apply.md'
+      'Updated OpenSpec instructions (AGENTS.md)\nUpdated slash commands: .cursor/commands/openspec-apply.md'
     );
 
     consoleSpy.mockRestore();
