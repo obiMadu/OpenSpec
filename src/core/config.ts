@@ -11,7 +11,7 @@ export const OPENSPEC_MARKERS = {
 
 export const AI_TOOLS = [
   { name: 'Claude Code', value: 'claude', available: true },
-  { name: 'Cursor', value: 'cursor', available: false },
+  { name: 'Cursor', value: 'cursor', available: true },
   { name: 'Aider', value: 'aider', available: false },
   { name: 'Continue', value: 'continue', available: false }
 ];

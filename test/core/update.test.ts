@@ -61,6 +61,37 @@ More content after.`;
     consoleSpy.mockRestore();
   });
 
+  it('should refresh existing Claude slash command files', async () => {
+    const proposalPath = path.join(testDir, '.claude/commands/openspec/proposal.md');
+    await fs.mkdir(path.dirname(proposalPath), { recursive: true });
+    const initialContent = `---
+name: OpenSpec: Proposal
+description: Old description
+category: OpenSpec
+tags: [openspec, change]
+---
+<!-- OPENSPEC:START -->
+Old slash content
+<!-- OPENSPEC:END -->`;
+    await fs.writeFile(proposalPath, initialContent);
+
+    const consoleSpy = vi.spyOn(console, 'log');
+
+    await updateCommand.execute(testDir);
+
+    const updated = await fs.readFile(proposalPath, 'utf-8');
+    expect(updated).toContain('name: OpenSpec: Proposal');
+    expect(updated).toContain('**Guardrails**');
+    expect(updated).toContain('Validate with `openspec validate <id> --strict`');
+    expect(updated).not.toContain('Old slash content');
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Updated OpenSpec instructions (README.md)\nUpdated slash commands: .claude/commands/openspec/proposal.md'
+    );
+
+    consoleSpy.mockRestore();
+  });
+
   it('should not create CLAUDE.md if it does not exist', async () => {
     // Ensure CLAUDE.md does not exist
     const claudePath = path.join(testDir, 'CLAUDE.md');
@@ -71,6 +102,36 @@ More content after.`;
     // Check that CLAUDE.md was not created
     const fileExists = await FileSystemUtils.fileExists(claudePath);
     expect(fileExists).toBe(false);
+  });
+
+  it('should refresh existing Cursor slash command files', async () => {
+    const cursorPath = path.join(testDir, '.cursor/commands/openspec-apply.md');
+    await fs.mkdir(path.dirname(cursorPath), { recursive: true });
+    const initialContent = `---
+name: /openspec-apply
+id: openspec-apply
+category: OpenSpec
+description: Old description
+---
+<!-- OPENSPEC:START -->
+Old body
+<!-- OPENSPEC:END -->`;
+    await fs.writeFile(cursorPath, initialContent);
+
+    const consoleSpy = vi.spyOn(console, 'log');
+
+    await updateCommand.execute(testDir);
+
+    const updated = await fs.readFile(cursorPath, 'utf-8');
+    expect(updated).toContain('id: openspec-apply');
+    expect(updated).toContain('Work through tasks sequentially');
+    expect(updated).not.toContain('Old body');
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Updated OpenSpec instructions (README.md)\nUpdated slash commands: .cursor/commands/openspec-apply.md'
+    );
+
+    consoleSpy.mockRestore();
   });
 
   it('should handle no AI tool files present', async () => {
@@ -89,6 +150,7 @@ More content after.`;
     // that all existing files are updated in a single operation.
     // For now, we test with just CLAUDE.md.
     const claudePath = path.join(testDir, 'CLAUDE.md');
+    await fs.mkdir(path.dirname(claudePath), { recursive: true });
     await fs.writeFile(claudePath, '<!-- OPENSPEC:START -->\nOld\n<!-- OPENSPEC:END -->');
 
     const consoleSpy = vi.spyOn(console, 'log');
@@ -99,6 +161,28 @@ More content after.`;
       'Updated OpenSpec instructions (README.md)\nUpdated AI tool files: CLAUDE.md'
     );
     consoleSpy.mockRestore();
+  });
+
+  it('should skip creating missing slash commands during update', async () => {
+    const proposalPath = path.join(testDir, '.claude/commands/openspec/proposal.md');
+    await fs.mkdir(path.dirname(proposalPath), { recursive: true });
+    await fs.writeFile(proposalPath, `---
+name: OpenSpec: Proposal
+description: Existing file
+category: OpenSpec
+tags: [openspec, change]
+---
+<!-- OPENSPEC:START -->
+Old content
+<!-- OPENSPEC:END -->`);
+
+    await updateCommand.execute(testDir);
+
+    const applyExists = await FileSystemUtils.fileExists(path.join(testDir, '.claude/commands/openspec/apply.md'));
+    const archiveExists = await FileSystemUtils.fileExists(path.join(testDir, '.claude/commands/openspec/archive.md'));
+
+    expect(applyExists).toBe(false);
+    expect(archiveExists).toBe(false);
   });
 
   it('should never create new AI tool files', async () => {

@@ -86,6 +86,59 @@ describe('InitCommand', () => {
       expect(updatedContent).toContain('Custom instructions here');
     });
 
+    it('should create Claude slash command files with templates', async () => {
+      vi.mocked(prompts.select).mockResolvedValue('claude');
+
+      await initCommand.execute(testDir);
+
+      const claudeProposal = path.join(testDir, '.claude/commands/openspec/proposal.md');
+      const claudeApply = path.join(testDir, '.claude/commands/openspec/apply.md');
+      const claudeArchive = path.join(testDir, '.claude/commands/openspec/archive.md');
+
+      expect(await fileExists(claudeProposal)).toBe(true);
+      expect(await fileExists(claudeApply)).toBe(true);
+      expect(await fileExists(claudeArchive)).toBe(true);
+
+      const proposalContent = await fs.readFile(claudeProposal, 'utf-8');
+      expect(proposalContent).toContain('name: OpenSpec: Proposal');
+      expect(proposalContent).toContain('<!-- OPENSPEC:START -->');
+      expect(proposalContent).toContain('**Guardrails**');
+
+      const applyContent = await fs.readFile(claudeApply, 'utf-8');
+      expect(applyContent).toContain('name: OpenSpec: Apply');
+      expect(applyContent).toContain('Work through tasks sequentially');
+
+      const archiveContent = await fs.readFile(claudeArchive, 'utf-8');
+      expect(archiveContent).toContain('name: OpenSpec: Archive');
+      expect(archiveContent).toContain('openspec archive <id> --skip-specs');
+    });
+
+    it('should create Cursor slash command files with templates', async () => {
+      vi.mocked(prompts.select).mockResolvedValue('cursor');
+
+      await initCommand.execute(testDir);
+
+      const cursorProposal = path.join(testDir, '.cursor/commands/openspec-proposal.md');
+      const cursorApply = path.join(testDir, '.cursor/commands/openspec-apply.md');
+      const cursorArchive = path.join(testDir, '.cursor/commands/openspec-archive.md');
+
+      expect(await fileExists(cursorProposal)).toBe(true);
+      expect(await fileExists(cursorApply)).toBe(true);
+      expect(await fileExists(cursorArchive)).toBe(true);
+
+      const proposalContent = await fs.readFile(cursorProposal, 'utf-8');
+      expect(proposalContent).toContain('name: /openspec-proposal');
+      expect(proposalContent).toContain('<!-- OPENSPEC:END -->');
+
+      const applyContent = await fs.readFile(cursorApply, 'utf-8');
+      expect(applyContent).toContain('id: openspec-apply');
+      expect(applyContent).toContain('Work through tasks sequentially');
+
+      const archiveContent = await fs.readFile(cursorArchive, 'utf-8');
+      expect(archiveContent).toContain('name: /openspec-archive');
+      expect(archiveContent).toContain('openspec list --specs');
+    });
+
     it('should throw error if OpenSpec already exists', async () => {
       const openspecPath = path.join(testDir, 'openspec');
       await fs.mkdir(openspecPath, { recursive: true });
