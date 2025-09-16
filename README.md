@@ -27,7 +27,9 @@
 
 # OpenSpec
 
-**Supported AI Tools:** ✅ Claude Code | ✅ Cursor | ✅ AGENTS.md instructions
+**Supported AI Tools:** ✅ Claude Code (custom slash commands) | ✅ Cursor (custom slash commands)
+
+Any assistant that understands the [AGENTS.md](https://agents.md/) convention—such as Codex, Amp, Jules, OpenCode, Gemini CLI, or GitHub Copilot—can consume the OpenSpec instructions, though without the slash-command shortcuts.
 
 **Custom Slash Commands:** Jump straight into any workflow step with the optional `/openspec` commands—no prompt engineering required:
 
@@ -279,12 +281,23 @@ Without specs, AI coding assistants generate code based on vague prompts, often 
 **Tool Freedom:** Your team can use different AI assistants. One developer might use Claude Code while another uses Cursor - OpenSpec keeps everyone aligned through shared specifications. Run `openspec update` to configure for any supported tool without affecting others.
 
 
+## Updating OpenSpec
+
+1. **Upgrade the package**
+   - Local dependency: `pnpm add @fission-ai/openspec@latest`
+   - Global CLI: `npm install -g @fission-ai/openspec@latest`
+2. **Refresh agent instructions**
+   - Run `openspec update` inside each project to regenerate AI instructions and refresh slash-command bindings.
+
+Run the update step after every version bump (or when switching tools) so your agents always pick up the latest guidance.
+
+
 ## Contributing
 
-- Install dependencies: `npm install`
-- Build: `npm run build`
-- Test: `npm test`
-- Develop CLI locally: `npm run dev` or `npm run dev:cli`
+- Install dependencies: `pnpm install`
+- Build: `pnpm run build`
+- Test: `pnpm test`
+- Develop CLI locally: `pnpm run dev` or `pnpm run dev:cli`
 - Conventional commits (one-line): `type(scope): subject`
 
 ## License
