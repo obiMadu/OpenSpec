@@ -95,8 +95,15 @@ export class ViewCommand {
       }
     }
 
-    // Sort alphabetically
-    active.sort((a, b) => a.name.localeCompare(b.name));
+    // Sort active changes by completion percentage (ascending) and then by name for deterministic ordering
+    active.sort((a, b) => {
+      const percentageA = a.progress.total > 0 ? a.progress.completed / a.progress.total : 0;
+      const percentageB = b.progress.total > 0 ? b.progress.completed / b.progress.total : 0;
+
+      if (percentageA < percentageB) return -1;
+      if (percentageA > percentageB) return 1;
+      return a.name.localeCompare(b.name);
+    });
     completed.sort((a, b) => a.name.localeCompare(b.name));
 
     return { active, completed };

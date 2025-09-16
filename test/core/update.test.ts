@@ -228,22 +228,31 @@ Old content
     const claudePath = path.join(testDir, 'CLAUDE.md');
     await fs.writeFile(claudePath, '<!-- OPENSPEC:START -->\nOld\n<!-- OPENSPEC:END -->');
     await fs.chmod(claudePath, 0o444); // Read-only
-    
+
     const consoleSpy = vi.spyOn(console, 'log');
     const errorSpy = vi.spyOn(console, 'error');
-    
+    const originalWriteFile = FileSystemUtils.writeFile.bind(FileSystemUtils);
+    const writeSpy = vi.spyOn(FileSystemUtils, 'writeFile').mockImplementation(async (filePath, content) => {
+      if (filePath.endsWith('CLAUDE.md')) {
+        throw new Error('EACCES: permission denied, open');
+      }
+
+      return originalWriteFile(filePath, content);
+    });
+
     // Execute update command - should not throw
     await updateCommand.execute(testDir);
-    
+
     // Should report the failure
     expect(errorSpy).toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalledWith(
       'Updated OpenSpec instructions (README.md)\nFailed to update: CLAUDE.md'
     );
-    
+
     // Restore permissions for cleanup
     await fs.chmod(claudePath, 0o644);
     consoleSpy.mockRestore();
     errorSpy.mockRestore();
+    writeSpy.mockRestore();
   });
 });
