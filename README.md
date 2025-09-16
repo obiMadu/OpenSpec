@@ -17,6 +17,14 @@
   <a href="https://conventionalcommits.org"><img alt="Conventional Commits" src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=flat-square" /></a>
 </p>
 
+<p align="center">
+  <img src="assets/openspec_dashboard.png" alt="OpenSpec dashboard preview" width="90%">
+</p>
+
+<p align="center">
+  Follow <a href="https://x.com/0xTab">@0xTab on X</a> for updates.
+</p>
+
 # OpenSpec
 
 **Supported AI Tools:** ✅ Claude Code | 🔜 Cursor (coming soon) | ✅ AGENTS.md instructions
