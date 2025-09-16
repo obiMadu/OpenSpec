@@ -2,7 +2,7 @@ export const claudeTemplate = `# OpenSpec Project
 
 This project uses OpenSpec for spec-driven development. Specifications are the source of truth.
 
-See @openspec/README.md for detailed conventions and guidelines.
+See @openspec/AGENTS.md for detailed conventions and guidelines.
 
 ## Three-Stage Workflow
 

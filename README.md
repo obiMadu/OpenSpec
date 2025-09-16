@@ -19,7 +19,7 @@
 
 # OpenSpec
 
-**Supported AI Tools:** ✅ Claude Code | 🔜 Cursor (coming soon) | 🔜 AGENTS.md support (coming soon)
+**Supported AI Tools:** ✅ Claude Code | 🔜 Cursor (coming soon) | ✅ AGENTS.md instructions
 
 Create **alignment** between humans and AI coding assistants through spec-driven development. **No API keys required.**
 
@@ -92,7 +92,7 @@ openspec init
 # openspec/
 #   ├── specs/       # Current specifications (truth)
 #   ├── changes/     # Proposed changes
-#   └── README.md    # AI instructions for your tool
+#   └── AGENTS.md    # AI instructions for your tool
 ```
 
 ### 2. Create Your First Change

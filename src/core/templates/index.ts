@@ -1,4 +1,4 @@
-import { readmeTemplate } from './readme-template.js';
+import { agentsTemplate } from './agents-template.js';
 import { projectTemplate, ProjectContext } from './project-template.js';
 import { claudeTemplate } from './claude-template.js';
 import { getSlashCommandBody, SlashCommandId } from './slash-command-templates.js';
@@ -12,8 +12,8 @@ export class TemplateManager {
   static getTemplates(context: ProjectContext = {}): Template[] {
     return [
       {
-        path: 'README.md',
-        content: readmeTemplate
+        path: 'AGENTS.md',
+        content: agentsTemplate
       },
       {
         path: 'project.md',
