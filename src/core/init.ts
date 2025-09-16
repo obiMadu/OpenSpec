@@ -4,6 +4,7 @@ import ora from 'ora';
 import { FileSystemUtils } from '../utils/file-system.js';
 import { TemplateManager, ProjectContext } from './templates/index.js';
 import { ToolRegistry } from './configurators/registry.js';
+import { SlashCommandRegistry } from './configurators/slash/registry.js';
 import { OpenSpecConfig, AI_TOOLS, OPENSPEC_DIR_NAME } from './config.js';
 
 export class InitCommand {
@@ -104,6 +105,11 @@ export class InitCommand {
       const configurator = ToolRegistry.get(toolId);
       if (configurator && configurator.isAvailable) {
         await configurator.configure(projectPath, openspecDir);
+      }
+
+      const slashConfigurator = SlashCommandRegistry.get(toolId);
+      if (slashConfigurator && slashConfigurator.isAvailable) {
+        await slashConfigurator.generateAll(projectPath, openspecDir);
       }
     }
   }

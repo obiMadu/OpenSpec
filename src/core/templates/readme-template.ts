@@ -40,20 +40,26 @@ Skip proposal for:
 - Configuration changes
 - Tests for existing behavior
 
+**Workflow**
+1. Review \`openspec/project.md\`, \`openspec list\`, and \`openspec list --specs\` to understand current context.
+2. Choose a unique verb-led \`change-id\` and scaffold \`proposal.md\`, \`tasks.md\`, optional \`design.md\`, and spec deltas under \`openspec/changes/<id>/\`.
+3. Draft spec deltas using \`## ADDED|MODIFIED|REMOVED Requirements\` with at least one \`#### Scenario:\` per requirement.
+4. Run \`openspec validate <id> --strict\` and resolve any issues before sharing the proposal.
+
 ### Stage 2: Implementing Changes
 1. **Read proposal.md** - Understand what's being built
 2. **Read design.md** (if exists) - Review technical decisions
 3. **Read tasks.md** - Get implementation checklist
 4. **Implement tasks sequentially** - Complete in order
 5. **Mark complete immediately** - Update \`- [x]\` after each task
-6. **Validate strictly** - Run \`openspec validate [change] --strict\` and address issues
-7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
+6. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
 
 ### Stage 3: Archiving Changes
 After deployment, create separate PR to:
 - Move \`changes/[name]/\` → \`changes/archive/YYYY-MM-DD-[name]/\`
 - Update \`specs/\` if capabilities changed
 - Use \`openspec archive [change] --skip-specs\` for tooling-only changes
+- Run \`openspec validate --strict\` to confirm the archived change passes checks
 
 ## Before Any Task
 
