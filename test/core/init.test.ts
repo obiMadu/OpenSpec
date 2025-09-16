@@ -40,17 +40,17 @@ describe('InitCommand', () => {
       expect(await directoryExists(path.join(openspecPath, 'changes', 'archive'))).toBe(true);
     });
 
-    it('should create README.md and project.md', async () => {
+    it('should create AGENTS.md and project.md', async () => {
       vi.mocked(prompts.select).mockResolvedValue('claude');
-      
+
       await initCommand.execute(testDir);
-      
+
       const openspecPath = path.join(testDir, 'openspec');
-      expect(await fileExists(path.join(openspecPath, 'README.md'))).toBe(true);
+      expect(await fileExists(path.join(openspecPath, 'AGENTS.md'))).toBe(true);
       expect(await fileExists(path.join(openspecPath, 'project.md'))).toBe(true);
-      
-      const readmeContent = await fs.readFile(path.join(openspecPath, 'README.md'), 'utf-8');
-      expect(readmeContent).toContain('OpenSpec Instructions');
+
+      const agentsContent = await fs.readFile(path.join(openspecPath, 'AGENTS.md'), 'utf-8');
+      expect(agentsContent).toContain('OpenSpec Instructions');
       
       const projectContent = await fs.readFile(path.join(openspecPath, 'project.md'), 'utf-8');
       expect(projectContent).toContain('Project Context');

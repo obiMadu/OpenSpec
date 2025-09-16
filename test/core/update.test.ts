@@ -56,7 +56,7 @@ More content after.`;
     
     // Check console output
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (README.md)\nUpdated AI tool files: CLAUDE.md'
+      'Updated OpenSpec instructions (AGENTS.md)\nUpdated AI tool files: CLAUDE.md'
     );
     consoleSpy.mockRestore();
   });
@@ -86,7 +86,7 @@ Old slash content
     expect(updated).not.toContain('Old slash content');
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (README.md)\nUpdated slash commands: .claude/commands/openspec/proposal.md'
+      'Updated OpenSpec instructions (AGENTS.md)\nUpdated slash commands: .claude/commands/openspec/proposal.md'
     );
 
     consoleSpy.mockRestore();
@@ -128,7 +128,7 @@ Old body
     expect(updated).not.toContain('Old body');
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (README.md)\nUpdated slash commands: .cursor/commands/openspec-apply.md'
+      'Updated OpenSpec instructions (AGENTS.md)\nUpdated slash commands: .cursor/commands/openspec-apply.md'
     );
 
     consoleSpy.mockRestore();
@@ -140,7 +140,7 @@ Old body
     await updateCommand.execute(testDir);
 
     // Should only update OpenSpec instructions
-    expect(consoleSpy).toHaveBeenCalledWith('Updated OpenSpec instructions (README.md)');
+    expect(consoleSpy).toHaveBeenCalledWith('Updated OpenSpec instructions (AGENTS.md)');
     consoleSpy.mockRestore();
   });
 
@@ -158,7 +158,7 @@ Old body
 
     // Should report updating with new format
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (README.md)\nUpdated AI tool files: CLAUDE.md'
+      'Updated OpenSpec instructions (AGENTS.md)\nUpdated AI tool files: CLAUDE.md'
     );
     consoleSpy.mockRestore();
   });
@@ -200,16 +200,16 @@ Old content
     }
   });
 
-  it('should update README.md in openspec directory', async () => {
+  it('should update AGENTS.md in openspec directory', async () => {
     // Execute update command
     await updateCommand.execute(testDir);
 
-    // Check that README.md was created/updated
-    const readmePath = path.join(testDir, 'openspec', 'README.md');
-    const fileExists = await FileSystemUtils.fileExists(readmePath);
+    // Check that AGENTS.md was created/updated
+    const agentsPath = path.join(testDir, 'openspec', 'AGENTS.md');
+    const fileExists = await FileSystemUtils.fileExists(agentsPath);
     expect(fileExists).toBe(true);
 
-    const content = await fs.readFile(readmePath, 'utf-8');
+    const content = await fs.readFile(agentsPath, 'utf-8');
     expect(content).toContain('# OpenSpec Instructions');
   });
 
@@ -246,7 +246,7 @@ Old content
     // Should report the failure
     expect(errorSpy).toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (README.md)\nFailed to update: CLAUDE.md'
+      'Updated OpenSpec instructions (AGENTS.md)\nFailed to update: CLAUDE.md'
     );
 
     // Restore permissions for cleanup

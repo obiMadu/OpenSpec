@@ -31,7 +31,7 @@ The command SHALL create the complete OpenSpec directory structure with all requ
 ```
 openspec/
 ├── project.md
-├── README.md
+├── AGENTS.md
 ├── specs/
 └── changes/
     └── archive/
@@ -44,7 +44,7 @@ The command SHALL generate required template files with appropriate content for 
 #### Scenario: Generating template files
 
 - **WHEN** initializing OpenSpec
-- **THEN** generate `README.md` containing complete OpenSpec instructions for AI assistants
+- **THEN** generate `AGENTS.md` containing complete OpenSpec instructions for AI assistants
 - **AND** generate `project.md` with project context template
 
 ### Requirement: AI Tool Configuration
@@ -80,7 +80,7 @@ This document provides instructions for AI coding assistants on how to use OpenS
 
 This project uses OpenSpec for spec-driven development. Specifications are the source of truth.
 
-See @openspec/README.md for detailed conventions and guidelines.
+See @openspec/AGENTS.md for detailed conventions and guidelines.
 <!-- OPENSPEC:END -->
 ```
 
@@ -164,7 +164,7 @@ Next steps - Copy these prompts to Claude:
     OpenSpec change proposal for this feature"
 
 3. Learn the OpenSpec workflow:
-   "Please explain the OpenSpec workflow from openspec/README.md
+   "Please explain the OpenSpec workflow from openspec/AGENTS.md
     and how I should work with you on this project"
 ────────────────────────────────────────────────────────────
 ```

@@ -132,7 +132,7 @@ export class InitCommand {
     console.log('   "I want to add [YOUR FEATURE HERE]. Please create an');
     console.log('    OpenSpec change proposal for this feature"\n');
     console.log('3. Learn the OpenSpec workflow:');
-    console.log('   "Please explain the OpenSpec workflow from openspec/README.md');
+    console.log('   "Please explain the OpenSpec workflow from openspec/AGENTS.md');
     console.log('    and how I should work with you on this project"');
     console.log('────────────────────────────────────────────────────────────\n');
   }

@@ -24,7 +24,7 @@ An OpenSpec project SHALL maintain a consistent directory structure for specific
 ```
 openspec/
 ├── project.md              # Project-specific context
-├── README.md               # AI assistant instructions
+├── AGENTS.md               # AI assistant instructions
 ├── specs/                  # Current deployed capabilities
 │   └── [capability]/       # Single, focused capability
 │       ├── spec.md         # WHAT and WHY
@@ -245,7 +245,7 @@ An OpenSpec project SHALL maintain a consistent directory structure for specific
 ```
 openspec/
 ├── project.md              # Project-specific context
-├── README.md               # AI assistant instructions
+├── AGENTS.md               # AI assistant instructions
 ├── specs/                  # Current deployed capabilities
 │   └── [capability]/       # Single, focused capability
 │       ├── spec.md         # WHAT and WHY

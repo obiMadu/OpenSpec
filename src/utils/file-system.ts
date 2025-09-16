@@ -18,6 +18,25 @@ export class FileSystemUtils {
     }
   }
 
+  static async canWriteFile(filePath: string): Promise<boolean> {
+    try {
+      const stats = await fs.stat(filePath);
+
+      if (!stats.isFile()) {
+        return true;
+      }
+
+      return (stats.mode & 0o222) !== 0;
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        return true;
+      }
+
+      console.debug(`Unable to determine write permissions for ${filePath}: ${error.message}`);
+      return false;
+    }
+  }
+
   static async directoryExists(dirPath: string): Promise<boolean> {
     try {
       const stats = await fs.stat(dirPath);

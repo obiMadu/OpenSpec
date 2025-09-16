@@ -13,7 +13,7 @@ The update command SHALL update OpenSpec instruction files to the latest templat
 - **WHEN** a user runs `openspec update`
 - **THEN** the command SHALL:
   - Check if the `openspec` directory exists
-  - Replace `openspec/README.md` with the latest template (complete replacement)
+  - Replace `openspec/AGENTS.md` with the latest template (complete replacement)
   - Update **only existing** AI tool configuration files (e.g., CLAUDE.md)
     - Check each registered AI tool configurator
     - For each configurator, check if its file exists
@@ -40,7 +40,7 @@ The update command SHALL handle file updates in a predictable and safe manner.
 #### Scenario: Updating files
 
 - **WHEN** updating files
-- **THEN** completely replace `openspec/README.md` with the latest template
+- **THEN** completely replace `openspec/AGENTS.md` with the latest template
 - **AND** update only the OpenSpec-managed blocks in **existing** AI tool files using markers
 - **AND** use the default directory name `openspec`
 - **AND** be idempotent (repeated runs have no additional effect)
@@ -64,7 +64,7 @@ The update command SHALL always update the core OpenSpec files and display an AS
 #### Scenario: Successful update
 
 - **WHEN** the update completes successfully
-- **THEN** replace `openspec/README.md` with the latest template
+- **THEN** replace `openspec/AGENTS.md` with the latest template
 - **AND** update existing AI tool configuration files within markers
 - **AND** display the message: "Updated OpenSpec instructions"
 

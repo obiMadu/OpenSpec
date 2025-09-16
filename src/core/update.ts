@@ -1,7 +1,7 @@
 import path from 'path';
 import { FileSystemUtils } from '../utils/file-system.js';
 import { OPENSPEC_DIR_NAME } from './config.js';
-import { readmeTemplate } from './templates/readme-template.js';
+import { agentsTemplate } from './templates/agents-template.js';
 import { ToolRegistry } from './configurators/registry.js';
 import { SlashCommandRegistry } from './configurators/slash/registry.js';
 
@@ -16,9 +16,9 @@ export class UpdateCommand {
       throw new Error(`No OpenSpec directory found. Run 'openspec init' first.`);
     }
 
-    // 2. Update README.md (full replacement)
-    const readmePath = path.join(openspecPath, 'README.md');
-    await FileSystemUtils.writeFile(readmePath, readmeTemplate);
+    // 2. Update AGENTS.md (full replacement)
+    const agentsPath = path.join(openspecPath, 'AGENTS.md');
+    await FileSystemUtils.writeFile(agentsPath, agentsTemplate);
 
     // 3. Update existing AI tool configuration files only
     const configurators = ToolRegistry.getAll();
@@ -34,6 +34,9 @@ export class UpdateCommand {
       // Only update if the file already exists
       if (await FileSystemUtils.fileExists(configFilePath)) {
         try {
+          if (!await FileSystemUtils.canWriteFile(configFilePath)) {
+            throw new Error(`Insufficient permissions to modify ${configurator.configFileName}`);
+          }
           await configurator.configure(resolvedProjectPath, openspecPath);
           updatedFiles.push(configurator.configFileName);
         } catch (error) {
@@ -60,7 +63,7 @@ export class UpdateCommand {
     }
 
     // 4. Success message (ASCII-safe)
-    const messages: string[] = ['Updated OpenSpec instructions (README.md)'];
+    const messages: string[] = ['Updated OpenSpec instructions (AGENTS.md)'];
     
     if (updatedFiles.length > 0) {
       messages.push(`Updated AI tool files: ${updatedFiles.join(', ')}`);
