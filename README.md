@@ -31,20 +31,13 @@ OpenSpec ensures you and your AI assistant agree on what to build before any cod
 
 **The Solution:** OpenSpec creates alignment BEFORE code is written:
 - **Human-AI Alignment** - You and your AI agree on specifications before implementation
-- **Deterministic Output** - Clear specs lead to predictable code generation
-- **Team Alignment** - Everyone reviews specs, not code surprises
-- **Focus on What, Not How** - Define requirements while AI handles implementation
-- **Living Documentation** - Specs evolve with your code as a natural byproduct
-
-## What You Get
-
-- **Alignment First** - Ensure humans and AI agree on what to build before writing code
-- **Predictable AI Output** - Turn non-deterministic AI into a reliable development partner
-- **Universal Tool Support** - Works with any AI assistant - Claude Code, Cursor, or future tools
-- **No API Keys Required** - Integrates through context rules, not external services
-- **Spec-Level Reviews** - Teams review intentions, not implementation details
-- **Clear Feature Scope** - Know exactly what you're building and what you're not
+- **Deterministic, Predictable Output** - Clear specs lead to reliable, repeatable code generation
+- **Team Alignment via Spec Reviews** - Everyone reviews intentions, not code surprises
+- **Clear Feature Scope** - Know exactly what you're building—and what you're not
 - **Progress Tracking** - See what's proposed, in progress, or completed at a glance
+- **Living Documentation** - Specs evolve with your code as a natural byproduct
+- **Universal Tool Support** - Works with any AI assistant (Claude Code, Cursor, and more)
+- **No API Keys Required** - Integrates through context rules, not external services
 
 ## How It Works
 
