@@ -27,7 +27,14 @@
 
 # OpenSpec
 
-**Supported AI Tools:** ✅ Claude Code | 🔜 Cursor (coming soon) | ✅ AGENTS.md instructions
+**Supported AI Tools:** ✅ Claude Code | ✅ Cursor | ✅ AGENTS.md instructions
+
+**Custom Slash Commands:** Jump straight into any workflow step with the optional `/openspec` commands—no prompt engineering required:
+
+- In Claude Code, type `/openspec:proposal` to draft a change, `/openspec:apply` to implement tasks, and `/openspec:archive` once it's deployed.
+- In Cursor, use `/openspec-proposal`, `/openspec-apply`, and `/openspec-archive` for proposals, implementation, and archiving respectively.
+
+You can still trigger every OpenSpec workflow step by chatting with your agent—the slash commands simply provide more precise control for tools that support custom commands.
 
 Create **alignment** between humans and AI coding assistants through spec-driven development. **No API keys required.**
 
@@ -91,10 +98,12 @@ cd my-project
 # Initialize OpenSpec
 openspec init
 
-# Select your AI tool (more coming soon!):
+# Select your AI tool:
 # "Which AI tool do you use?"
 #   > Claude Code
-#     Cursor (coming soon)
+#       Use /openspec:proposal, /openspec:apply, and /openspec:archive in Claude Code to run proposals, apply tasks, and archive changes.
+#     Cursor
+#       Use /openspec-proposal, /openspec-apply, and /openspec-archive in Cursor for proposals, implementation, and archiving.
 
 # This creates:
 # openspec/
