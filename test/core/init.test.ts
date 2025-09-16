@@ -110,7 +110,8 @@ describe('InitCommand', () => {
 
       const archiveContent = await fs.readFile(claudeArchive, 'utf-8');
       expect(archiveContent).toContain('name: OpenSpec: Archive');
-      expect(archiveContent).toContain('openspec archive <id> --skip-specs');
+      expect(archiveContent).toContain('openspec archive <id>');
+      expect(archiveContent).toContain('`--skip-specs` only for tooling-only work');
     });
 
     it('should create Cursor slash command files with templates', async () => {
