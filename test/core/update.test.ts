@@ -55,9 +55,10 @@ More content after.`;
     expect(updatedContent).toContain('More content after');
     
     // Check console output
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (AGENTS.md)\nUpdated AI tool files: CLAUDE.md'
-    );
+    const [logMessage] = consoleSpy.mock.calls[0];
+    expect(logMessage).toContain('Updated OpenSpec instructions (openspec/AGENTS.md');
+    expect(logMessage).toContain('AGENTS.md (created)');
+    expect(logMessage).toContain('Updated AI tool files: CLAUDE.md');
     consoleSpy.mockRestore();
   });
 
@@ -85,9 +86,10 @@ Old slash content
     expect(updated).toContain('Validate with `openspec validate <id> --strict`');
     expect(updated).not.toContain('Old slash content');
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (AGENTS.md)\nUpdated slash commands: .claude/commands/openspec/proposal.md'
-    );
+    const [logMessage] = consoleSpy.mock.calls[0];
+    expect(logMessage).toContain('Updated OpenSpec instructions (openspec/AGENTS.md');
+    expect(logMessage).toContain('AGENTS.md (created)');
+    expect(logMessage).toContain('Updated slash commands: .claude/commands/openspec/proposal.md');
 
     consoleSpy.mockRestore();
   });
@@ -127,9 +129,10 @@ Old body
     expect(updated).toContain('Work through tasks sequentially');
     expect(updated).not.toContain('Old body');
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (AGENTS.md)\nUpdated slash commands: .cursor/commands/openspec-apply.md'
-    );
+    const [logMessage] = consoleSpy.mock.calls[0];
+    expect(logMessage).toContain('Updated OpenSpec instructions (openspec/AGENTS.md');
+    expect(logMessage).toContain('AGENTS.md (created)');
+    expect(logMessage).toContain('Updated slash commands: .cursor/commands/openspec-apply.md');
 
     consoleSpy.mockRestore();
   });
@@ -140,7 +143,9 @@ Old body
     await updateCommand.execute(testDir);
 
     // Should only update OpenSpec instructions
-    expect(consoleSpy).toHaveBeenCalledWith('Updated OpenSpec instructions (AGENTS.md)');
+    const [logMessage] = consoleSpy.mock.calls[0];
+    expect(logMessage).toContain('Updated OpenSpec instructions (openspec/AGENTS.md');
+    expect(logMessage).toContain('AGENTS.md (created)');
     consoleSpy.mockRestore();
   });
 
@@ -157,9 +162,10 @@ Old body
     await updateCommand.execute(testDir);
 
     // Should report updating with new format
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (AGENTS.md)\nUpdated AI tool files: CLAUDE.md'
-    );
+    const [logMessage] = consoleSpy.mock.calls[0];
+    expect(logMessage).toContain('Updated OpenSpec instructions (openspec/AGENTS.md');
+    expect(logMessage).toContain('AGENTS.md (created)');
+    expect(logMessage).toContain('Updated AI tool files: CLAUDE.md');
     consoleSpy.mockRestore();
   });
 
@@ -196,7 +202,11 @@ Old content
     for (const configurator of configurators) {
       const configPath = path.join(testDir, configurator.configFileName);
       const fileExists = await FileSystemUtils.fileExists(configPath);
-      expect(fileExists).toBe(false);
+      if (configurator.configFileName === 'AGENTS.md') {
+        expect(fileExists).toBe(true);
+      } else {
+        expect(fileExists).toBe(false);
+      }
     }
   });
 
@@ -211,6 +221,41 @@ Old content
 
     const content = await fs.readFile(agentsPath, 'utf-8');
     expect(content).toContain('# OpenSpec Instructions');
+  });
+
+  it('should create root AGENTS.md with managed block when missing', async () => {
+    await updateCommand.execute(testDir);
+
+    const rootAgentsPath = path.join(testDir, 'AGENTS.md');
+    const exists = await FileSystemUtils.fileExists(rootAgentsPath);
+    expect(exists).toBe(true);
+
+    const content = await fs.readFile(rootAgentsPath, 'utf-8');
+    expect(content).toContain('<!-- OPENSPEC:START -->');
+    expect(content).toContain('This project uses OpenSpec');
+    expect(content).toContain('<!-- OPENSPEC:END -->');
+  });
+
+  it('should refresh root AGENTS.md while preserving surrounding content', async () => {
+    const rootAgentsPath = path.join(testDir, 'AGENTS.md');
+    const original = `# Custom intro\n\n<!-- OPENSPEC:START -->\nOld content\n<!-- OPENSPEC:END -->\n\n# Footnotes`;
+    await fs.writeFile(rootAgentsPath, original);
+
+    const consoleSpy = vi.spyOn(console, 'log');
+
+    await updateCommand.execute(testDir);
+
+    const updated = await fs.readFile(rootAgentsPath, 'utf-8');
+    expect(updated).toContain('# Custom intro');
+    expect(updated).toContain('# Footnotes');
+    expect(updated).toContain('This project uses OpenSpec');
+    expect(updated).not.toContain('Old content');
+
+    const [logMessage] = consoleSpy.mock.calls[0];
+    expect(logMessage).toContain('Updated OpenSpec instructions (openspec/AGENTS.md, AGENTS.md)');
+    expect(logMessage).not.toContain('AGENTS.md (created)');
+
+    consoleSpy.mockRestore();
   });
 
   it('should throw error if openspec directory does not exist', async () => {
@@ -245,9 +290,10 @@ Old content
 
     // Should report the failure
     expect(errorSpy).toHaveBeenCalled();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Updated OpenSpec instructions (AGENTS.md)\nFailed to update: CLAUDE.md'
-    );
+    const [logMessage] = consoleSpy.mock.calls[0];
+    expect(logMessage).toContain('Updated OpenSpec instructions (openspec/AGENTS.md');
+    expect(logMessage).toContain('AGENTS.md (created)');
+    expect(logMessage).toContain('Failed to update: CLAUDE.md');
 
     // Restore permissions for cleanup
     await fs.chmod(claudePath, 0o644);

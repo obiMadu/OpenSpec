@@ -6,12 +6,9 @@ The command SHALL configure AI coding assistants with OpenSpec instructions base
 
 - **WHEN** run
 - **THEN** prompt user to select AI tools to configure:
-  - Claude Code
-  - AGENTS.md standard
-- **AND** show disabled options as "coming soon" (not selectable):
-  - Cursor (coming soon)
-  - Aider (coming soon)
-  - Continue (coming soon)
+  - Claude Code (✅ OpenSpec custom slash commands available)
+  - Cursor (✅ OpenSpec custom slash commands available)
+  - AGENTS.md (works with Codex, Amp, Copilot, …)
 
 ### Requirement: AI Tool Configuration Details
 The command SHALL properly configure selected AI tools with OpenSpec-specific instructions using a marker system.

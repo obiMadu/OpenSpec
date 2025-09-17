@@ -86,6 +86,23 @@ describe('InitCommand', () => {
       expect(updatedContent).toContain('Custom instructions here');
     });
 
+    it('should create AGENTS.md in project root when AGENTS standard is selected', async () => {
+      vi.mocked(prompts.select).mockResolvedValue('agents');
+
+      await initCommand.execute(testDir);
+
+      const rootAgentsPath = path.join(testDir, 'AGENTS.md');
+      expect(await fileExists(rootAgentsPath)).toBe(true);
+
+      const content = await fs.readFile(rootAgentsPath, 'utf-8');
+      expect(content).toContain('<!-- OPENSPEC:START -->');
+      expect(content).toContain('OpenSpec Project');
+      expect(content).toContain('<!-- OPENSPEC:END -->');
+
+      const claudeExists = await fileExists(path.join(testDir, 'CLAUDE.md'));
+      expect(claudeExists).toBe(false);
+    });
+
     it('should create Claude slash command files with templates', async () => {
       vi.mocked(prompts.select).mockResolvedValue('claude');
 
@@ -167,6 +184,16 @@ describe('InitCommand', () => {
       
       const calls = logSpy.mock.calls.flat().join('\n');
       expect(calls).toContain('Copy these prompts to Claude Code');
+    });
+
+    it('should reference AGENTS compatible assistants in success message', async () => {
+      vi.mocked(prompts.select).mockResolvedValue('agents');
+      const logSpy = vi.spyOn(console, 'log');
+
+      await initCommand.execute(testDir);
+
+      const calls = logSpy.mock.calls.flat().join('\n');
+      expect(calls).toContain('Copy these prompts to your AGENTS.md-compatible assistant');
     });
   });
 
