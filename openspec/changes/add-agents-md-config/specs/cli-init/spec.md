@@ -6,8 +6,8 @@ The command SHALL configure AI coding assistants with OpenSpec instructions base
 
 - **WHEN** run
 - **THEN** prompt user to select AI tools to configure:
-  - Claude Code (slash commands)
-  - Cursor (slash commands)
+  - Claude Code (✅ OpenSpec custom slash commands available)
+  - Cursor (✅ OpenSpec custom slash commands available)
   - AGENTS.md standard
 
 ### Requirement: AI Tool Configuration Details

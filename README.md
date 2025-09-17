@@ -102,9 +102,9 @@ openspec init
 
 # Select your AI tool:
 # "Which AI tool do you use?"
-#   > Claude Code (slash commands)
+#   > Claude Code (✅ OpenSpec custom slash commands available)
 #       Use /openspec:proposal, /openspec:apply, and /openspec:archive in Claude Code to run proposals, apply tasks, and archive changes.
-#     Cursor (slash commands)
+#     Cursor (✅ OpenSpec custom slash commands available)
 #       Use /openspec-proposal, /openspec-apply, and /openspec-archive in Cursor for proposals, implementation, and archiving.
 #     AGENTS.md standard
 #       Creates/updates a root-level AGENTS.md block for tools that follow the AGENTS.md convention (Codex, Amp, Jules, OpenCode, Gemini CLI, GitHub Copilot, etc.)
