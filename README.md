@@ -27,142 +27,181 @@
 
 # OpenSpec
 
-**Supported AI Tools:** ✅ Claude Code (custom slash commands) | ✅ Cursor (custom slash commands)
-
-Any assistant that understands the [AGENTS.md](https://agents.md/) convention—such as Codex, Amp, Jules, OpenCode, Gemini CLI, or GitHub Copilot—can consume the OpenSpec instructions, though without the slash-command shortcuts.
-
-**Custom Slash Commands:** Jump straight into any workflow step with the optional `/openspec` commands—no prompt engineering required:
-
-- In Claude Code, type `/openspec:proposal` to draft a change, `/openspec:apply` to implement tasks, and `/openspec:archive` once it's deployed.
-- In Cursor, use `/openspec-proposal`, `/openspec-apply`, and `/openspec-archive` for proposals, implementation, and archiving respectively.
-
-You can still trigger every OpenSpec workflow step by chatting with your agent—the slash commands simply provide more precise control for tools that support custom commands.
-
-Create **alignment** between humans and AI coding assistants through spec-driven development. **No API keys required.**
-
-OpenSpec ensures you and your AI assistant agree on what to build before any code is written. By discussing and refining specifications first, you bring determinism to AI code generation, getting exactly what you want, not what the AI thinks you might want.
+OpenSpec aligns humans and AI coding assistants with spec-driven development so you agree on what to build before any code is written. **No API keys required.**
 
 ## Why OpenSpec?
 
-**The Problem:** AI coding assistants are powerful but unpredictable. Without clear specifications, they generate code based on assumptions, often missing requirements or adding unwanted features. Teams waste time in review cycles because humans and AI aren't aligned on what to build.
+AI coding assistants are powerful but unpredictable when requirements live in chat history. OpenSpec adds a lightweight specification workflow that locks intent before implementation, giving you deterministic, reviewable outputs.
 
-**The Solution:** OpenSpec creates alignment BEFORE code is written:
-- **Human-AI Alignment** - You and your AI agree on specifications before implementation
-- **Deterministic, Predictable Output** - Clear specs lead to reliable, repeatable code generation
-- **Team Alignment via Spec Reviews** - Everyone reviews intentions, not code surprises
-- **Clear Feature Scope** - Know exactly what you're building—and what you're not
-- **Progress Tracking** - See what's proposed, in progress, or completed at a glance
-- **Living Documentation** - Specs evolve with your code as a natural byproduct
-- **Universal Tool Support** - Works with any AI assistant (Claude Code, Cursor, and more)
-- **No API Keys Required** - Integrates through context rules, not external services
+Key outcomes:
+- Human and AI stakeholders agree on specs before work begins.
+- Structured change folders (proposals, tasks, and spec updates) keep scope explicit and auditable.
+- Shared visibility into what's proposed, active, or archived.
+- Works with the AI tools you already use: custom slash commands where supported, context rules everywhere else.
 
 ## How It Works
 
 ```
-┌─────────────┐       ┌─────────────┐       ┌──────────────┐
-│    SPECS    │       │   CHANGES   │       │   ARCHIVE    │
-│   (Truth)   │◀──────│ (Proposals) │──────▶│ (Completed)  │
-└─────────────┘       └─────────────┘       └──────────────┘
-      ▲                      │                      │
-      │                      ▼                      │
-      │               ┌─────────────┐               │
-      └───────────────│    CODE     │◀──────────────┘
-                      └─────────────┘
+┌────────────────────┐
+│ Draft Change       │
+│ Proposal           │
+└────────┬───────────┘
+         │ share intent with your AI
+         ▼
+┌────────────────────┐
+│ Review & Align     │
+│ (edit specs/tasks) │◀──── feedback loop ──────┐
+└────────┬───────────┘                          │
+         │ approved plan                        │
+         ▼                                      │
+┌────────────────────┐                          │
+│ Implement Tasks    │──────────────────────────┘
+│ (AI writes code)   │
+└────────┬───────────┘
+         │ ship the change
+         ▼
+┌────────────────────┐
+│ Archive & Update   │
+│ Specs (source)     │
+└────────────────────┘
 
-1. SPECS define current capabilities (what IS built)
-2. CHANGES propose modifications using deltas (what SHOULD change)  
-3. CODE implements the changes following tasks
-4. ARCHIVE preserves completed changes after deployment
-```
-
-## Installation
-
-### Prerequisites
-
-- Node.js >= 20.19.0
-
-### Install OpenSpec
-
-Install globally:
-
-```bash
-npm install -g @fission-ai/openspec
+1. Draft a change proposal that captures the spec updates you want.
+2. Review the proposal with your AI assistant until everyone agrees.
+3. Implement tasks that reference the agreed specs.
+4. Archive the change to merge the approved updates back into the source-of-truth specs.
 ```
 
 ## Getting Started
 
-### 1. Initialize OpenSpec in Your Project
+### Supported AI Tools
+
+#### Native Slash Commands
+These tools have built-in OpenSpec commands. Select the OpenSpec integration when prompted.
+
+| Tool | Commands |
+|------|----------|
+| **Claude Code** | `/openspec:proposal`, `/openspec:apply`, `/openspec:archive` |
+| **Cursor** | `/openspec-proposal`, `/openspec-apply`, `/openspec-archive` |
+
+#### AGENTS.md Compatible
+These tools automatically read workflow instructions from `openspec/AGENTS.md`. Ask them to follow the OpenSpec workflow if they need a reminder. Learn more about the [AGENTS.md convention](https://agents.md/).
+
+| Tools |
+|-------|
+| Codex • Amp • Jules • OpenCode • Gemini CLI • GitHub Copilot • Others |
+
+### Install & Initialize
+
+#### Prerequisites
+- **Node.js >= 20.19.0** - Check your version with `node --version`
+
+#### Step 1: Install the CLI globally
 
 ```bash
-# Navigate to your project
+npm install -g @fission-ai/openspec@latest
+```
+
+Verify installation:
+```bash
+openspec --version
+```
+
+#### Step 2: Initialize OpenSpec in your project
+
+Navigate to your project directory:
+```bash
 cd my-project
+```
 
-# Initialize OpenSpec
+Run the initialization:
+```bash
 openspec init
-
-# Select your AI tool:
-# "Which AI tool do you use?"
-#   > Claude Code (✅ OpenSpec custom slash commands available)
-#       Use /openspec:proposal, /openspec:apply, and /openspec:archive in Claude Code to run proposals, apply tasks, and archive changes.
-#     Cursor (✅ OpenSpec custom slash commands available)
-#       Use /openspec-proposal, /openspec-apply, and /openspec-archive in Cursor for proposals, implementation, and archiving.
-#     AGENTS.md (works with Codex, Amp, Copilot, …)
-#       Creates/updates a root-level AGENTS.md block for tools that follow the AGENTS.md convention (Codex, Amp, Jules, OpenCode, Gemini CLI, GitHub Copilot, etc.)
-
-# This creates:
-# openspec/
-#   ├── specs/       # Current specifications (truth)
-#   ├── changes/     # Proposed changes
-#   └── AGENTS.md    # AI instructions for your tool
 ```
 
-### 2. Create Your First Change
+**What happens during initialization:**
+- You'll be prompted to select your AI tool (Claude Code, Cursor, etc.)
+- OpenSpec automatically configures slash commands or `AGENTS.md` based on your selection
+- A new `openspec/` directory structure is created in your project
 
-Jump straight into creating a change proposal with your AI assistant (works with Claude Code, Cursor, or any AI tool):
+**After setup:**
+- Primary AI tools can trigger `/openspec` workflows without additional configuration
+- Run `openspec list` to verify the setup and view any active changes
 
-```markdown
-// Quick win - Add a simple new feature:
-You: "I want to add a user profile API endpoint.
-      Please create an OpenSpec change proposal for this."
+### Create Your First Change
 
-AI: "I'll create an OpenSpec change proposal for the user profile API..."
-    *Creates openspec/changes/add-user-profile-api/ with:*
-    - proposal.md (why this feature is needed)
-    - tasks.md (implementation checklist)
-    - design.md (API design decisions)
-    - specs/user-profile/spec.md (new requirements)
+Here's a real example showing the complete OpenSpec workflow. This works with any AI tool. Those with native slash commands will recognize the shortcuts automatically.
 
-You: "The proposal looks good. Let's implement it."
+#### 1. Draft the Proposal
+Start by asking your AI to create a change proposal:
 
-AI: "Following the tasks in openspec/changes/add-user-profile-api/tasks.md:
-     Task 1.1: Create user profile model..."
-    *Implements each task systematically*
+```text
+You: Create an OpenSpec change proposal for adding profile search filters by role and team
+     (Shortcut for tools with slash commands: /openspec:proposal Add profile search filters)
+
+AI:  I'll create an OpenSpec change proposal for profile filters.
+     *Scaffolds openspec/changes/add-profile-filters/ with proposal.md, tasks.md, spec deltas.*
 ```
 
-### 3. Track Your Work
+#### 2. Verify & Review
+Check that the change was created correctly and review the proposal:
 
 ```bash
-# View active changes (what's being worked on)
-openspec list
-
-# Validate your changes are properly formatted
-openspec validate add-2fa --strict
-
-# After deployment, archive the completed change
-openspec archive add-2fa
-# This moves the change to archive/ and updates specs/
+$ openspec list                             # Confirm the change folder exists
+$ openspec validate add-profile-filters     # Validate spec formatting
+$ openspec show add-profile-filters         # Review proposal, tasks, and spec delta
 ```
 
-## Common Commands
+#### 3. Refine the Specs
+Iterate on the specifications until they match your needs:
+
+```text
+You: Can you add acceptance criteria for the role and team filters?
+
+AI:  I'll update the spec delta with scenarios for role and team filters.
+     *Edits openspec/changes/add-profile-filters/specs/profile/spec.md and tasks.md.*
+```
+
+#### 4. Implement the Change
+Once specs look good, start implementation:
+
+```text
+You: The specs look good. Let's implement this change.
+     (Shortcut for tools with slash commands: /openspec:apply add-profile-filters)
+
+AI:  I'll work through the tasks in the add-profile-filters change.
+     *Implements tasks from openspec/changes/add-profile-filters/tasks.md*
+     *Marks tasks complete: Task 1.1 ✓, Task 1.2 ✓, Task 2.1 ✓...*
+```
+
+#### 5. Archive the Completed Change
+After implementation is complete, archive the change:
+
+```text
+AI:  All tasks are complete. The implementation is ready.
+
+You: Please archive the change
+     (Shortcut for tools with slash commands: /openspec:archive add-profile-filters)
+
+AI:  I'll archive the add-profile-filters change.
+     *Runs: openspec archive add-profile-filters*
+     ✓ Change archived successfully. Specs updated. Ready for the next feature!
+```
+
+Or run the command yourself in terminal:
+```bash
+$ openspec archive add-profile-filters  # Archive the completed change
+```
+
+**Note:** Tools with native slash commands (Claude Code, Cursor) can use the shortcuts shown. All other tools work with natural language requests to "create an OpenSpec proposal", "apply the OpenSpec change", or "archive the change".
+
+## Command Reference
 
 ```bash
-# Most used:
-openspec list              # See what changes you're working on
-openspec archive <change>  # Mark a change as complete after deployment
-
-# Also useful:
-openspec validate <change> # Check formatting before committing
-openspec show <change>     # View change details
+openspec list               # View active change folders
+openspec view               # Interactive dashboard of specs and changes
+openspec show <change>      # Display change details (proposal, tasks, spec updates)
+openspec validate <change>  # Check spec formatting and structure
+openspec archive <change>   # Move a completed change into archive/
 ```
 
 ## Example: How AI Creates OpenSpec Files
@@ -249,50 +288,31 @@ Deltas are "patches" that show how specs change:
 - Every requirement needs at least one `#### Scenario:` block
 - Use SHALL/MUST in requirement text
 
-
-## Why OpenSpec Works
-
-OpenSpec creates **alignment** between you and your AI coding assistant:
-
-1. **You describe** what you want to build
-2. **AI creates specs** before writing any code
-3. **You review and adjust** the specifications
-4. **AI implements** exactly what was specified
-5. **Everyone understands** what's being built through clear specs
-
-**True Interoperability:** OpenSpec is designed to be universal. No API keys, no vendor lock-in. It works by adding context rules to ANY AI coding tool - whether you use Claude Code today, switch to Cursor tomorrow, or adopt the next breakthrough AI assistant. Your specs remain portable and your workflow stays consistent.
-
-
 ## How OpenSpec Compares
 
 ### vs. Kiro.dev
-OpenSpec groups all changes for a feature in one place (`openspec/changes/feature-name/`), making it easy to track what needs to be done. Kiro spreads changes across multiple spec folders, making feature tracking harder.
+OpenSpec groups every change for a feature in one folder (`openspec/changes/feature-name/`), making it easy to track related specs, tasks, and designs together. Kiro spreads updates across multiple spec folders, which can make feature tracking harder.
 
 ### vs. No Specs
-Without specs, AI coding assistants generate code based on vague prompts, often missing requirements or adding unwanted features. OpenSpec ensures alignment before any code is written.
+Without specs, AI coding assistants generate code from vague prompts, often missing requirements or adding unwanted features. OpenSpec brings predictability by agreeing on the desired behavior before any code is written.
 
 ## Team Adoption
 
-### Getting Started with Your Team
+1. **Initialize OpenSpec** – Run `openspec init` in your repo.
+2. **Start with new features** – Ask your AI to capture upcoming work as change proposals.
+3. **Grow incrementally** – Each change archives into living specs that document your system.
+4. **Stay flexible** – Different teammates can use Claude Code, Cursor, or any AGENTS.md-compatible tool while sharing the same specs.
 
-1. **Initialize OpenSpec** - Run `openspec init` in your project
-2. **Start with new features** - Use OpenSpec for your next change proposal
-3. **Build incrementally** - Each new feature adds to your spec library
-4. **Future capability** - We're working on tools to generate specs from existing code
-
-**Tool Freedom:** Your team can use different AI assistants. One developer might use Claude Code while another uses Cursor - OpenSpec keeps everyone aligned through shared specifications. Run `openspec update` to configure for any supported tool without affecting others.
-
+Run `openspec update` whenever someone switches tools so your agents pick up the latest instructions and slash-command bindings.
 
 ## Updating OpenSpec
 
 1. **Upgrade the package**
-   - Local dependency: `pnpm add @fission-ai/openspec@latest`
-   - Global CLI: `npm install -g @fission-ai/openspec@latest`
+   ```bash
+   npm install -g @fission-ai/openspec@latest
+   ```
 2. **Refresh agent instructions**
-   - Run `openspec update` inside each project to regenerate AI instructions, refresh the root `AGENTS.md`, and update slash-command bindings.
-
-Run the update step after every version bump (or when switching tools) so your agents always pick up the latest guidance.
-
+   - Run `openspec update` inside each project to regenerate AI guidance and ensure the latest slash commands are active.
 
 ## Contributing
 
