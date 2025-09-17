@@ -9,6 +9,17 @@ vi.mock('@inquirer/prompts', () => ({
   select: vi.fn()
 }));
 
+const DONE = '__done__';
+
+function queueSelections(...values: string[]) {
+  const selectMock = vi.mocked(prompts.select);
+  values.forEach((value) => selectMock.mockResolvedValueOnce(value));
+}
+
+function stripAnsi(input: string): string {
+  return input.replace(/\x1B\[[0-9;]*m/g, '');
+}
+
 describe('InitCommand', () => {
   let testDir: string;
   let initCommand: InitCommand;
@@ -29,7 +40,7 @@ describe('InitCommand', () => {
 
   describe('execute', () => {
     it('should create OpenSpec directory structure', async () => {
-      vi.mocked(prompts.select).mockResolvedValue('claude');
+      queueSelections('claude', DONE);
       
       await initCommand.execute(testDir);
       
@@ -41,7 +52,7 @@ describe('InitCommand', () => {
     });
 
     it('should create AGENTS.md and project.md', async () => {
-      vi.mocked(prompts.select).mockResolvedValue('claude');
+      queueSelections('claude', DONE);
 
       await initCommand.execute(testDir);
 
@@ -57,7 +68,7 @@ describe('InitCommand', () => {
     });
 
     it('should create CLAUDE.md when Claude Code is selected', async () => {
-      vi.mocked(prompts.select).mockResolvedValue('claude');
+      queueSelections('claude', DONE);
       
       await initCommand.execute(testDir);
       
@@ -71,7 +82,7 @@ describe('InitCommand', () => {
     });
 
     it('should update existing CLAUDE.md with markers', async () => {
-      vi.mocked(prompts.select).mockResolvedValue('claude');
+      queueSelections('claude', DONE);
       
       const claudePath = path.join(testDir, 'CLAUDE.md');
       const existingContent = '# My Project Instructions\nCustom instructions here';
@@ -87,7 +98,7 @@ describe('InitCommand', () => {
     });
 
     it('should create AGENTS.md in project root when AGENTS standard is selected', async () => {
-      vi.mocked(prompts.select).mockResolvedValue('agents');
+      queueSelections('agents', DONE);
 
       await initCommand.execute(testDir);
 
@@ -104,7 +115,7 @@ describe('InitCommand', () => {
     });
 
     it('should create Claude slash command files with templates', async () => {
-      vi.mocked(prompts.select).mockResolvedValue('claude');
+      queueSelections('claude', DONE);
 
       await initCommand.execute(testDir);
 
@@ -132,7 +143,7 @@ describe('InitCommand', () => {
     });
 
     it('should create Cursor slash command files with templates', async () => {
-      vi.mocked(prompts.select).mockResolvedValue('cursor');
+      queueSelections('cursor', DONE);
 
       await initCommand.execute(testDir);
 
@@ -157,17 +168,23 @@ describe('InitCommand', () => {
       expect(archiveContent).toContain('openspec list --specs');
     });
 
-    it('should throw error if OpenSpec already exists', async () => {
-      const openspecPath = path.join(testDir, 'openspec');
-      await fs.mkdir(openspecPath, { recursive: true });
-      
-      await expect(initCommand.execute(testDir)).rejects.toThrow(
-        /OpenSpec seems to already be initialized/
-      );
+    it('should add new tool when OpenSpec already exists', async () => {
+      queueSelections('claude', DONE, 'cursor', DONE);
+      await initCommand.execute(testDir);
+      await initCommand.execute(testDir);
+
+      const cursorProposal = path.join(testDir, '.cursor/commands/openspec-proposal.md');
+      expect(await fileExists(cursorProposal)).toBe(true);
+    });
+
+    it('should error when extend mode selects no tools', async () => {
+      queueSelections('claude', DONE, DONE);
+      await initCommand.execute(testDir);
+      await expect(initCommand.execute(testDir)).rejects.toThrow(/OpenSpec seems to already be initialized/);
     });
 
     it('should handle non-existent target directory', async () => {
-      vi.mocked(prompts.select).mockResolvedValue('claude');
+      queueSelections('claude', DONE);
       
       const newDir = path.join(testDir, 'new-project');
       await initCommand.execute(newDir);
@@ -177,7 +194,7 @@ describe('InitCommand', () => {
     });
 
     it('should display success message with selected tool name', async () => {
-      vi.mocked(prompts.select).mockResolvedValue('claude');
+      queueSelections('claude', DONE);
       const logSpy = vi.spyOn(console, 'log');
       
       await initCommand.execute(testDir);
@@ -187,7 +204,7 @@ describe('InitCommand', () => {
     });
 
     it('should reference AGENTS compatible assistants in success message', async () => {
-      vi.mocked(prompts.select).mockResolvedValue('agents');
+      queueSelections('agents', DONE);
       const logSpy = vi.spyOn(console, 'log');
 
       await initCommand.execute(testDir);
@@ -200,26 +217,36 @@ describe('InitCommand', () => {
   describe('AI tool selection', () => {
     it('should prompt for AI tool selection', async () => {
       const selectMock = vi.mocked(prompts.select);
-      selectMock.mockResolvedValue('claude');
-      
+      queueSelections('claude', DONE);
+
       await initCommand.execute(testDir);
-      
+
       expect(selectMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: 'Which AI tool do you use?'
+          message: expect.stringContaining('Which AI tools do you use?')
         })
       );
     });
 
     it('should handle different AI tool selections', async () => {
       // For now, only Claude is available, but test the structure
-      vi.mocked(prompts.select).mockResolvedValue('claude');
-      
+      queueSelections('claude', DONE);
+
       await initCommand.execute(testDir);
       
       // When other tools are added, we'd test their specific configurations here
       const claudePath = path.join(testDir, 'CLAUDE.md');
       expect(await fileExists(claudePath)).toBe(true);
+    });
+
+    it('should mark existing tools as already configured during extend mode', async () => {
+      queueSelections('claude', DONE, 'cursor', DONE);
+      await initCommand.execute(testDir);
+      await initCommand.execute(testDir);
+
+      const secondRunArgs = vi.mocked(prompts.select).mock.calls[2][0];
+      const claudeChoice = secondRunArgs.choices.find((choice: any) => choice.value === 'claude');
+      expect(stripAnsi(claudeChoice.name)).toContain('already configured');
     });
   });
 
@@ -238,6 +265,7 @@ describe('InitCommand', () => {
         return originalCheck.call(fs, filePath, ...args);
       });
       
+      queueSelections('claude', DONE);
       await expect(initCommand.execute(readOnlyDir)).rejects.toThrow(
         /Insufficient permissions/
       );

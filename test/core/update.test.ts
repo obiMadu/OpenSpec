@@ -5,6 +5,7 @@ import { ToolRegistry } from '../../src/core/configurators/registry.js';
 import path from 'path';
 import fs from 'fs/promises';
 import os from 'os';
+import { randomUUID } from 'crypto';
 
 describe('UpdateCommand', () => {
   let testDir: string;
@@ -12,7 +13,7 @@ describe('UpdateCommand', () => {
 
   beforeEach(async () => {
     // Create a temporary test directory
-    testDir = path.join(os.tmpdir(), `openspec-test-${Date.now()}`);
+    testDir = path.join(os.tmpdir(), `openspec-test-${randomUUID()}`);
     await fs.mkdir(testDir, { recursive: true });
     
     // Create openspec directory
