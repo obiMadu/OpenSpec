@@ -3,21 +3,34 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import { InitCommand } from '../../src/core/init.js';
-import * as prompts from '@inquirer/prompts';
-
-vi.mock('@inquirer/prompts', () => ({
-  select: vi.fn()
-}));
 
 const DONE = '__done__';
 
-function queueSelections(...values: string[]) {
-  const selectMock = vi.mocked(prompts.select);
-  values.forEach((value) => selectMock.mockResolvedValueOnce(value));
-}
+type SelectionQueue = string[][];
 
-function stripAnsi(input: string): string {
-  return input.replace(/\x1B\[[0-9;]*m/g, '');
+let selectionQueue: SelectionQueue = [];
+
+const mockPrompt = vi.fn(async () => {
+  if (selectionQueue.length === 0) {
+    throw new Error('No queued selections provided to init prompt.');
+  }
+  return selectionQueue.shift() ?? [];
+});
+
+function queueSelections(...values: string[]) {
+  let current: string[] = [];
+  values.forEach((value) => {
+    if (value === DONE) {
+      selectionQueue.push(current);
+      current = [];
+    } else {
+      current.push(value);
+    }
+  });
+
+  if (current.length > 0) {
+    selectionQueue.push(current);
+  }
 }
 
 describe('InitCommand', () => {
@@ -27,7 +40,9 @@ describe('InitCommand', () => {
   beforeEach(async () => {
     testDir = path.join(os.tmpdir(), `openspec-init-test-${Date.now()}`);
     await fs.mkdir(testDir, { recursive: true });
-    initCommand = new InitCommand();
+    selectionQueue = [];
+    mockPrompt.mockReset();
+    initCommand = new InitCommand({ prompt: mockPrompt });
     
     // Mock console.log to suppress output during tests
     vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -216,14 +231,13 @@ describe('InitCommand', () => {
 
   describe('AI tool selection', () => {
     it('should prompt for AI tool selection', async () => {
-      const selectMock = vi.mocked(prompts.select);
       queueSelections('claude', DONE);
 
       await initCommand.execute(testDir);
 
-      expect(selectMock).toHaveBeenCalledWith(
+      expect(mockPrompt).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: expect.stringContaining('Which AI tools do you use?')
+          baseMessage: expect.stringContaining('Which AI tools do you use?')
         })
       );
     });
@@ -244,9 +258,9 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
       await initCommand.execute(testDir);
 
-      const secondRunArgs = vi.mocked(prompts.select).mock.calls[2][0];
+      const secondRunArgs = mockPrompt.mock.calls[1][0];
       const claudeChoice = secondRunArgs.choices.find((choice: any) => choice.value === 'claude');
-      expect(stripAnsi(claudeChoice.name)).toContain('already configured');
+      expect(claudeChoice.configured).toBe(true);
     });
   });
 

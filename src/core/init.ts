@@ -116,6 +116,8 @@ type ToolWizardConfig = {
 
 type WizardStep = 'intro' | 'select' | 'review';
 
+type ToolSelectionPrompt = (config: ToolWizardConfig) => Promise<string[]>;
+
 const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>((config, done) => {
   const totalSteps = 3;
   const [step, setStep] = useState<WizardStep>('intro');
@@ -276,7 +278,17 @@ const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>((config, do
   return lines.join('\n');
 });
 
+type InitCommandOptions = {
+  prompt?: ToolSelectionPrompt;
+};
+
 export class InitCommand {
+  private readonly prompt: ToolSelectionPrompt;
+
+  constructor(options: InitCommandOptions = {}) {
+    this.prompt = options.prompt ?? ((config) => toolSelectionWizard(config));
+  }
+
   async execute(targetPath: string): Promise<void> {
     const projectPath = path.resolve(targetPath);
     const openspecDir = OPENSPEC_DIR_NAME;
@@ -364,7 +376,7 @@ export class InitCommand {
       ? availableTools.filter(tool => existingTools[tool.value]).map(tool => tool.value)
       : [];
 
-    return toolSelectionWizard({
+    return this.prompt({
       extendMode,
       baseMessage,
       choices: availableTools.map((tool) => ({
