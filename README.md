@@ -104,6 +104,8 @@ openspec init
 # "Which AI tool do you use?"
 #   > Claude Code
 #       Use /openspec:proposal, /openspec:apply, and /openspec:archive in Claude Code to run proposals, apply tasks, and archive changes.
+#     AGENTS.md standard
+#       Creates/updates a root-level AGENTS.md block for tools that follow the AGENTS.md convention (Codex, Amp, Jules, OpenCode, Gemini CLI, GitHub Copilot, etc.)
 #     Cursor
 #       Use /openspec-proposal, /openspec-apply, and /openspec-archive in Cursor for proposals, implementation, and archiving.
 
@@ -287,7 +289,7 @@ Without specs, AI coding assistants generate code based on vague prompts, often 
    - Local dependency: `pnpm add @fission-ai/openspec@latest`
    - Global CLI: `npm install -g @fission-ai/openspec@latest`
 2. **Refresh agent instructions**
-   - Run `openspec update` inside each project to regenerate AI instructions and refresh slash-command bindings.
+   - Run `openspec update` inside each project to regenerate AI instructions, refresh the root `AGENTS.md`, and update slash-command bindings.
 
 Run the update step after every version bump (or when switching tools) so your agents always pick up the latest guidance.
 

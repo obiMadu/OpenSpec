@@ -13,5 +13,5 @@
 - [x] 3.2 Add automated tests covering init/update flows for projects with and without an existing `AGENTS.md`, ensuring markers behave correctly.
 
 ## 4. Documentation
-- [ ] 4.1 Update CLI specs and user-facing docs to describe AGENTS standard support.
+- [x] 4.1 Update CLI specs and user-facing docs to describe AGENTS standard support.
 - [x] 4.2 Run `openspec validate add-agents-md-config --strict` and document any notable behavior changes.
