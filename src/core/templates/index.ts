@@ -27,7 +27,7 @@ export class TemplateManager {
   }
 
   static getAgentsStandardTemplate(): string {
-    return claudeTemplate;
+    return agentsTemplate;
   }
 
   static getSlashCommandBody(id: SlashCommandId): string {

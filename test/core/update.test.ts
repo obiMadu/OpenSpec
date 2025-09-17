@@ -50,7 +50,7 @@ More content after.`;
     const updatedContent = await fs.readFile(claudePath, 'utf-8');
     expect(updatedContent).toContain('<!-- OPENSPEC:START -->');
     expect(updatedContent).toContain('<!-- OPENSPEC:END -->');
-    expect(updatedContent).toContain('This project uses OpenSpec');
+    expect(updatedContent).toContain('OpenSpec Instructions');
     expect(updatedContent).toContain('Some existing content here');
     expect(updatedContent).toContain('More content after');
     
@@ -232,7 +232,7 @@ Old content
 
     const content = await fs.readFile(rootAgentsPath, 'utf-8');
     expect(content).toContain('<!-- OPENSPEC:START -->');
-    expect(content).toContain('This project uses OpenSpec');
+    expect(content).toContain('OpenSpec Instructions');
     expect(content).toContain('<!-- OPENSPEC:END -->');
   });
 
@@ -248,7 +248,7 @@ Old content
     const updated = await fs.readFile(rootAgentsPath, 'utf-8');
     expect(updated).toContain('# Custom intro');
     expect(updated).toContain('# Footnotes');
-    expect(updated).toContain('This project uses OpenSpec');
+    expect(updated).toContain('OpenSpec Instructions');
     expect(updated).not.toContain('Old content');
 
     const [logMessage] = consoleSpy.mock.calls[0];
