@@ -19,5 +19,5 @@ export interface AIToolOption {
 export const AI_TOOLS: AIToolOption[] = [
   { name: 'Claude Code (✅ OpenSpec custom slash commands available)', value: 'claude', available: true, successLabel: 'Claude Code' },
   { name: 'Cursor (✅ OpenSpec custom slash commands available)', value: 'cursor', available: true, successLabel: 'Cursor' },
-  { name: 'AGENTS.md standard', value: 'agents', available: true, successLabel: 'your AGENTS.md-compatible assistant' }
+  { name: 'AGENTS.md (works with Codex, Amp, Copilot, …)', value: 'agents', available: true, successLabel: 'your AGENTS.md-compatible assistant' }
 ];

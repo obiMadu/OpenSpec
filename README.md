@@ -106,7 +106,7 @@ openspec init
 #       Use /openspec:proposal, /openspec:apply, and /openspec:archive in Claude Code to run proposals, apply tasks, and archive changes.
 #     Cursor (✅ OpenSpec custom slash commands available)
 #       Use /openspec-proposal, /openspec-apply, and /openspec-archive in Cursor for proposals, implementation, and archiving.
-#     AGENTS.md standard
+#     AGENTS.md (works with Codex, Amp, Copilot, …)
 #       Creates/updates a root-level AGENTS.md block for tools that follow the AGENTS.md convention (Codex, Amp, Jules, OpenCode, Gemini CLI, GitHub Copilot, etc.)
 
 # This creates:
