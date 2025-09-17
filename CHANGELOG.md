@@ -1,5 +1,11 @@
 # @fission-ai/openspec
 
+## 0.3.0
+
+### Minor Changes
+
+- Enhance `openspec init` with extend mode, multi-tool selection, and an interactive `AGENTS.md` configurator.
+
 ## 0.2.0
 
 ### Minor Changes
