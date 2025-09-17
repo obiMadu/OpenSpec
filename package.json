@@ -18,8 +18,7 @@
   "author": "OpenSpec Contributors",
   "type": "module",
   "publishConfig": {
-    "access": "public",
-    "tag": "next"
+    "access": "public"
   },
   "exports": {
     ".": {
