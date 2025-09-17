@@ -121,7 +121,7 @@ export class InitCommand {
     // Get the selected tool name for display
     const selectedToolId = config.aiTools[0];
     const selectedTool = AI_TOOLS.find(t => t.value === selectedToolId);
-    const toolName = selectedTool ? selectedTool.name : 'your AI assistant';
+    const toolName = selectedTool?.successLabel ?? selectedTool?.name ?? 'your AI assistant';
     
     console.log(`\nNext steps - Copy these prompts to ${toolName}:\n`);
     console.log('────────────────────────────────────────────────────────────');

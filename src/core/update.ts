@@ -1,7 +1,8 @@
 import path from 'path';
 import { FileSystemUtils } from '../utils/file-system.js';
-import { OPENSPEC_DIR_NAME } from './config.js';
+import { OPENSPEC_DIR_NAME, OPENSPEC_MARKERS } from './config.js';
 import { agentsTemplate } from './templates/agents-template.js';
+import { TemplateManager } from './templates/index.js';
 import { ToolRegistry } from './configurators/registry.js';
 import { SlashCommandRegistry } from './configurators/slash/registry.js';
 
@@ -18,7 +19,17 @@ export class UpdateCommand {
 
     // 2. Update AGENTS.md (full replacement)
     const agentsPath = path.join(openspecPath, 'AGENTS.md');
+    const rootAgentsPath = path.join(resolvedProjectPath, 'AGENTS.md');
+    const rootAgentsExisted = await FileSystemUtils.fileExists(rootAgentsPath);
+
     await FileSystemUtils.writeFile(agentsPath, agentsTemplate);
+    const agentsStandardContent = TemplateManager.getAgentsStandardTemplate();
+    await FileSystemUtils.updateFileWithMarkers(
+      rootAgentsPath,
+      agentsStandardContent,
+      OPENSPEC_MARKERS.start,
+      OPENSPEC_MARKERS.end
+    );
 
     // 3. Update existing AI tool configuration files only
     const configurators = ToolRegistry.getAll();
@@ -63,7 +74,10 @@ export class UpdateCommand {
     }
 
     // 4. Success message (ASCII-safe)
-    const messages: string[] = ['Updated OpenSpec instructions (AGENTS.md)'];
+    const instructionUpdates = ['openspec/AGENTS.md'];
+    instructionUpdates.push(`AGENTS.md${rootAgentsExisted ? '' : ' (created)'}`);
+
+    const messages: string[] = [`Updated OpenSpec instructions (${instructionUpdates.join(', ')})`];
     
     if (updatedFiles.length > 0) {
       messages.push(`Updated AI tool files: ${updatedFiles.join(', ')}`);

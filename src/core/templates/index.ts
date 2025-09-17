@@ -26,6 +26,10 @@ export class TemplateManager {
     return claudeTemplate;
   }
 
+  static getAgentsStandardTemplate(): string {
+    return claudeTemplate;
+  }
+
   static getSlashCommandBody(id: SlashCommandId): string {
     return getSlashCommandBody(id);
   }
