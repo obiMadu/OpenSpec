@@ -43,7 +43,7 @@ describe('InitCommand', () => {
     selectionQueue = [];
     mockPrompt.mockReset();
     initCommand = new InitCommand({ prompt: mockPrompt });
-    
+
     // Mock console.log to suppress output during tests
     vi.spyOn(console, 'log').mockImplementation(() => {});
   });
@@ -56,14 +56,20 @@ describe('InitCommand', () => {
   describe('execute', () => {
     it('should create OpenSpec directory structure', async () => {
       queueSelections('claude', DONE);
-      
+
       await initCommand.execute(testDir);
-      
+
       const openspecPath = path.join(testDir, 'openspec');
       expect(await directoryExists(openspecPath)).toBe(true);
-      expect(await directoryExists(path.join(openspecPath, 'specs'))).toBe(true);
-      expect(await directoryExists(path.join(openspecPath, 'changes'))).toBe(true);
-      expect(await directoryExists(path.join(openspecPath, 'changes', 'archive'))).toBe(true);
+      expect(await directoryExists(path.join(openspecPath, 'specs'))).toBe(
+        true
+      );
+      expect(await directoryExists(path.join(openspecPath, 'changes'))).toBe(
+        true
+      );
+      expect(
+        await directoryExists(path.join(openspecPath, 'changes', 'archive'))
+      ).toBe(true);
     });
 
     it('should create AGENTS.md and project.md', async () => {
@@ -73,23 +79,31 @@ describe('InitCommand', () => {
 
       const openspecPath = path.join(testDir, 'openspec');
       expect(await fileExists(path.join(openspecPath, 'AGENTS.md'))).toBe(true);
-      expect(await fileExists(path.join(openspecPath, 'project.md'))).toBe(true);
+      expect(await fileExists(path.join(openspecPath, 'project.md'))).toBe(
+        true
+      );
 
-      const agentsContent = await fs.readFile(path.join(openspecPath, 'AGENTS.md'), 'utf-8');
+      const agentsContent = await fs.readFile(
+        path.join(openspecPath, 'AGENTS.md'),
+        'utf-8'
+      );
       expect(agentsContent).toContain('OpenSpec Instructions');
-      
-      const projectContent = await fs.readFile(path.join(openspecPath, 'project.md'), 'utf-8');
+
+      const projectContent = await fs.readFile(
+        path.join(openspecPath, 'project.md'),
+        'utf-8'
+      );
       expect(projectContent).toContain('Project Context');
     });
 
     it('should create CLAUDE.md when Claude Code is selected', async () => {
       queueSelections('claude', DONE);
-      
+
       await initCommand.execute(testDir);
-      
+
       const claudePath = path.join(testDir, 'CLAUDE.md');
       expect(await fileExists(claudePath)).toBe(true);
-      
+
       const content = await fs.readFile(claudePath, 'utf-8');
       expect(content).toContain('<!-- OPENSPEC:START -->');
       expect(content).toContain('OpenSpec Instructions');
@@ -98,13 +112,14 @@ describe('InitCommand', () => {
 
     it('should update existing CLAUDE.md with markers', async () => {
       queueSelections('claude', DONE);
-      
+
       const claudePath = path.join(testDir, 'CLAUDE.md');
-      const existingContent = '# My Project Instructions\nCustom instructions here';
+      const existingContent =
+        '# My Project Instructions\nCustom instructions here';
       await fs.writeFile(claudePath, existingContent);
-      
+
       await initCommand.execute(testDir);
-      
+
       const updatedContent = await fs.readFile(claudePath, 'utf-8');
       expect(updatedContent).toContain('<!-- OPENSPEC:START -->');
       expect(updatedContent).toContain('OpenSpec Instructions');
@@ -134,9 +149,18 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      const claudeProposal = path.join(testDir, '.claude/commands/openspec/proposal.md');
-      const claudeApply = path.join(testDir, '.claude/commands/openspec/apply.md');
-      const claudeArchive = path.join(testDir, '.claude/commands/openspec/archive.md');
+      const claudeProposal = path.join(
+        testDir,
+        '.claude/commands/openspec/proposal.md'
+      );
+      const claudeApply = path.join(
+        testDir,
+        '.claude/commands/openspec/apply.md'
+      );
+      const claudeArchive = path.join(
+        testDir,
+        '.claude/commands/openspec/archive.md'
+      );
 
       expect(await fileExists(claudeProposal)).toBe(true);
       expect(await fileExists(claudeApply)).toBe(true);
@@ -154,7 +178,9 @@ describe('InitCommand', () => {
       const archiveContent = await fs.readFile(claudeArchive, 'utf-8');
       expect(archiveContent).toContain('name: OpenSpec: Archive');
       expect(archiveContent).toContain('openspec archive <id>');
-      expect(archiveContent).toContain('`--skip-specs` only for tooling-only work');
+      expect(archiveContent).toContain(
+        '`--skip-specs` only for tooling-only work'
+      );
     });
 
     it('should create Cursor slash command files with templates', async () => {
@@ -162,9 +188,18 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      const cursorProposal = path.join(testDir, '.cursor/commands/openspec-proposal.md');
-      const cursorApply = path.join(testDir, '.cursor/commands/openspec-apply.md');
-      const cursorArchive = path.join(testDir, '.cursor/commands/openspec-archive.md');
+      const cursorProposal = path.join(
+        testDir,
+        '.cursor/commands/openspec-proposal.md'
+      );
+      const cursorApply = path.join(
+        testDir,
+        '.cursor/commands/openspec-apply.md'
+      );
+      const cursorArchive = path.join(
+        testDir,
+        '.cursor/commands/openspec-archive.md'
+      );
 
       expect(await fileExists(cursorProposal)).toBe(true);
       expect(await fileExists(cursorApply)).toBe(true);
@@ -183,27 +218,76 @@ describe('InitCommand', () => {
       expect(archiveContent).toContain('openspec list --specs');
     });
 
+    it('should create OpenCode slash command files with templates', async () => {
+      queueSelections('opencode', DONE);
+
+      await initCommand.execute(testDir);
+
+      const openCodeProposal = path.join(
+        testDir,
+        '.opencode/command/openspec-proposal.md'
+      );
+      const openCodeApply = path.join(
+        testDir,
+        '.opencode/command/openspec-apply.md'
+      );
+      const openCodeArchive = path.join(
+        testDir,
+        '.opencode/command/openspec-archive.md'
+      );
+
+      expect(await fileExists(openCodeProposal)).toBe(true);
+      expect(await fileExists(openCodeApply)).toBe(true);
+      expect(await fileExists(openCodeArchive)).toBe(true);
+
+      const proposalContent = await fs.readFile(openCodeProposal, 'utf-8');
+      expect(proposalContent).toContain('agent: build');
+      expect(proposalContent).toContain(
+        'description: Scaffold a new OpenSpec change and validate strictly.'
+      );
+      expect(proposalContent).toContain('<!-- OPENSPEC:START -->');
+
+      const applyContent = await fs.readFile(openCodeApply, 'utf-8');
+      expect(applyContent).toContain('agent: build');
+      expect(applyContent).toContain(
+        'description: Implement an approved OpenSpec change and keep tasks in sync.'
+      );
+      expect(applyContent).toContain('Work through tasks sequentially');
+
+      const archiveContent = await fs.readFile(openCodeArchive, 'utf-8');
+      expect(archiveContent).toContain('agent: build');
+      expect(archiveContent).toContain(
+        'description: Archive a deployed OpenSpec change and update specs.'
+      );
+      expect(archiveContent).toContain('openspec list --specs');
+    });
+
     it('should add new tool when OpenSpec already exists', async () => {
       queueSelections('claude', DONE, 'cursor', DONE);
       await initCommand.execute(testDir);
       await initCommand.execute(testDir);
 
-      const cursorProposal = path.join(testDir, '.cursor/commands/openspec-proposal.md');
+      const cursorProposal = path.join(
+        testDir,
+        '.cursor/commands/openspec-proposal.md'
+      );
       expect(await fileExists(cursorProposal)).toBe(true);
     });
 
     it('should error when extend mode selects no tools', async () => {
       queueSelections('claude', DONE, DONE);
       await initCommand.execute(testDir);
-      await expect(initCommand.execute(testDir)).rejects.toThrow(/OpenSpec seems to already be initialized/);
+      await expect(initCommand.execute(testDir)).rejects.toThrow(
+        /OpenSpec seems to already be initialized/
+      );
     });
 
     it('should handle non-existent target directory', async () => {
       queueSelections('claude', DONE);
-      
+
       const newDir = path.join(testDir, 'new-project');
       await initCommand.execute(newDir);
-      
+
       const openspecPath = path.join(newDir, 'openspec');
       expect(await directoryExists(openspecPath)).toBe(true);
     });
@@ -211,9 +295,9 @@ describe('InitCommand', () => {
     it('should display success message with selected tool name', async () => {
       queueSelections('claude', DONE);
       const logSpy = vi.spyOn(console, 'log');
-      
+
       await initCommand.execute(testDir);
-      
+
       const calls = logSpy.mock.calls.flat().join('\n');
       expect(calls).toContain('Copy these prompts to Claude Code');
     });
@@ -225,7 +309,9 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       const calls = logSpy.mock.calls.flat().join('\n');
-      expect(calls).toContain('Copy these prompts to your AGENTS.md-compatible assistant');
+      expect(calls).toContain(
+        'Copy these prompts to your AGENTS.md-compatible assistant'
+      );
     });
   });
 
@@ -237,7 +323,7 @@ describe('InitCommand', () => {
 
       expect(mockPrompt).toHaveBeenCalledWith(
         expect.objectContaining({
-          baseMessage: expect.stringContaining('Which AI tools do you use?')
+          baseMessage: expect.stringContaining('Which AI tools do you use?'),
         })
       );
     });
@@ -247,7 +333,7 @@ describe('InitCommand', () => {
       queueSelections('claude', DONE);
 
       await initCommand.execute(testDir);
-      
+
       // When other tools are added, we'd test their specific configurations here
       const claudePath = path.join(testDir, 'CLAUDE.md');
       expect(await fileExists(claudePath)).toBe(true);
@@ -259,7 +345,9 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       const secondRunArgs = mockPrompt.mock.calls[1][0];
-      const claudeChoice = secondRunArgs.choices.find((choice: any) => choice.value === 'claude');
+      const claudeChoice = secondRunArgs.choices.find(
+        (choice: any) => choice.value === 'claude'
+      );
       expect(claudeChoice.configured).toBe(true);
     });
   });
@@ -269,16 +357,21 @@ describe('InitCommand', () => {
       // This is tricky to test cross-platform, but we can test the error message
       const readOnlyDir = path.join(testDir, 'readonly');
       await fs.mkdir(readOnlyDir);
-      
+
       // Mock the permission check to fail
       const originalCheck = fs.writeFile;
-      vi.spyOn(fs, 'writeFile').mockImplementation(async (filePath: any, ...args: any[]) => {
-        if (typeof filePath === 'string' && filePath.includes('.openspec-test-')) {
-          throw new Error('EACCES: permission denied');
+      vi.spyOn(fs, 'writeFile').mockImplementation(
+        async (filePath: any, ...args: any[]) => {
+          if (
+            typeof filePath === 'string' &&
+            filePath.includes('.openspec-test-')
+          ) {
+            throw new Error('EACCES: permission denied');
+          }
+          return originalCheck.call(fs, filePath, ...args);
         }
-        return originalCheck.call(fs, filePath, ...args);
-      });
-      
+      );
+
       queueSelections('claude', DONE);
       await expect(initCommand.execute(readOnlyDir)).rejects.toThrow(
         /Insufficient permissions/
