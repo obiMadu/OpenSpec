@@ -15,7 +15,7 @@
   <a href="https://nodejs.org/"><img alt="node version" src="https://img.shields.io/node/v/@fission-ai/openspec?style=flat-square" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" /></a>
   <a href="https://conventionalcommits.org"><img alt="Conventional Commits" src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=flat-square" /></a>
-  <a href="https://discord.gg/saTQQGQZ"><img alt="Discord" src="https://img.shields.io/discord/1411657095639601154?logo=discord&logoColor=white&style=flat-square" /></a>
+  <a href="https://discord.gg/saTQQGQZ"><img alt="Discord" src="https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white&style=flat-square" /></a>
 </p>
 
 <p align="center">
