@@ -1,5 +1,17 @@
 # @fission-ai/openspec
 
+## 0.4.0
+
+### Minor Changes
+
+- Add OpenSpec change proposals for CLI improvements and enhanced user experience
+- Add Opencode slash commands support for AI-driven development workflows
+
+### Patch Changes
+
+- Add documentation improvements including --yes flag for archive command template and Discord badge
+- Fix normalize line endings in markdown parser to handle CRLF files properly
+
 ## 0.3.0
 
 ### Minor Changes
