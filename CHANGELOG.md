@@ -1,5 +1,29 @@
 # @fission-ai/openspec
 
+## 0.5.0
+
+### Minor Changes
+
+- feat: implement Phase 1 E2E testing with cross-platform CI matrix
+
+  - Add shared runCLI helper in test/helpers/run-cli.ts for spawn testing
+  - Create test/cli-e2e/basic.test.ts covering help, version, validate flows
+  - Migrate existing CLI exec tests to use runCLI helper
+  - Extend CI matrix to bash (Linux/macOS) and pwsh (Windows)
+  - Split PR and main workflows for optimized feedback
+
+### Patch Changes
+
+- Make apply instructions more specific
+
+  Improve agent templates and slash command templates with more specific and actionable apply instructions.
+
+- docs: improve documentation and cleanup
+
+  - Document non-interactive flag for archive command
+  - Replace discord badge in README
+  - Archive completed changes for better organization
+
 ## 0.4.0
 
 ### Minor Changes
