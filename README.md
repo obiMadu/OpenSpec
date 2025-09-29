@@ -185,13 +185,13 @@ You: Please archive the change
      (Shortcut for tools with slash commands: /openspec:archive add-profile-filters)
 
 AI:  I'll archive the add-profile-filters change.
-     *Runs: openspec archive add-profile-filters*
+    *Runs: openspec archive add-profile-filters --yes*
      ✓ Change archived successfully. Specs updated. Ready for the next feature!
 ```
 
 Or run the command yourself in terminal:
 ```bash
-$ openspec archive add-profile-filters  # Archive the completed change
+$ openspec archive add-profile-filters --yes  # Archive the completed change without prompts
 ```
 
 **Note:** Tools with native slash commands (Claude Code, Cursor) can use the shortcuts shown. All other tools work with natural language requests to "create an OpenSpec proposal", "apply the OpenSpec change", or "archive the change".
@@ -203,7 +203,7 @@ openspec list               # View active change folders
 openspec view               # Interactive dashboard of specs and changes
 openspec show <change>      # Display change details (proposal, tasks, spec updates)
 openspec validate <change>  # Check spec formatting and structure
-openspec archive <change>   # Move a completed change into archive/
+openspec archive <change> [--yes|-y]   # Move a completed change into archive/ (non-interactive with --yes)
 ```
 
 ## Example: How AI Creates OpenSpec Files
