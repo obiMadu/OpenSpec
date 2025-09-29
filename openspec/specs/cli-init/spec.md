@@ -3,9 +3,7 @@
 ## Purpose
 
 The `openspec init` command SHALL create a complete OpenSpec directory structure in any project, enabling immediate adoption of OpenSpec conventions with support for multiple AI coding assistants.
-
 ## Requirements
-
 ### Requirement: Progress Indicators
 
 The command SHALL display progress indicators during initialization to provide clear feedback about each step.
@@ -21,11 +19,9 @@ The command SHALL display progress indicators during initialization to provide c
   - Then success: "✔ AI tools configured"
 
 ### Requirement: Directory Creation
-
 The command SHALL create the complete OpenSpec directory structure with all required directories and files.
 
 #### Scenario: Creating OpenSpec structure
-
 - **WHEN** `openspec init` is executed
 - **THEN** create the following directory structure:
 ```
@@ -38,11 +34,9 @@ openspec/
 ```
 
 ### Requirement: File Generation
-
 The command SHALL generate required template files with appropriate content for immediate use.
 
 #### Scenario: Generating template files
-
 - **WHEN** initializing OpenSpec
 - **THEN** generate `AGENTS.md` containing complete OpenSpec instructions for AI assistants
 - **AND** generate `project.md` with project context template
@@ -54,10 +48,14 @@ The command SHALL configure AI coding assistants with OpenSpec instructions base
 #### Scenario: Prompting for AI tool selection
 
 - **WHEN** run interactively
-- **THEN** prompt user to select AI tools to configure:
-  - Claude Code (updates/creates CLAUDE.md with OpenSpec markers)
-  - Cursor (future)
-  - Aider (future)
+- **THEN** prompt the user with "Which AI tools do you use?" using a multi-select menu
+- **AND** list every available tool with a checkbox:
+  - Claude Code (creates or refreshes CLAUDE.md and slash commands)
+  - Cursor (creates or refreshes `.cursor/commands/*` slash commands)
+  - AGENTS.md standard (creates or refreshes AGENTS.md with OpenSpec markers)
+- **AND** show "(already configured)" beside tools whose managed files exist so users understand selections will refresh content
+- **AND** treat disabled tools as "coming soon" and keep them unselectable
+- **AND** allow confirming with Enter after selecting one or more tools
 
 ### Requirement: AI Tool Configuration Details
 
@@ -74,105 +72,36 @@ The command SHALL properly configure selected AI tools with OpenSpec-specific in
 - **THEN** create new file with OpenSpec content wrapped in markers:
 ```markdown
 <!-- OPENSPEC:START -->
-# OpenSpec Project
+# OpenSpec Instructions
 
-This document provides instructions for AI coding assistants on how to use OpenSpec conventions for spec-driven development. Follow these rules precisely when working on OpenSpec-enabled projects.
-
-This project uses OpenSpec for spec-driven development. Specifications are the source of truth.
-
-See @openspec/AGENTS.md for detailed conventions and guidelines.
-<!-- OPENSPEC:END -->
-```
-
-#### Scenario: Updating existing CLAUDE.md
-
-- **WHEN** CLAUDE.md already exists
-- **THEN** preserve all existing content
-- **AND** insert OpenSpec content at the beginning of the file using markers
-- **AND** ensure markers don't duplicate if they already exist
-
-#### Scenario: Managing content with markers
-
-- **WHEN** using the marker system
-- **THEN** use `<!-- OPENSPEC:START -->` to mark the beginning of managed content
-- **AND** use `<!-- OPENSPEC:END -->` to mark the end of managed content
-- **AND** allow OpenSpec to update its content without affecting user customizations
-- **AND** preserve all content outside the markers intact
-
-WHY use markers:
-- Users may have existing CLAUDE.md instructions they want to keep
-- OpenSpec can update its instructions in future versions
-- Clear boundary between OpenSpec-managed and user-managed content
+Instructions for AI coding assistants using OpenSpec for spec-driven development.
 
 ### Requirement: Interactive Mode
-
 The command SHALL provide an interactive menu for AI tool selection with clear navigation instructions.
 
 #### Scenario: Displaying interactive menu
-
-- **WHEN** run
-- **THEN** prompt user with: "Which AI tool do you use?"
-- **AND** show single-select menu with available tools:
-  - Claude Code
-- **AND** show disabled options as "coming soon" (not selectable):
-  - Cursor (coming soon)
-  - Aider (coming soon)  
-  - Continue (coming soon)
-
-#### Scenario: Navigating the menu
-
-- **WHEN** user is in the menu
-- **THEN** allow arrow keys to move between options
-- **AND** allow Enter key to select the highlighted option
+- **WHEN** run in fresh or extend mode
+- **THEN** present a looping select menu that lets users toggle tools with Enter and finish via a "Done" option
+- **AND** label already configured tools with "(already configured)" while keeping disabled options marked "coming soon"
+- **AND** change the prompt copy in extend mode to "Which AI tools would you like to add or refresh?"
+- **AND** display inline instructions clarifying that Enter toggles a tool and selecting "Done" confirms the list
 
 ### Requirement: Safety Checks
-
 The command SHALL perform safety checks to prevent overwriting existing structures and ensure proper permissions.
 
 #### Scenario: Detecting existing initialization
-
-- **WHEN** `openspec/` directory already exists
-- **THEN** display error with ora fail indicator:
-  - "✖ Error: OpenSpec seems to already be initialized. Use 'openspec update' to update the structure."
-
-#### Scenario: Checking write permissions
-
-- **WHEN** checking initialization feasibility
-- **THEN** verify write permissions in the target directory silently
-- **AND** only display error if permissions are insufficient
+- **WHEN** the `openspec/` directory already exists
+- **THEN** inform the user that OpenSpec is already initialized, skip recreating the base structure, and enter an extend mode
+- **AND** continue to the AI tool selection step so additional tools can be configured
+- **AND** display the existing-initialization error message only when the user declines to add any AI tools
 
 ### Requirement: Success Output
 
 The command SHALL provide clear, actionable next steps upon successful initialization.
 
 #### Scenario: Displaying success message
-
 - **WHEN** initialization completes successfully
-- **THEN** display actionable prompts for AI-driven workflow:
-```
-✔ OpenSpec initialized successfully!
-
-Next steps - Copy these prompts to Claude:
-
-────────────────────────────────────────────────────────────
-1. Populate your project context:
-   "Please read openspec/project.md and help me fill it out
-    with details about my project, tech stack, and conventions"
-
-2. Create your first change proposal:
-   "I want to add [YOUR FEATURE HERE]. Please create an
-    OpenSpec change proposal for this feature"
-
-3. Learn the OpenSpec workflow:
-   "Please explain the OpenSpec workflow from openspec/AGENTS.md
-    and how I should work with you on this project"
-────────────────────────────────────────────────────────────
-```
-
-The prompts SHALL:
-- Be copy-pasteable for immediate use with AI tools
-- Guide users through the AI-driven workflow
-- Replace placeholder text ([YOUR FEATURE HERE]) with actual features
+- **THEN** include prompt: "Please explain the OpenSpec workflow from openspec/AGENTS.md and how I should work with you on this project"
 
 ### Requirement: Exit Codes
 
@@ -186,6 +115,52 @@ The command SHALL use consistent exit codes to indicate different failure modes.
   - 1: General error (including when OpenSpec directory already exists)
   - 2: Insufficient permissions (reserved for future use)
   - 3: User cancelled operation (reserved for future use)
+
+### Requirement: Additional AI Tool Initialization
+`openspec init` SHALL allow users to add configuration files for new AI coding assistants after the initial setup.
+
+#### Scenario: Configuring an extra tool after initial setup
+- **GIVEN** an `openspec/` directory already exists and at least one AI tool file is present
+- **WHEN** the user runs `openspec init` and selects a different supported AI tool
+- **THEN** generate that tool's configuration files with OpenSpec markers the same way as during first-time initialization
+- **AND** leave existing tool configuration files unchanged except for managed sections that need refreshing
+- **AND** exit with code 0 and display a success summary highlighting the newly added tool files
+
+### Requirement: Success Output Enhancements
+`openspec init` SHALL summarize tool actions when initialization or extend mode completes.
+
+#### Scenario: Showing tool summary
+- **WHEN** the command completes successfully
+- **THEN** display a categorized summary of tools that were created, refreshed, or skipped (including already-configured skips)
+- **AND** personalize the "Next steps" header using the names of the selected tools, defaulting to a generic label when none remain
+
+### Requirement: Exit Code Adjustments
+`openspec init` SHALL treat extend mode with no selected tools as a guarded error.
+
+#### Scenario: Preventing empty extend runs
+- **WHEN** OpenSpec is already initialized and the user selects no additional tools
+- **THEN** exit with code 1 after showing the existing-initialization guidance message
+
+### Requirement: Slash Command Configuration
+The init command SHALL generate slash command files for supported editors using shared templates.
+
+#### Scenario: Generating slash commands for Claude Code
+- **WHEN** the user selects Claude Code during initialization
+- **THEN** create `.claude/commands/openspec/proposal.md`, `.claude/commands/openspec/apply.md`, and `.claude/commands/openspec/archive.md`
+- **AND** populate each file from shared templates so command text matches other tools
+- **AND** each template includes instructions for the relevant OpenSpec workflow stage
+
+#### Scenario: Generating slash commands for Cursor
+- **WHEN** the user selects Cursor during initialization
+- **THEN** create `.cursor/commands/openspec-proposal.md`, `.cursor/commands/openspec-apply.md`, and `.cursor/commands/openspec-archive.md`
+- **AND** populate each file from shared templates so command text matches other tools
+- **AND** each template includes instructions for the relevant OpenSpec workflow stage
+
+#### Scenario: Generating slash commands for OpenCode
+- **WHEN** the user selects OpenCode during initialization
+- **THEN** create `.opencode/commands/openspec-proposal.md`, `.opencode/commands/openspec-apply.md`, and `.opencode/commands/openspec-archive.md`
+- **AND** populate each file from shared templates so command text matches other tools
+- **AND** each template includes instructions for the relevant OpenSpec workflow stage
 
 ## Why
 

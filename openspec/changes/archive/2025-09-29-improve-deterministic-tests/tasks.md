@@ -21,5 +21,5 @@
 
 ## 5. Optional (Not Needed Now)
 - [x] 5.1 Add optional root param to discovery helpers (default process.cwd())
-- [ ] 5.2 Consider threading root through command constructors if ever required
+
 

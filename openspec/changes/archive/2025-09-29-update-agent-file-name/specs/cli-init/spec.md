@@ -25,11 +25,15 @@ The command SHALL generate required template files with appropriate content for 
 
 ### Requirement: AI Tool Configuration Details
 
+The command SHALL properly configure selected AI tools with OpenSpec-specific instructions using a marker system.
+
 #### Scenario: Creating new CLAUDE.md
 - **WHEN** CLAUDE.md does not exist
 - **THEN** create new file with OpenSpec content wrapped in markers including reference to `@openspec/AGENTS.md`
 
 ### Requirement: Success Output
+
+The command SHALL provide clear, actionable next steps upon successful initialization.
 
 #### Scenario: Displaying success message
 - **WHEN** initialization completes successfully

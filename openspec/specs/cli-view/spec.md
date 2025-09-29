@@ -36,27 +36,13 @@ The dashboard SHALL display a summary section with key project metrics.
 - **THEN** summary shows zero counts for all metrics
 
 ### Requirement: Active Changes Display
-
 The dashboard SHALL show active changes with visual progress indicators.
 
-#### Scenario: Active changes with progress bars
-
-- **WHEN** there are in-progress changes with tasks
-- **THEN** system displays each change with change name left-aligned
-- **AND** visual progress bar using Unicode characters
-- **AND** percentage completion on the right
-
 #### Scenario: Active changes ordered by completion percentage
-
 - **WHEN** multiple active changes are displayed with progress information
 - **THEN** list them sorted by completion percentage ascending so 0% items appear first
 - **AND** treat missing progress values as 0% for ordering
 - **AND** break ties by change identifier in ascending alphabetical order to keep output deterministic
-
-#### Scenario: No active changes
-
-- **WHEN** all changes are completed or no changes exist
-- **THEN** active changes section is omitted from display
 
 ### Requirement: Completed Changes Display
 

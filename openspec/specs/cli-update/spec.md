@@ -5,22 +5,11 @@
 As a developer using OpenSpec, I want to update the OpenSpec instructions in my project when new versions are released, so that I can benefit from improvements to AI agent instructions.
 ## Requirements
 ### Requirement: Update Behavior
-
 The update command SHALL update OpenSpec instruction files to the latest templates in a team-friendly manner.
 
 #### Scenario: Running update command
-
 - **WHEN** a user runs `openspec update`
-- **THEN** the command SHALL:
-  - Check if the `openspec` directory exists
-  - Replace `openspec/AGENTS.md` with the latest template (complete replacement)
-  - Update **only existing** AI tool configuration files (e.g., CLAUDE.md)
-    - Check each registered AI tool configurator
-    - For each configurator, check if its file exists
-    - Update only files that already exist using their markers
-    - Preserve user content outside markers
-    - **Never create new AI tool configuration files**
-  - Display success message listing updated files
+- **THEN** replace `openspec/AGENTS.md` with the latest template
 
 ### Requirement: Prerequisites
 
@@ -34,39 +23,53 @@ The command SHALL require an existing OpenSpec structure before allowing updates
 - **AND** exit with code 1
 
 ### Requirement: File Handling
-
 The update command SHALL handle file updates in a predictable and safe manner.
+
+#### Scenario: Updating files
+- **WHEN** updating files
+- **THEN** completely replace `openspec/AGENTS.md` with the latest template
+
+### Requirement: Tool-Agnostic Updates
+The update command SHALL handle file updates in a predictable and safe manner while respecting team tool choices.
 
 #### Scenario: Updating files
 
 - **WHEN** updating files
 - **THEN** completely replace `openspec/AGENTS.md` with the latest template
+- **AND** create or update the root-level `AGENTS.md` using the OpenSpec markers
 - **AND** update only the OpenSpec-managed blocks in **existing** AI tool files using markers
 - **AND** use the default directory name `openspec`
 - **AND** be idempotent (repeated runs have no additional effect)
-- **AND** respect team members' AI tool choices by not creating unwanted files
-
-### Requirement: Tool-Agnostic Updates
-
-The update command SHALL update only existing AI tool configuration files and SHALL NOT create new ones.
-
-#### Scenario: Updating existing tool files
-
-- **WHEN** a user runs `openspec update`
-- **THEN** update each AI tool configuration file that exists (e.g., CLAUDE.md, COPILOT.md)
-- **AND** do not create missing tool configuration files
-- **AND** preserve user content outside OpenSpec markers
+- **AND** respect team members' AI tool choices by not creating additional tool files beyond the root `AGENTS.md`
 
 ### Requirement: Core Files Always Updated
-
 The update command SHALL always update the core OpenSpec files and display an ASCII-safe success message.
 
 #### Scenario: Successful update
-
 - **WHEN** the update completes successfully
 - **THEN** replace `openspec/AGENTS.md` with the latest template
-- **AND** update existing AI tool configuration files within markers
-- **AND** display the message: "Updated OpenSpec instructions"
+
+### Requirement: Slash Command Updates
+The update command SHALL refresh existing slash command files for configured tools without creating new ones.
+
+#### Scenario: Updating slash commands for Claude Code
+- **WHEN** `.claude/commands/openspec/` contains `proposal.md`, `apply.md`, and `archive.md`
+- **THEN** refresh each file using shared templates
+- **AND** ensure templates include instructions for the relevant workflow stage
+
+#### Scenario: Updating slash commands for Cursor
+- **WHEN** `.cursor/commands/` contains `openspec-proposal.md`, `openspec-apply.md`, and `openspec-archive.md`
+- **THEN** refresh each file using shared templates
+- **AND** ensure templates include instructions for the relevant workflow stage
+
+#### Scenario: Updating slash commands for OpenCode
+- **WHEN** `.opencode/commands/` contains `openspec-proposal.md`, `openspec-apply.md`, and `openspec-archive.md`
+- **THEN** refresh each file using shared templates
+- **AND** ensure templates include instructions for the relevant workflow stage
+
+#### Scenario: Missing slash command file
+- **WHEN** a tool lacks a slash command file
+- **THEN** do not create a new file during update
 
 ## Edge Cases
 

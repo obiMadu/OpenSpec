@@ -26,10 +26,6 @@
   - Archive documentation
   - Change proposals
 
-## 6. Add Deprecation Notice (Optional Phase)
-- [ ] Consider adding a deprecation warning before full removal
-- [ ] Provide helpful message directing users to `openspec show` command
-
 ## 7. Testing
 - [x] Ensure all tests pass after removal
 - [x] Verify CLI help text no longer shows diff command

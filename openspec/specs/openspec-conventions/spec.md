@@ -14,11 +14,9 @@ OpenSpec conventions SHALL mandate a structured spec format with clear requireme
 - **THEN** authors SHALL use `### Requirement: ...` followed by at least one `#### Scenario: ...` section
 
 ### Requirement: Project Structure
-
 An OpenSpec project SHALL maintain a consistent directory structure for specifications and changes.
 
 #### Scenario: Initializing project structure
-
 - **WHEN** an OpenSpec project is initialized
 - **THEN** it SHALL have this structure:
 ```
