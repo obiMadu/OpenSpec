@@ -1,5 +1,11 @@
 # @fission-ai/openspec
 
+## 0.6.0
+
+### Minor Changes
+
+- Slim the generated root agent instructions down to a managed hand-off stub and update the init/update flows to refresh it safely.
+
 ## 0.5.0
 
 ### Minor Changes
