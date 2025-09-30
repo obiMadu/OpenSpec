@@ -10,6 +10,7 @@ The update command SHALL update OpenSpec instruction files to the latest templat
 #### Scenario: Running update command
 - **WHEN** a user runs `openspec update`
 - **THEN** replace `openspec/AGENTS.md` with the latest template
+- **AND** if a root-level stub (`AGENTS.md`/`CLAUDE.md`) exists, refresh it so it points to `@/openspec/AGENTS.md`
 
 ### Requirement: Prerequisites
 
@@ -28,6 +29,7 @@ The update command SHALL handle file updates in a predictable and safe manner.
 #### Scenario: Updating files
 - **WHEN** updating files
 - **THEN** completely replace `openspec/AGENTS.md` with the latest template
+- **AND** if a root-level stub exists, update the managed block content so it keeps directing teammates to `@/openspec/AGENTS.md`
 
 ### Requirement: Tool-Agnostic Updates
 The update command SHALL handle file updates in a predictable and safe manner while respecting team tool choices.
@@ -36,11 +38,12 @@ The update command SHALL handle file updates in a predictable and safe manner wh
 
 - **WHEN** updating files
 - **THEN** completely replace `openspec/AGENTS.md` with the latest template
-- **AND** create or update the root-level `AGENTS.md` using the OpenSpec markers
+- **AND** update the root-level `AGENTS.md` using the OpenSpec markers only when that file already exists, keeping the stub content that links to `@/openspec/AGENTS.md`
 - **AND** update only the OpenSpec-managed blocks in **existing** AI tool files using markers
 - **AND** use the default directory name `openspec`
 - **AND** be idempotent (repeated runs have no additional effect)
 - **AND** respect team members' AI tool choices by not creating additional tool files beyond the root `AGENTS.md`
+- **AND** do not create new root-level stub files when none are present
 
 ### Requirement: Core Files Always Updated
 The update command SHALL always update the core OpenSpec files and display an ASCII-safe success message.
@@ -48,6 +51,7 @@ The update command SHALL always update the core OpenSpec files and display an AS
 #### Scenario: Successful update
 - **WHEN** the update completes successfully
 - **THEN** replace `openspec/AGENTS.md` with the latest template
+- **AND** if a root-level stub exists, refresh it so it still directs contributors to `@/openspec/AGENTS.md`
 
 ### Requirement: Slash Command Updates
 The update command SHALL refresh existing slash command files for configured tools without creating new ones.
@@ -63,7 +67,7 @@ The update command SHALL refresh existing slash command files for configured too
 - **AND** ensure templates include instructions for the relevant workflow stage
 
 #### Scenario: Updating slash commands for OpenCode
-- **WHEN** `.opencode/commands/` contains `openspec-proposal.md`, `openspec-apply.md`, and `openspec-archive.md`
+- **WHEN** `.opencode/command/` contains `openspec-proposal.md`, `openspec-apply.md`, and `openspec-archive.md`
 - **THEN** refresh each file using shared templates
 - **AND** ensure templates include instructions for the relevant workflow stage
 

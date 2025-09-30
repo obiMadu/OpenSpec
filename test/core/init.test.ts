@@ -106,7 +106,8 @@ describe('InitCommand', () => {
 
       const content = await fs.readFile(claudePath, 'utf-8');
       expect(content).toContain('<!-- OPENSPEC:START -->');
-      expect(content).toContain('OpenSpec Instructions');
+      expect(content).toContain("@/openspec/AGENTS.md");
+      expect(content).toContain('openspec update');
       expect(content).toContain('<!-- OPENSPEC:END -->');
     });
 
@@ -122,7 +123,8 @@ describe('InitCommand', () => {
 
       const updatedContent = await fs.readFile(claudePath, 'utf-8');
       expect(updatedContent).toContain('<!-- OPENSPEC:START -->');
-      expect(updatedContent).toContain('OpenSpec Instructions');
+      expect(updatedContent).toContain("@/openspec/AGENTS.md");
+      expect(updatedContent).toContain('openspec update');
       expect(updatedContent).toContain('<!-- OPENSPEC:END -->');
       expect(updatedContent).toContain('Custom instructions here');
     });
@@ -137,7 +139,8 @@ describe('InitCommand', () => {
 
       const content = await fs.readFile(rootAgentsPath, 'utf-8');
       expect(content).toContain('<!-- OPENSPEC:START -->');
-      expect(content).toContain('OpenSpec Instructions');
+      expect(content).toContain("@/openspec/AGENTS.md");
+      expect(content).toContain('openspec update');
       expect(content).toContain('<!-- OPENSPEC:END -->');
 
       const claudeExists = await fileExists(path.join(testDir, 'CLAUDE.md'));

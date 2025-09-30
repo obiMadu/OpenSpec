@@ -1,6 +1,7 @@
 import { agentsTemplate } from './agents-template.js';
 import { projectTemplate, ProjectContext } from './project-template.js';
 import { claudeTemplate } from './claude-template.js';
+import { agentsRootStubTemplate } from './agents-root-stub.js';
 import { getSlashCommandBody, SlashCommandId } from './slash-command-templates.js';
 
 export interface Template {
@@ -27,7 +28,7 @@ export class TemplateManager {
   }
 
   static getAgentsStandardTemplate(): string {
-    return agentsTemplate;
+    return agentsRootStubTemplate;
   }
 
   static getSlashCommandBody(id: SlashCommandId): string {

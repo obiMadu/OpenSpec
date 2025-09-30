@@ -1,6 +1,46 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
+function isMarkerOnOwnLine(content: string, markerIndex: number, markerLength: number): boolean {
+  let leftIndex = markerIndex - 1;
+  while (leftIndex >= 0 && content[leftIndex] !== '\n') {
+    const char = content[leftIndex];
+    if (char !== ' ' && char !== '\t' && char !== '\r') {
+      return false;
+    }
+    leftIndex--;
+  }
+
+  let rightIndex = markerIndex + markerLength;
+  while (rightIndex < content.length && content[rightIndex] !== '\n') {
+    const char = content[rightIndex];
+    if (char !== ' ' && char !== '\t' && char !== '\r') {
+      return false;
+    }
+    rightIndex++;
+  }
+
+  return true;
+}
+
+function findMarkerIndex(
+  content: string,
+  marker: string,
+  fromIndex = 0
+): number {
+  let currentIndex = content.indexOf(marker, fromIndex);
+
+  while (currentIndex !== -1) {
+    if (isMarkerOnOwnLine(content, currentIndex, marker.length)) {
+      return currentIndex;
+    }
+
+    currentIndex = content.indexOf(marker, currentIndex + marker.length);
+  }
+
+  return -1;
+}
+
 export class FileSystemUtils {
   static async createDirectory(dirPath: string): Promise<void> {
     await fs.mkdir(dirPath, { recursive: true });
@@ -70,10 +110,18 @@ export class FileSystemUtils {
     if (await this.fileExists(filePath)) {
       existingContent = await this.readFile(filePath);
       
-      const startIndex = existingContent.indexOf(startMarker);
-      const endIndex = existingContent.indexOf(endMarker);
-      
+      const startIndex = findMarkerIndex(existingContent, startMarker);
+      const endIndex = startIndex !== -1
+        ? findMarkerIndex(existingContent, endMarker, startIndex + startMarker.length)
+        : findMarkerIndex(existingContent, endMarker);
+
       if (startIndex !== -1 && endIndex !== -1) {
+        if (endIndex < startIndex) {
+          throw new Error(
+            `Invalid marker state in ${filePath}. End marker appears before start marker.`
+          );
+        }
+
         const before = existingContent.substring(0, startIndex);
         const after = existingContent.substring(endIndex + endMarker.length);
         existingContent = before + startMarker + '\n' + content + '\n' + endMarker + after;

@@ -38,7 +38,7 @@ The command SHALL generate required template files with appropriate content for 
 
 #### Scenario: Generating template files
 - **WHEN** initializing OpenSpec
-- **THEN** generate `AGENTS.md` containing complete OpenSpec instructions for AI assistants
+- **THEN** generate `openspec/AGENTS.md` containing complete OpenSpec instructions for AI assistants
 - **AND** generate `project.md` with project context template
 
 ### Requirement: AI Tool Configuration
@@ -52,7 +52,7 @@ The command SHALL configure AI coding assistants with OpenSpec instructions base
 - **AND** list every available tool with a checkbox:
   - Claude Code (creates or refreshes CLAUDE.md and slash commands)
   - Cursor (creates or refreshes `.cursor/commands/*` slash commands)
-  - AGENTS.md standard (creates or refreshes AGENTS.md with OpenSpec markers)
+  - AGENTS.md standard (creates or refreshes AGENTS.md stub with OpenSpec markers)
 - **AND** show "(already configured)" beside tools whose managed files exist so users understand selections will refresh content
 - **AND** treat disabled tools as "coming soon" and keep them unselectable
 - **AND** allow confirming with Enter after selecting one or more tools
@@ -65,16 +65,22 @@ The command SHALL properly configure selected AI tools with OpenSpec-specific in
 
 - **WHEN** Claude Code is selected
 - **THEN** create or update `CLAUDE.md` in the project root directory (not inside openspec/)
+- **AND** populate the managed block with a short stub that points teammates to `@/openspec/AGENTS.md`
 
 #### Scenario: Creating new CLAUDE.md
 
 - **WHEN** CLAUDE.md does not exist
-- **THEN** create new file with OpenSpec content wrapped in markers:
+- **THEN** create new file with stub instructions wrapped in markers so the full workflow stays in `openspec/AGENTS.md`:
 ```markdown
 <!-- OPENSPEC:START -->
 # OpenSpec Instructions
 
-Instructions for AI coding assistants using OpenSpec for spec-driven development.
+This project uses OpenSpec to manage AI assistant workflows.
+
+- Full guidance lives in '@/openspec/AGENTS.md'.
+- Keep this managed block so 'openspec update' can refresh the instructions.
+<!-- OPENSPEC:END -->
+```
 
 ### Requirement: Interactive Mode
 The command SHALL provide an interactive menu for AI tool selection with clear navigation instructions.

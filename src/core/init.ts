@@ -22,17 +22,11 @@ import {
   OPENSPEC_DIR_NAME,
   AIToolOption,
 } from './config.js';
+import { PALETTE } from './styles/palette.js';
 
 const PROGRESS_SPINNER = {
   interval: 80,
   frames: ['░░░', '▒░░', '▒▒░', '▒▒▒', '▓▒▒', '▓▓▒', '▓▓▓', '▒▓▓', '░▒▓'],
-};
-
-const PALETTE = {
-  white: chalk.hex('#f4f4f4'),
-  lightGray: chalk.hex('#c8c8c8'),
-  midGray: chalk.hex('#8a8a8a'),
-  darkGray: chalk.hex('#4a4a4a'),
 };
 
 const LETTER_MAP: Record<string, string[]> = {

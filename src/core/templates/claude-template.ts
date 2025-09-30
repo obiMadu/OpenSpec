@@ -1,1 +1,1 @@
-export { agentsTemplate as claudeTemplate } from './agents-template.js';
+export { agentsRootStubTemplate as claudeTemplate } from './agents-root-stub.js';

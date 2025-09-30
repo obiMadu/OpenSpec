@@ -248,5 +248,40 @@ Line 5 with gap`;
       const result = await fs.readFile(filePath, 'utf-8');
       expect(result).toContain(content);
     });
+
+    it('should ignore inline mentions of markers when updating content', async () => {
+      const filePath = path.join(testDir, 'inline-mentions.md');
+      const existingFile = `Intro referencing markers like ${START_MARKER} and ${END_MARKER} inside text.
+
+${START_MARKER}
+Original content
+${END_MARKER}
+`;
+
+      await fs.writeFile(filePath, existingFile);
+
+      await FileSystemUtils.updateFileWithMarkers(
+        filePath,
+        'Updated content',
+        START_MARKER,
+        END_MARKER
+      );
+
+      const firstResult = await fs.readFile(filePath, 'utf-8');
+      expect(firstResult).toContain('Intro referencing markers like');
+      expect(firstResult).toContain('Updated content');
+      expect(firstResult.match(new RegExp(START_MARKER, 'g'))?.length).toBe(2);
+      expect(firstResult.match(new RegExp(END_MARKER, 'g'))?.length).toBe(2);
+
+      await FileSystemUtils.updateFileWithMarkers(
+        filePath,
+        'Updated content',
+        START_MARKER,
+        END_MARKER
+      );
+
+      const secondResult = await fs.readFile(filePath, 'utf-8');
+      expect(secondResult).toBe(firstResult);
+    });
   });
 });
