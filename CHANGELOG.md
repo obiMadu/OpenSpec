@@ -1,5 +1,11 @@
 # @fission-ai/openspec
 
+## 0.7.0
+
+### Minor Changes
+
+- Add Kilo Code workflow support so `openspec init` scaffolds `.kilocode/workflows/openspec-*.md` and `openspec update` refreshes them in place.
+
 ## 0.6.0
 
 ### Minor Changes

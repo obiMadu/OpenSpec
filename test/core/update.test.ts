@@ -192,6 +192,34 @@ Old body
     consoleSpy.mockRestore();
   });
 
+  it('should refresh existing Kilo Code workflows', async () => {
+    const kilocodePath = path.join(
+      testDir,
+      '.kilocode/workflows/openspec-apply.md'
+    );
+    await fs.mkdir(path.dirname(kilocodePath), { recursive: true });
+    const initialContent = `<!-- OPENSPEC:START -->
+Old body
+<!-- OPENSPEC:END -->`;
+    await fs.writeFile(kilocodePath, initialContent);
+
+    const consoleSpy = vi.spyOn(console, 'log');
+
+    await updateCommand.execute(testDir);
+
+    const updated = await fs.readFile(kilocodePath, 'utf-8');
+    expect(updated).toContain('Work through tasks sequentially');
+    expect(updated).not.toContain('Old body');
+    expect(updated.startsWith('<!-- OPENSPEC:START -->')).toBe(true);
+
+    const [logMessage] = consoleSpy.mock.calls[0];
+    expect(logMessage).toContain(
+      'Updated slash commands: .kilocode/workflows/openspec-apply.md'
+    );
+
+    consoleSpy.mockRestore();
+  });
+
   it('should handle no AI tool files present', async () => {
     // Execute update command with no AI tool files
     const consoleSpy = vi.spyOn(console, 'log');

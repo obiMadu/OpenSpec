@@ -265,6 +265,42 @@ describe('InitCommand', () => {
       expect(archiveContent).toContain('openspec list --specs');
     });
 
+    it('should create Kilo Code workflows with templates', async () => {
+      queueSelections('kilocode', DONE);
+
+      await initCommand.execute(testDir);
+
+      const proposalPath = path.join(
+        testDir,
+        '.kilocode/workflows/openspec-proposal.md'
+      );
+      const applyPath = path.join(
+        testDir,
+        '.kilocode/workflows/openspec-apply.md'
+      );
+      const archivePath = path.join(
+        testDir,
+        '.kilocode/workflows/openspec-archive.md'
+      );
+
+      expect(await fileExists(proposalPath)).toBe(true);
+      expect(await fileExists(applyPath)).toBe(true);
+      expect(await fileExists(archivePath)).toBe(true);
+
+      const proposalContent = await fs.readFile(proposalPath, 'utf-8');
+      expect(proposalContent).toContain('<!-- OPENSPEC:START -->');
+      expect(proposalContent).toContain('**Guardrails**');
+      expect(proposalContent).not.toContain('---\n');
+
+      const applyContent = await fs.readFile(applyPath, 'utf-8');
+      expect(applyContent).toContain('Work through tasks sequentially');
+      expect(applyContent).not.toContain('---\n');
+
+      const archiveContent = await fs.readFile(archivePath, 'utf-8');
+      expect(archiveContent).toContain('openspec list --specs');
+      expect(archiveContent).not.toContain('---\n');
+    });
+
     it('should add new tool when OpenSpec already exists', async () => {
       queueSelections('claude', DONE, 'cursor', DONE);
       await initCommand.execute(testDir);
@@ -352,6 +388,16 @@ describe('InitCommand', () => {
         (choice: any) => choice.value === 'claude'
       );
       expect(claudeChoice.configured).toBe(true);
+    });
+
+    it('should preselect Kilo Code when workflows already exist', async () => {
+      queueSelections('kilocode', DONE, 'kilocode', DONE);
+      await initCommand.execute(testDir);
+      await initCommand.execute(testDir);
+
+      const secondRunArgs = mockPrompt.mock.calls[1][0];
+      const preselected = secondRunArgs.initialSelected ?? [];
+      expect(preselected).toContain('kilocode');
     });
   });
 
