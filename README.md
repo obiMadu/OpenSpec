@@ -124,8 +124,8 @@ openspec init
 ```
 
 **What happens during initialization:**
-- You'll be prompted to select your AI tool (Claude Code, Cursor, etc.)
-- OpenSpec automatically configures slash commands or `AGENTS.md` based on your selection
+- You'll be prompted to pick any natively supported AI tools (Claude Code, Cursor, OpenCode, etc.); other assistants always rely on the shared `AGENTS.md` stub
+- OpenSpec automatically configures slash commands for the tools you choose and always writes a managed `AGENTS.md` hand-off at the project root
 - A new `openspec/` directory structure is created in your project
 
 **After setup:**

@@ -59,11 +59,24 @@ const parseToolLabel = (raw: string): ToolLabel => {
   };
 };
 
-type ToolWizardChoice = {
-  value: string;
-  label: ToolLabel;
-  configured: boolean;
-};
+const isSelectableChoice = (
+  choice: ToolWizardChoice
+): choice is Extract<ToolWizardChoice, { selectable: true }> => choice.selectable;
+
+type ToolWizardChoice =
+  | {
+      kind: 'heading' | 'info';
+      value: string;
+      label: ToolLabel;
+      selectable: false;
+    }
+  | {
+      kind: 'option';
+      value: string;
+      label: ToolLabel;
+      configured: boolean;
+      selectable: true;
+    };
 
 type ToolWizardConfig = {
   extendMode: boolean;
@@ -76,21 +89,41 @@ type WizardStep = 'intro' | 'select' | 'review';
 
 type ToolSelectionPrompt = (config: ToolWizardConfig) => Promise<string[]>;
 
+type RootStubStatus = 'created' | 'updated' | 'skipped';
+
+const ROOT_STUB_CHOICE_VALUE = '__root_stub__';
+
+const OTHER_TOOLS_HEADING_VALUE = '__heading-other__';
+const LIST_SPACER_VALUE = '__list-spacer__';
+
 const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>(
   (config, done) => {
     const totalSteps = 3;
     const [step, setStep] = useState<WizardStep>('intro');
-    const [cursor, setCursor] = useState<number>(0);
-    const [selected, setSelected] = useState<string[]>(
-      () => config.initialSelected ?? []
+    const selectableChoices = config.choices.filter(isSelectableChoice);
+    const initialCursorIndex = config.choices.findIndex((choice) =>
+      choice.selectable
     );
+    const [cursor, setCursor] = useState<number>(
+      initialCursorIndex === -1 ? 0 : initialCursorIndex
+    );
+    const [selected, setSelected] = useState<string[]>(() => {
+      const initial = new Set(
+        (config.initialSelected ?? []).filter((value) =>
+          selectableChoices.some((choice) => choice.value === value)
+        )
+      );
+      return selectableChoices
+        .map((choice) => choice.value)
+        .filter((value) => initial.has(value));
+    });
     const [error, setError] = useState<string | null>(null);
 
     const selectedSet = new Set(selected);
-    const pageSize = Math.max(Math.min(config.choices.length, 7), 1);
+    const pageSize = Math.max(config.choices.length, 1);
 
     const updateSelected = (next: Set<string>) => {
-      const ordered = config.choices
+      const ordered = selectableChoices
         .map((choice) => choice.value)
         .filter((value) => next.has(value));
       setSelected(ordered);
@@ -100,8 +133,17 @@ const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>(
       items: config.choices,
       active: cursor,
       pageSize,
-      loop: config.choices.length > 1,
+      loop: false,
       renderItem: ({ item, isActive }) => {
+        if (!item.selectable) {
+          const prefix = item.kind === 'info' ? '  ' : '';
+          const textColor =
+            item.kind === 'heading' ? PALETTE.lightGray : PALETTE.midGray;
+          return `${PALETTE.midGray(' ')} ${PALETTE.midGray(' ')} ${textColor(
+            `${prefix}${item.label.primary}`
+          )}`;
+        }
+
         const isSelected = selectedSet.has(item.value);
         const cursorSymbol = isActive
           ? PALETTE.white('›')
@@ -110,12 +152,35 @@ const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>(
           ? PALETTE.white('◉')
           : PALETTE.midGray('○');
         const nameColor = isActive ? PALETTE.white : PALETTE.midGray;
-        const label = `${nameColor(item.label.primary)}${
-          item.configured ? PALETTE.midGray(' (already configured)') : ''
-        }`;
+        const annotation = item.label.annotation
+          ? PALETTE.midGray(` (${item.label.annotation})`)
+          : '';
+        const configuredNote = item.configured
+          ? PALETTE.midGray(' (already configured)')
+          : '';
+        const label = `${nameColor(item.label.primary)}${annotation}${configuredNote}`;
         return `${cursorSymbol} ${indicator} ${label}`;
       },
     });
+
+    const moveCursor = (direction: 1 | -1) => {
+      if (selectableChoices.length === 0) {
+        return;
+      }
+
+      let nextIndex = cursor;
+      while (true) {
+        nextIndex = nextIndex + direction;
+        if (nextIndex < 0 || nextIndex >= config.choices.length) {
+          return;
+        }
+
+        if (config.choices[nextIndex]?.selectable) {
+          setCursor(nextIndex);
+          return;
+        }
+      }
+    };
 
     useKeypress((key) => {
       if (step === 'intro') {
@@ -127,24 +192,20 @@ const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>(
 
       if (step === 'select') {
         if (isUpKey(key)) {
-          const previousIndex =
-            cursor <= 0 ? config.choices.length - 1 : cursor - 1;
-          setCursor(previousIndex);
+          moveCursor(-1);
           setError(null);
           return;
         }
 
         if (isDownKey(key)) {
-          const nextIndex =
-            cursor >= config.choices.length - 1 ? 0 : cursor + 1;
-          setCursor(nextIndex);
+          moveCursor(1);
           setError(null);
           return;
         }
 
         if (isSpaceKey(key)) {
           const current = config.choices[cursor];
-          if (!current) return;
+          if (!current || !current.selectable) return;
 
           const next = new Set(selected);
           if (next.has(current.value)) {
@@ -159,17 +220,14 @@ const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>(
         }
 
         if (isEnterKey(key)) {
-          if (selected.length === 0) {
-            setError('Select at least one AI tool to continue.');
-            return;
-          }
           setStep('review');
           setError(null);
           return;
         }
 
         if (key.name === 'escape') {
-          setSelected([]);
+          const next = new Set<string>();
+          updateSelected(next);
           setError(null);
         }
         return;
@@ -179,7 +237,10 @@ const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>(
         if (isEnterKey(key)) {
           const finalSelection = config.choices
             .map((choice) => choice.value)
-            .filter((value) => selectedSet.has(value));
+            .filter(
+              (value) =>
+                selectedSet.has(value) && value !== ROOT_STUB_CHOICE_VALUE
+            );
           done(finalSelection);
           return;
         }
@@ -191,9 +252,30 @@ const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>(
       }
     });
 
-    const selectedNames = config.choices
-      .filter((choice) => selectedSet.has(choice.value))
-      .map((choice) => choice.label.primary);
+    const rootStubChoice = selectableChoices.find(
+      (choice) => choice.value === ROOT_STUB_CHOICE_VALUE
+    );
+    const rootStubSelected = rootStubChoice
+      ? selectedSet.has(ROOT_STUB_CHOICE_VALUE)
+      : false;
+    const nativeChoices = selectableChoices.filter(
+      (choice) => choice.value !== ROOT_STUB_CHOICE_VALUE
+    );
+    const selectedNativeChoices = nativeChoices.filter((choice) =>
+      selectedSet.has(choice.value)
+    );
+
+    const formatSummaryLabel = (
+      choice: Extract<ToolWizardChoice, { selectable: true }>
+    ) => {
+      const annotation = choice.label.annotation
+        ? PALETTE.midGray(` (${choice.label.annotation})`)
+        : '';
+      const configuredNote = choice.configured
+        ? PALETTE.midGray(' (already configured)')
+        : '';
+      return `${PALETTE.white(choice.label.primary)}${annotation}${configuredNote}`;
+    };
 
     const stepIndex = step === 'intro' ? 1 : step === 'select' ? 2 : 3;
     const lines: string[] = [];
@@ -222,16 +304,21 @@ const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>(
       lines.push('');
       lines.push(page);
       lines.push('');
-      if (selectedNames.length === 0) {
+      lines.push(PALETTE.midGray('Selected configuration:'));
+      if (rootStubSelected && rootStubChoice) {
         lines.push(
-          `${PALETTE.midGray('Selected')}: ${PALETTE.midGray(
-            'None selected yet'
-          )}`
+          `  ${PALETTE.white('-')} ${formatSummaryLabel(rootStubChoice)}`
+        );
+      }
+      if (selectedNativeChoices.length === 0) {
+        lines.push(
+          `  ${PALETTE.midGray('- No natively supported providers selected')}`
         );
       } else {
-        lines.push(PALETTE.midGray('Selected:'));
-        selectedNames.forEach((name) => {
-          lines.push(`  ${PALETTE.white('-')} ${PALETTE.white(name)}`);
+        selectedNativeChoices.forEach((choice) => {
+          lines.push(
+            `  ${PALETTE.white('-')} ${formatSummaryLabel(choice)}`
+          );
         });
       }
     } else {
@@ -241,13 +328,23 @@ const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>(
       );
       lines.push('');
 
-      if (selectedNames.length === 0) {
+      if (rootStubSelected && rootStubChoice) {
         lines.push(
-          PALETTE.midGray('No tools selected. Press Backspace to return.')
+          `${PALETTE.white('▌')} ${formatSummaryLabel(rootStubChoice)}`
+        );
+      }
+
+      if (selectedNativeChoices.length === 0) {
+        lines.push(
+          PALETTE.midGray(
+            'No natively supported providers selected. Universal instructions will still be applied.'
+          )
         );
       } else {
-        selectedNames.forEach((name) => {
-          lines.push(`${PALETTE.white('▌')} ${PALETTE.white(name)}`);
+        selectedNativeChoices.forEach((choice) => {
+          lines.push(
+            `${PALETTE.white('▌')} ${formatSummaryLabel(choice)}`
+          );
         });
       }
     }
@@ -284,17 +381,6 @@ export class InitCommand {
 
     // Get configuration (after validation to avoid prompts if validation fails)
     const config = await this.getConfiguration(existingToolStates, extendMode);
-
-    if (config.aiTools.length === 0) {
-      if (extendMode) {
-        throw new Error(
-          `OpenSpec seems to already be initialized at ${openspecPath}.\n` +
-            `Use 'openspec update' to update the structure.`
-        );
-      }
-
-      throw new Error('You must select at least one AI tool to configure.');
-    }
 
     const availableTools = AI_TOOLS.filter((tool) => tool.available);
     const selectedIds = new Set(config.aiTools);
@@ -335,7 +421,11 @@ export class InitCommand {
 
     // Step 2: Configure AI tools
     const toolSpinner = this.startSpinner('Configuring AI tools...');
-    await this.configureAITools(projectPath, openspecDir, config.aiTools);
+    const rootStubStatus = await this.configureAITools(
+      projectPath,
+      openspecDir,
+      config.aiTools
+    );
     toolSpinner.stopAndPersist({
       symbol: PALETTE.white('▌'),
       text: PALETTE.white('AI tools configured'),
@@ -348,7 +438,8 @@ export class InitCommand {
       refreshed,
       skippedExisting,
       skipped,
-      extendMode
+      extendMode,
+      rootStubStatus
     );
   }
 
@@ -382,27 +473,69 @@ export class InitCommand {
   ): Promise<string[]> {
     const availableTools = AI_TOOLS.filter((tool) => tool.available);
 
-    if (availableTools.length === 0) {
-      return [];
-    }
-
     const baseMessage = extendMode
-      ? 'Which AI tools would you like to add or refresh?'
-      : 'Which AI tools do you use?';
-    const initialSelected = extendMode
+      ? 'Which natively supported AI tools would you like to add or refresh?'
+      : 'Which natively supported AI tools do you use?';
+    const initialNativeSelection = extendMode
       ? availableTools
           .filter((tool) => existingTools[tool.value])
           .map((tool) => tool.value)
       : [];
 
-    return this.prompt({
-      extendMode,
-      baseMessage,
-      choices: availableTools.map((tool) => ({
+    const initialSelected = Array.from(new Set(initialNativeSelection));
+
+    const choices: ToolWizardChoice[] = [
+      {
+        kind: 'heading',
+        value: '__heading-native__',
+        label: {
+          primary:
+            'Natively supported providers (✔ OpenSpec custom slash commands available)',
+        },
+        selectable: false,
+      },
+      ...availableTools.map<ToolWizardChoice>((tool) => ({
+        kind: 'option',
         value: tool.value,
         label: parseToolLabel(tool.name),
         configured: Boolean(existingTools[tool.value]),
+        selectable: true,
       })),
+      ...(availableTools.length
+        ? ([
+            {
+              kind: 'info' as const,
+              value: LIST_SPACER_VALUE,
+              label: { primary: '' },
+              selectable: false,
+            },
+          ] as ToolWizardChoice[])
+        : []),
+      {
+        kind: 'heading',
+        value: OTHER_TOOLS_HEADING_VALUE,
+        label: {
+          primary:
+            'Other tools (use Universal AGENTS.md for Codex, Amp, VS Code, GitHub Copilot, …)',
+        },
+        selectable: false,
+      },
+      {
+        kind: 'option',
+        value: ROOT_STUB_CHOICE_VALUE,
+        label: {
+          primary: 'Universal AGENTS.md',
+          annotation: 'always available',
+        },
+        configured: extendMode,
+        selectable: true,
+      },
+    ];
+
+    return this.prompt({
+      extendMode,
+      baseMessage,
+      choices,
       initialSelected,
     });
   }
@@ -475,7 +608,12 @@ export class InitCommand {
     projectPath: string,
     openspecDir: string,
     toolIds: string[]
-  ): Promise<void> {
+  ): Promise<RootStubStatus> {
+    const rootStubStatus = await this.configureRootAgentsStub(
+      projectPath,
+      openspecDir
+    );
+
     for (const toolId of toolIds) {
       const configurator = ToolRegistry.get(toolId);
       if (configurator && configurator.isAvailable) {
@@ -487,6 +625,25 @@ export class InitCommand {
         await slashConfigurator.generateAll(projectPath, openspecDir);
       }
     }
+
+    return rootStubStatus;
+  }
+
+  private async configureRootAgentsStub(
+    projectPath: string,
+    openspecDir: string
+  ): Promise<RootStubStatus> {
+    const configurator = ToolRegistry.get('agents');
+    if (!configurator || !configurator.isAvailable) {
+      return 'skipped';
+    }
+
+    const stubPath = path.join(projectPath, configurator.configFileName);
+    const existed = await FileSystemUtils.fileExists(stubPath);
+
+    await configurator.configure(projectPath, openspecDir);
+
+    return existed ? 'updated' : 'created';
   }
 
   private displaySuccessMessage(
@@ -495,7 +652,8 @@ export class InitCommand {
     refreshed: AIToolOption[],
     skippedExisting: AIToolOption[],
     skipped: AIToolOption[],
-    extendMode: boolean
+    extendMode: boolean,
+    rootStubStatus: RootStubStatus
   ): void {
     console.log(); // Empty line for spacing
     const successHeadline = extendMode
@@ -506,6 +664,16 @@ export class InitCommand {
     console.log();
     console.log(PALETTE.lightGray('Tool summary:'));
     const summaryLines = [
+      rootStubStatus === 'created'
+        ? `${PALETTE.white('▌')} ${PALETTE.white(
+            'Root AGENTS.md stub created for other assistants'
+          )}`
+        : null,
+      rootStubStatus === 'updated'
+        ? `${PALETTE.lightGray('▌')} ${PALETTE.lightGray(
+            'Root AGENTS.md stub refreshed for other assistants'
+          )}`
+        : null,
       created.length
         ? `${PALETTE.white('▌')} ${PALETTE.white(
             'Created:'
@@ -587,7 +755,8 @@ export class InitCommand {
       .map((tool) => tool.successLabel ?? tool.name)
       .filter((name): name is string => Boolean(name));
 
-    if (names.length === 0) return PALETTE.lightGray('your AI assistant');
+    if (names.length === 0)
+      return PALETTE.lightGray('your AGENTS.md-compatible assistant');
     if (names.length === 1) return PALETTE.white(names[0]);
 
     const base = names.slice(0, -1).map((name) => PALETTE.white(name));

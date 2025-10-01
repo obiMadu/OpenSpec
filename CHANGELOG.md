@@ -1,5 +1,11 @@
 # @fission-ai/openspec
 
+## Unreleased
+
+### Minor Changes
+
+- Always generate the root `AGENTS.md` stub during `openspec init`, regroup the tool prompt into native vs. other assistants, and refresh docs to reflect the universal hand-off.
+
 ## 0.7.0
 
 ### Minor Changes

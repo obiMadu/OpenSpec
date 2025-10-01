@@ -129,8 +129,8 @@ describe('InitCommand', () => {
       expect(updatedContent).toContain('Custom instructions here');
     });
 
-    it('should create AGENTS.md in project root when AGENTS standard is selected', async () => {
-      queueSelections('agents', DONE);
+    it('should always create AGENTS.md in project root', async () => {
+      queueSelections(DONE);
 
       await initCommand.execute(testDir);
 
@@ -313,12 +313,10 @@ describe('InitCommand', () => {
       expect(await fileExists(cursorProposal)).toBe(true);
     });
 
-    it('should error when extend mode selects no tools', async () => {
+    it('should allow extend mode with no additional native tools', async () => {
       queueSelections('claude', DONE, DONE);
       await initCommand.execute(testDir);
-      await expect(initCommand.execute(testDir)).rejects.toThrow(
-        /OpenSpec seems to already be initialized/
-      );
+      await expect(initCommand.execute(testDir)).resolves.toBeUndefined();
     });
 
     it('should handle non-existent target directory', async () => {
@@ -342,7 +340,7 @@ describe('InitCommand', () => {
     });
 
     it('should reference AGENTS compatible assistants in success message', async () => {
-      queueSelections('agents', DONE);
+      queueSelections(DONE);
       const logSpy = vi.spyOn(console, 'log');
 
       await initCommand.execute(testDir);
@@ -362,7 +360,9 @@ describe('InitCommand', () => {
 
       expect(mockPrompt).toHaveBeenCalledWith(
         expect.objectContaining({
-          baseMessage: expect.stringContaining('Which AI tools do you use?'),
+          baseMessage: expect.stringContaining(
+            'Which natively supported AI tools do you use?'
+          ),
         })
       );
     });
