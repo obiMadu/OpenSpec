@@ -129,6 +129,50 @@ describe('InitCommand', () => {
       expect(updatedContent).toContain('Custom instructions here');
     });
 
+    it('should create Windsurf workflows when Windsurf is selected', async () => {
+      queueSelections('windsurf', DONE);
+
+      await initCommand.execute(testDir);
+
+      const wsProposal = path.join(
+        testDir,
+        '.windsurf/workflows/openspec-proposal.md'
+      );
+      const wsApply = path.join(
+        testDir,
+        '.windsurf/workflows/openspec-apply.md'
+      );
+      const wsArchive = path.join(
+        testDir,
+        '.windsurf/workflows/openspec-archive.md'
+      );
+
+      expect(await fileExists(wsProposal)).toBe(true);
+      expect(await fileExists(wsApply)).toBe(true);
+      expect(await fileExists(wsArchive)).toBe(true);
+
+      const proposalContent = await fs.readFile(wsProposal, 'utf-8');
+      expect(proposalContent).toContain('---');
+      expect(proposalContent).toContain('description: Scaffold a new OpenSpec change and validate strictly.');
+      expect(proposalContent).toContain('auto_execution_mode: 3');
+      expect(proposalContent).toContain('<!-- OPENSPEC:START -->');
+      expect(proposalContent).toContain('**Guardrails**');
+
+      const applyContent = await fs.readFile(wsApply, 'utf-8');
+      expect(applyContent).toContain('---');
+      expect(applyContent).toContain('description: Implement an approved OpenSpec change and keep tasks in sync.');
+      expect(applyContent).toContain('auto_execution_mode: 3');
+      expect(applyContent).toContain('<!-- OPENSPEC:START -->');
+      expect(applyContent).toContain('Work through tasks sequentially');
+
+      const archiveContent = await fs.readFile(wsArchive, 'utf-8');
+      expect(archiveContent).toContain('---');
+      expect(archiveContent).toContain('description: Archive a deployed OpenSpec change and update specs.');
+      expect(archiveContent).toContain('auto_execution_mode: 3');
+      expect(archiveContent).toContain('<!-- OPENSPEC:START -->');
+      expect(archiveContent).toContain('Run `openspec archive <id> --yes`');
+    });
+
     it('should always create AGENTS.md in project root', async () => {
       queueSelections(DONE);
 
@@ -398,6 +442,18 @@ describe('InitCommand', () => {
       const secondRunArgs = mockPrompt.mock.calls[1][0];
       const preselected = secondRunArgs.initialSelected ?? [];
       expect(preselected).toContain('kilocode');
+    });
+
+    it('should mark Windsurf as already configured during extend mode', async () => {
+      queueSelections('windsurf', DONE, 'windsurf', DONE);
+      await initCommand.execute(testDir);
+      await initCommand.execute(testDir);
+
+      const secondRunArgs = mockPrompt.mock.calls[1][0];
+      const wsChoice = secondRunArgs.choices.find(
+        (choice: any) => choice.value === 'windsurf'
+      );
+      expect(wsChoice.configured).toBe(true);
     });
   });
 

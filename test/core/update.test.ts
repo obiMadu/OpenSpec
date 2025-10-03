@@ -220,6 +220,81 @@ Old body
     consoleSpy.mockRestore();
   });
 
+  it('should refresh existing Windsurf workflows', async () => {
+    const wsPath = path.join(
+      testDir,
+      '.windsurf/workflows/openspec-apply.md'
+    );
+    await fs.mkdir(path.dirname(wsPath), { recursive: true });
+    const initialContent = `## OpenSpec: Apply (Windsurf)
+Intro
+<!-- OPENSPEC:START -->
+Old body
+<!-- OPENSPEC:END -->`;
+    await fs.writeFile(wsPath, initialContent);
+
+    const consoleSpy = vi.spyOn(console, 'log');
+
+    await updateCommand.execute(testDir);
+
+    const updated = await fs.readFile(wsPath, 'utf-8');
+    expect(updated).toContain('Work through tasks sequentially');
+    expect(updated).not.toContain('Old body');
+    expect(updated).toContain('## OpenSpec: Apply (Windsurf)');
+
+    const [logMessage] = consoleSpy.mock.calls[0];
+    expect(logMessage).toContain(
+      'Updated slash commands: .windsurf/workflows/openspec-apply.md'
+    );
+    consoleSpy.mockRestore();
+  });
+
+  it('should preserve Windsurf content outside markers during update', async () => {
+    const wsPath = path.join(
+      testDir,
+      '.windsurf/workflows/openspec-proposal.md'
+    );
+    await fs.mkdir(path.dirname(wsPath), { recursive: true });
+    const initialContent = `## Custom Intro Title\nSome intro text\n<!-- OPENSPEC:START -->\nOld body\n<!-- OPENSPEC:END -->\n\nFooter stays`;
+    await fs.writeFile(wsPath, initialContent);
+
+    await updateCommand.execute(testDir);
+
+    const updated = await fs.readFile(wsPath, 'utf-8');
+    expect(updated).toContain('## Custom Intro Title');
+    expect(updated).toContain('Footer stays');
+    expect(updated).not.toContain('Old body');
+    expect(updated).toContain('Validate with `openspec validate <id> --strict`');
+  });
+
+  it('should not create missing Windsurf workflows on update', async () => {
+    const wsApply = path.join(
+      testDir,
+      '.windsurf/workflows/openspec-apply.md'
+    );
+    // Only create apply; leave proposal and archive missing
+    await fs.mkdir(path.dirname(wsApply), { recursive: true });
+    await fs.writeFile(
+      wsApply,
+      '<!-- OPENSPEC:START -->\nOld\n<!-- OPENSPEC:END -->'
+    );
+
+    await updateCommand.execute(testDir);
+
+    const wsProposal = path.join(
+      testDir,
+      '.windsurf/workflows/openspec-proposal.md'
+    );
+    const wsArchive = path.join(
+      testDir,
+      '.windsurf/workflows/openspec-archive.md'
+    );
+
+    // Confirm they weren't created by update
+    await expect(FileSystemUtils.fileExists(wsProposal)).resolves.toBe(false);
+    await expect(FileSystemUtils.fileExists(wsArchive)).resolves.toBe(false);
+  });
+
   it('should handle no AI tool files present', async () => {
     // Execute update command with no AI tool files
     const consoleSpy = vi.spyOn(console, 'log');
