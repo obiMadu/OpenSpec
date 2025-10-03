@@ -46,6 +46,7 @@
     "test:coverage": "vitest --coverage",
     "prepare": "pnpm run build",
     "prepublishOnly": "pnpm run build",
+    "release": "pnpm run build && pnpm exec changeset publish",
     "changeset": "changeset"
   },
   "engines": {

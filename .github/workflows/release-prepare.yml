@@ -35,13 +35,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Opens/updates the Version Packages PR; no publishing here
+      # Opens/updates the Version Packages PR; publishes when the Version PR merges
       - name: Create/Update Version PR
         uses: changesets/action@v1
         with:
           title: 'chore(release): version packages'
           createGithubReleases: true
-          publish: "echo 'Dry run: changeset publish would execute here'"
+          publish: pnpm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
