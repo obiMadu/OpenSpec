@@ -4,6 +4,7 @@ import { CursorSlashCommandConfigurator } from './cursor.js';
 import { WindsurfSlashCommandConfigurator } from './windsurf.js';
 import { KiloCodeSlashCommandConfigurator } from './kilocode.js';
 import { OpenCodeSlashCommandConfigurator } from './opencode.js';
+import { CodexSlashCommandConfigurator } from './codex.js';
 
 export class SlashCommandRegistry {
   private static configurators: Map<string, SlashCommandConfigurator> = new Map();
@@ -14,12 +15,14 @@ export class SlashCommandRegistry {
     const windsurf = new WindsurfSlashCommandConfigurator();
     const kilocode = new KiloCodeSlashCommandConfigurator();
     const opencode = new OpenCodeSlashCommandConfigurator();
+    const codex = new CodexSlashCommandConfigurator();
 
     this.configurators.set(claude.toolId, claude);
     this.configurators.set(cursor.toolId, cursor);
     this.configurators.set(windsurf.toolId, windsurf);
     this.configurators.set(kilocode.toolId, kilocode);
     this.configurators.set(opencode.toolId, opencode);
+    this.configurators.set(codex.toolId, codex);
   }
 
   static register(configurator: SlashCommandConfigurator): void {

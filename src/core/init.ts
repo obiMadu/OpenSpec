@@ -516,7 +516,7 @@ export class InitCommand {
         value: OTHER_TOOLS_HEADING_VALUE,
         label: {
           primary:
-            'Other tools (use Universal AGENTS.md for Codex, Amp, VS Code, GitHub Copilot, …)',
+            'Other tools (use Universal AGENTS.md for Amp, VS Code, GitHub Copilot, …)',
         },
         selectable: false,
       },
@@ -564,8 +564,11 @@ export class InitCommand {
     const slashConfigurator = SlashCommandRegistry.get(toolId);
     if (!slashConfigurator) return false;
     for (const target of slashConfigurator.getTargets()) {
-      if (await FileSystemUtils.fileExists(path.join(projectPath, target.path)))
-        return true;
+      const absolute = slashConfigurator.resolveAbsolutePath(
+        projectPath,
+        target.id
+      );
+      if (await FileSystemUtils.fileExists(absolute)) return true;
     }
     return false;
   }
@@ -748,6 +751,16 @@ export class InitCommand {
         '────────────────────────────────────────────────────────────\n'
       )
     );
+
+    // Codex heads-up: prompts installed globally
+    const selectedToolIds = new Set(selectedTools.map((t) => t.value));
+    if (selectedToolIds.has('codex')) {
+      console.log(PALETTE.white('Codex setup note'));
+      console.log(
+        PALETTE.midGray('Prompts installed to ~/.codex/prompts (or $CODEX_HOME/prompts).')
+      );
+      console.log();
+    }
   }
 
   private formatToolNames(tools: AIToolOption[]): string {

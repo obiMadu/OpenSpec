@@ -123,5 +123,7 @@ export class UpdateCommand {
     }
 
     console.log(summaryParts.join(' | '));
+
+    // No additional notes
   }
 }
