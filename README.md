@@ -40,6 +40,15 @@ Key outcomes:
 - Shared visibility into what's proposed, active, or archived.
 - Works with the AI tools you already use: custom slash commands where supported, context rules everywhere else.
 
+## How OpenSpec compares (at a glance)
+
+- **Lightweight**: simple workflow, no API keys, minimal setup.
+- **Brownfield-first**: works great beyond 0→1. OpenSpec separates the source of truth from proposals: `openspec/specs/` (current truth) and `openspec/changes/` (proposed updates). This keeps diffs explicit and manageable across features.
+- **Change tracking**: proposals, tasks, and spec deltas live together; archiving merges the approved updates back into specs.
+- **Compared to spec-kit & Kiro**: those shine for brand-new features (0→1). OpenSpec also excels when modifying existing behavior (1→n), especially when updates span multiple specs.
+
+See the full comparison in [How OpenSpec Compares](#how-openspec-compares).
+
 ## How It Works
 
 ```
@@ -295,6 +304,9 @@ Deltas are "patches" that show how specs change:
 - Use SHALL/MUST in requirement text
 
 ## How OpenSpec Compares
+
+### vs. spec-kit
+OpenSpec’s two-folder model (`openspec/specs/` for the current truth, `openspec/changes/` for proposed updates) keeps state and diffs separate. This scales when you modify existing features or touch multiple specs. spec-kit is strong for greenfield/0→1 but provides less structure for cross-spec updates and evolving features.
 
 ### vs. Kiro.dev
 OpenSpec groups every change for a feature in one folder (`openspec/changes/feature-name/`), making it easy to track related specs, tasks, and designs together. Kiro spreads updates across multiple spec folders, which can make feature tracking harder.
