@@ -262,7 +262,7 @@ Old body
       '.codex/prompts/openspec-apply.md'
     );
     await fs.mkdir(path.dirname(codexPath), { recursive: true });
-    const initialContent = `Change ID: $1\n<!-- OPENSPEC:START -->\nOld body\n<!-- OPENSPEC:END -->`;
+    const initialContent = `---\ndescription: Old description\nargument-hint: old-hint\n---\n\n$ARGUMENTS\n<!-- OPENSPEC:START -->\nOld body\n<!-- OPENSPEC:END -->`;
     await fs.writeFile(codexPath, initialContent);
 
     const consoleSpy = vi.spyOn(console, 'log');
@@ -270,9 +270,12 @@ Old body
     await updateCommand.execute(testDir);
 
     const updated = await fs.readFile(codexPath, 'utf-8');
-    expect(updated).toContain('Change ID: $1');
+    expect(updated).toContain('description: Implement an approved OpenSpec change and keep tasks in sync.');
+    expect(updated).toContain('argument-hint: change-id');
+    expect(updated).toContain('$ARGUMENTS');
     expect(updated).toContain('Work through tasks sequentially');
     expect(updated).not.toContain('Old body');
+    expect(updated).not.toContain('Old description');
 
     const [logMessage] = consoleSpy.mock.calls[0];
     expect(logMessage).toContain(
@@ -292,7 +295,7 @@ Old body
     await fs.mkdir(path.dirname(codexApply), { recursive: true });
     await fs.writeFile(
       codexApply,
-      'Change ID: $1\n<!-- OPENSPEC:START -->\nOld\n<!-- OPENSPEC:END -->'
+      '---\ndescription: Old\nargument-hint: old\n---\n\n$ARGUMENTS\n<!-- OPENSPEC:START -->\nOld\n<!-- OPENSPEC:END -->'
     );
 
     await updateCommand.execute(testDir);

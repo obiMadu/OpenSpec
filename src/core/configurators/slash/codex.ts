@@ -20,14 +20,29 @@ export class CodexSlashCommandConfigurator extends SlashCommandConfigurator {
   }
 
   protected getFrontmatter(id: SlashCommandId): string | undefined {
-    // Codex does not use YAML front matter. Provide a heading-style
-    // preface that captures the first numbered placeholder `$1`.
-    const headers: Record<SlashCommandId, string> = {
-      proposal: "Request: $1",
-      apply: "Change ID: $1",
-      archive: "Change ID: $1",
+    // Codex supports YAML frontmatter with description and argument-hint fields,
+    // plus $ARGUMENTS to capture all arguments as a single string.
+    const frontmatter: Record<SlashCommandId, string> = {
+      proposal: `---
+description: Scaffold a new OpenSpec change and validate strictly.
+argument-hint: request or feature description
+---
+
+$ARGUMENTS`,
+      apply: `---
+description: Implement an approved OpenSpec change and keep tasks in sync.
+argument-hint: change-id
+---
+
+$ARGUMENTS`,
+      archive: `---
+description: Archive a deployed OpenSpec change and update specs.
+argument-hint: change-id
+---
+
+$ARGUMENTS`,
     };
-    return headers[id];
+    return frontmatter[id];
   }
 
   private getGlobalPromptsDir(): string {
@@ -49,11 +64,11 @@ export class CodexSlashCommandConfigurator extends SlashCommandConfigurator {
       await FileSystemUtils.createDirectory(path.dirname(filePath));
 
       if (await FileSystemUtils.fileExists(filePath)) {
-        await this.updateBody(filePath, body);
+        await this.updateFullFile(filePath, target.id, body);
       } else {
-        const header = this.getFrontmatter(target.id);
+        const frontmatter = this.getFrontmatter(target.id);
         const sections: string[] = [];
-        if (header) sections.push(header.trim());
+        if (frontmatter) sections.push(frontmatter.trim());
         sections.push(`${OPENSPEC_MARKERS.start}\n${body}\n${OPENSPEC_MARKERS.end}`);
         await FileSystemUtils.writeFile(filePath, sections.join("\n") + "\n");
       }
@@ -70,11 +85,29 @@ export class CodexSlashCommandConfigurator extends SlashCommandConfigurator {
       const filePath = path.join(promptsDir, path.basename(target.path));
       if (await FileSystemUtils.fileExists(filePath)) {
         const body = TemplateManager.getSlashCommandBody(target.id).trim();
-        await this.updateBody(filePath, body);
+        await this.updateFullFile(filePath, target.id, body);
         updated.push(target.path);
       }
     }
     return updated;
+  }
+
+  // Update both frontmatter and body in an existing file
+  private async updateFullFile(filePath: string, id: SlashCommandId, body: string): Promise<void> {
+    const content = await FileSystemUtils.readFile(filePath);
+    const startIndex = content.indexOf(OPENSPEC_MARKERS.start);
+
+    if (startIndex === -1) {
+      throw new Error(`Missing OpenSpec start marker in ${filePath}`);
+    }
+
+    // Replace everything before the start marker with the new frontmatter
+    const frontmatter = this.getFrontmatter(id);
+    const sections: string[] = [];
+    if (frontmatter) sections.push(frontmatter.trim());
+    sections.push(`${OPENSPEC_MARKERS.start}\n${body}\n${OPENSPEC_MARKERS.end}`);
+
+    await FileSystemUtils.writeFile(filePath, sections.join("\n") + "\n");
   }
 
   // Resolve to the global prompts location for configuration detection
