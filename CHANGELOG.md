@@ -1,5 +1,11 @@
 # @fission-ai/openspec
 
+## Unreleased
+
+### Minor Changes
+
+- Add GitHub Copilot slash command support. OpenSpec now writes prompts to `.github/prompts/openspec-{proposal,apply,archive}.prompt.md` with YAML frontmatter and `$ARGUMENTS` placeholder, and refreshes them on `openspec update`.
+
 ## 0.8.1
 
 ### Patch Changes

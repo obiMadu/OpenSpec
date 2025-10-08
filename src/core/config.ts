@@ -23,5 +23,6 @@ export const AI_TOOLS: AIToolOption[] = [
   { name: 'Kilo Code', value: 'kilocode', available: true, successLabel: 'Kilo Code' },
   { name: 'Windsurf', value: 'windsurf', available: true, successLabel: 'Windsurf' },
   { name: 'Codex', value: 'codex', available: true, successLabel: 'Codex' },
-  { name: 'AGENTS.md (works with Amp, VS Code, GitHub Copilot, …)', value: 'agents', available: false, successLabel: 'your AGENTS.md-compatible assistant' }
+  { name: 'GitHub Copilot', value: 'github-copilot', available: true, successLabel: 'GitHub Copilot' },
+  { name: 'AGENTS.md (works with Amp, VS Code, …)', value: 'agents', available: false, successLabel: 'your AGENTS.md-compatible assistant' }
 ];

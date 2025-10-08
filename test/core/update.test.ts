@@ -311,6 +311,69 @@ Old body
     await expect(FileSystemUtils.fileExists(codexArchive)).resolves.toBe(false);
   });
 
+  it('should refresh existing GitHub Copilot prompts', async () => {
+    const ghPath = path.join(
+      testDir,
+      '.github/prompts/openspec-apply.prompt.md'
+    );
+    await fs.mkdir(path.dirname(ghPath), { recursive: true });
+    const initialContent = `---
+description: Implement an approved OpenSpec change and keep tasks in sync.
+---
+
+$ARGUMENTS
+<!-- OPENSPEC:START -->
+Old body
+<!-- OPENSPEC:END -->`;
+    await fs.writeFile(ghPath, initialContent);
+
+    const consoleSpy = vi.spyOn(console, 'log');
+
+    await updateCommand.execute(testDir);
+
+    const updated = await fs.readFile(ghPath, 'utf-8');
+    expect(updated).toContain('description: Implement an approved OpenSpec change and keep tasks in sync.');
+    expect(updated).toContain('$ARGUMENTS');
+    expect(updated).toContain('Work through tasks sequentially');
+    expect(updated).not.toContain('Old body');
+
+    const [logMessage] = consoleSpy.mock.calls[0];
+    expect(logMessage).toContain(
+      'Updated slash commands: .github/prompts/openspec-apply.prompt.md'
+    );
+
+    consoleSpy.mockRestore();
+  });
+
+  it('should not create missing GitHub Copilot prompts on update', async () => {
+    const ghApply = path.join(
+      testDir,
+      '.github/prompts/openspec-apply.prompt.md'
+    );
+
+    // Only create apply; leave proposal and archive missing
+    await fs.mkdir(path.dirname(ghApply), { recursive: true });
+    await fs.writeFile(
+      ghApply,
+      '---\ndescription: Old\n---\n\n$ARGUMENTS\n<!-- OPENSPEC:START -->\nOld\n<!-- OPENSPEC:END -->'
+    );
+
+    await updateCommand.execute(testDir);
+
+    const ghProposal = path.join(
+      testDir,
+      '.github/prompts/openspec-proposal.prompt.md'
+    );
+    const ghArchive = path.join(
+      testDir,
+      '.github/prompts/openspec-archive.prompt.md'
+    );
+
+    // Confirm they weren't created by update
+    await expect(FileSystemUtils.fileExists(ghProposal)).resolves.toBe(false);
+    await expect(FileSystemUtils.fileExists(ghArchive)).resolves.toBe(false);
+  });
+
   it('should preserve Windsurf content outside markers during update', async () => {
     const wsPath = path.join(
       testDir,

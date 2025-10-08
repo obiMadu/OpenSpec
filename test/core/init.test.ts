@@ -388,6 +388,48 @@ describe('InitCommand', () => {
       expect(archiveContent).not.toContain('---\n');
     });
 
+    it('should create GitHub Copilot prompt files with templates', async () => {
+      queueSelections('github-copilot', DONE);
+
+      await initCommand.execute(testDir);
+
+      const proposalPath = path.join(
+        testDir,
+        '.github/prompts/openspec-proposal.prompt.md'
+      );
+      const applyPath = path.join(
+        testDir,
+        '.github/prompts/openspec-apply.prompt.md'
+      );
+      const archivePath = path.join(
+        testDir,
+        '.github/prompts/openspec-archive.prompt.md'
+      );
+
+      expect(await fileExists(proposalPath)).toBe(true);
+      expect(await fileExists(applyPath)).toBe(true);
+      expect(await fileExists(archivePath)).toBe(true);
+
+      const proposalContent = await fs.readFile(proposalPath, 'utf-8');
+      expect(proposalContent).toContain('---');
+      expect(proposalContent).toContain('description: Scaffold a new OpenSpec change and validate strictly.');
+      expect(proposalContent).toContain('$ARGUMENTS');
+      expect(proposalContent).toContain('<!-- OPENSPEC:START -->');
+      expect(proposalContent).toContain('**Guardrails**');
+
+      const applyContent = await fs.readFile(applyPath, 'utf-8');
+      expect(applyContent).toContain('---');
+      expect(applyContent).toContain('description: Implement an approved OpenSpec change and keep tasks in sync.');
+      expect(applyContent).toContain('$ARGUMENTS');
+      expect(applyContent).toContain('Work through tasks sequentially');
+
+      const archiveContent = await fs.readFile(archivePath, 'utf-8');
+      expect(archiveContent).toContain('---');
+      expect(archiveContent).toContain('description: Archive a deployed OpenSpec change and update specs.');
+      expect(archiveContent).toContain('$ARGUMENTS');
+      expect(archiveContent).toContain('openspec archive <id> --yes');
+    });
+
     it('should add new tool when OpenSpec already exists', async () => {
       queueSelections('claude', DONE, 'cursor', DONE);
       await initCommand.execute(testDir);
@@ -509,6 +551,18 @@ describe('InitCommand', () => {
         (choice: any) => choice.value === 'codex'
       );
       expect(codexChoice.configured).toBe(true);
+    });
+
+    it('should mark GitHub Copilot as already configured during extend mode', async () => {
+      queueSelections('github-copilot', DONE, 'github-copilot', DONE);
+      await initCommand.execute(testDir);
+      await initCommand.execute(testDir);
+
+      const secondRunArgs = mockPrompt.mock.calls[1][0];
+      const githubCopilotChoice = secondRunArgs.choices.find(
+        (choice: any) => choice.value === 'github-copilot'
+      );
+      expect(githubCopilotChoice.configured).toBe(true);
     });
   });
 

@@ -5,6 +5,7 @@ import { WindsurfSlashCommandConfigurator } from './windsurf.js';
 import { KiloCodeSlashCommandConfigurator } from './kilocode.js';
 import { OpenCodeSlashCommandConfigurator } from './opencode.js';
 import { CodexSlashCommandConfigurator } from './codex.js';
+import { GitHubCopilotSlashCommandConfigurator } from './github-copilot.js';
 
 export class SlashCommandRegistry {
   private static configurators: Map<string, SlashCommandConfigurator> = new Map();
@@ -16,6 +17,7 @@ export class SlashCommandRegistry {
     const kilocode = new KiloCodeSlashCommandConfigurator();
     const opencode = new OpenCodeSlashCommandConfigurator();
     const codex = new CodexSlashCommandConfigurator();
+    const githubCopilot = new GitHubCopilotSlashCommandConfigurator();
 
     this.configurators.set(claude.toolId, claude);
     this.configurators.set(cursor.toolId, cursor);
@@ -23,6 +25,7 @@ export class SlashCommandRegistry {
     this.configurators.set(kilocode.toolId, kilocode);
     this.configurators.set(opencode.toolId, opencode);
     this.configurators.set(codex.toolId, codex);
+    this.configurators.set(githubCopilot.toolId, githubCopilot);
   }
 
   static register(configurator: SlashCommandConfigurator): void {
