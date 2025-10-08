@@ -46,7 +46,10 @@
     "test:coverage": "vitest --coverage",
     "prepare": "pnpm run build",
     "prepublishOnly": "pnpm run build",
-    "release": "pnpm run build && pnpm exec changeset publish",
+    "check:pack-version": "node scripts/pack-version-check.mjs",
+    "release": "pnpm run release:ci",
+    "release:ci": "pnpm run check:pack-version && pnpm exec changeset publish",
+    "release:local": "pnpm exec changeset version && pnpm run check:pack-version && pnpm exec changeset publish",
     "changeset": "changeset"
   },
   "engines": {
