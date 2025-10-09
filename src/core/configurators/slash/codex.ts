@@ -6,9 +6,9 @@ import { FileSystemUtils } from "../../../utils/file-system.js";
 import { OPENSPEC_MARKERS } from "../../config.js";
 
 const FILE_PATHS: Record<SlashCommandId, string> = {
-  proposal: ".codex/prompts/openspec-proposal.md",
-  apply: ".codex/prompts/openspec-apply.md",
-  archive: ".codex/prompts/openspec-archive.md",
+  proposal: path.join(".codex", "prompts", "openspec-proposal.md"),
+  apply: path.join(".codex", "prompts", "openspec-apply.md"),
+  archive: path.join(".codex", "prompts", "openspec-archive.md"),
 };
 
 export class CodexSlashCommandConfigurator extends SlashCommandConfigurator {
