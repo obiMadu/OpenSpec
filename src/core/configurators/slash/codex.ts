@@ -5,10 +5,11 @@ import { SlashCommandId, TemplateManager } from "../../templates/index.js";
 import { FileSystemUtils } from "../../../utils/file-system.js";
 import { OPENSPEC_MARKERS } from "../../config.js";
 
+// Use POSIX-style paths for consistent logging across platforms.
 const FILE_PATHS: Record<SlashCommandId, string> = {
-  proposal: path.join(".codex", "prompts", "openspec-proposal.md"),
-  apply: path.join(".codex", "prompts", "openspec-apply.md"),
-  archive: path.join(".codex", "prompts", "openspec-archive.md"),
+  proposal: ".codex/prompts/openspec-proposal.md",
+  apply: ".codex/prompts/openspec-apply.md",
+  archive: ".codex/prompts/openspec-archive.md",
 };
 
 export class CodexSlashCommandConfigurator extends SlashCommandConfigurator {
