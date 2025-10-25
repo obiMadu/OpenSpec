@@ -17,6 +17,8 @@ const mockPrompt = vi.fn(async () => {
   return selectionQueue.shift() ?? [];
 });
 
+const mockTaskPrompt = vi.fn(async () => 'markdown');
+
 function queueSelections(...values: string[]) {
   let current: string[] = [];
   values.forEach((value) => {
@@ -43,7 +45,12 @@ describe('InitCommand', () => {
     await fs.mkdir(testDir, { recursive: true });
     selectionQueue = [];
     mockPrompt.mockReset();
-    initCommand = new InitCommand({ prompt: mockPrompt });
+    mockTaskPrompt.mockReset();
+    mockTaskPrompt.mockResolvedValue('markdown');
+    initCommand = new InitCommand({
+      prompt: mockPrompt,
+      taskManagerPrompt: mockTaskPrompt,
+    });
 
     // Route Codex global directory into the test sandbox
     prevCodexHome = process.env.CODEX_HOME;
@@ -101,6 +108,29 @@ describe('InitCommand', () => {
         'utf-8'
       );
       expect(projectContent).toContain('Project Context');
+      expect(projectContent).toContain('<!-- TASK_MANAGEMENT:markdown -->');
+    });
+
+    it('should allow selecting bd mode for task management', async () => {
+      mockTaskPrompt.mockResolvedValue('bd');
+      queueSelections('claude', DONE);
+
+      await initCommand.execute(testDir);
+
+      const openspecPath = path.join(testDir, 'openspec');
+      const projectContent = await fs.readFile(
+        path.join(openspecPath, 'project.md'),
+        'utf-8'
+      );
+      expect(projectContent).toContain('<!-- TASK_MANAGEMENT:bd -->');
+
+      const agentsContent = await fs.readFile(
+        path.join(openspecPath, 'AGENTS.md'),
+        'utf-8'
+      );
+      expect(agentsContent).toContain('bd issue - Implementation tracking');
+      expect(agentsContent).not.toContain('tasks.md` - Implementation steps');
+      expect(mockTaskPrompt).toHaveBeenCalledTimes(1);
     });
 
     it('should create CLAUDE.md when Claude Code is selected', async () => {

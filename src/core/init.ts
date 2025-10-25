@@ -10,6 +10,7 @@ import {
   usePagination,
   useState,
 } from '@inquirer/core';
+import { select } from '@inquirer/prompts';
 import chalk from 'chalk';
 import ora from 'ora';
 import { FileSystemUtils } from '../utils/file-system.js';
@@ -21,8 +22,13 @@ import {
   AI_TOOLS,
   OPENSPEC_DIR_NAME,
   AIToolOption,
+  TaskManagementMode,
 } from './config.js';
-import { DEFAULT_TASK_MANAGEMENT_MODE } from './task-management.js';
+import {
+  DEFAULT_TASK_MANAGEMENT_MODE,
+  detectTaskManagementMode,
+  applyTaskManagementMarker,
+} from './task-management.js';
 import { PALETTE } from './styles/palette.js';
 
 const PROGRESS_SPINNER = {
@@ -89,6 +95,13 @@ type ToolWizardConfig = {
 type WizardStep = 'intro' | 'select' | 'review';
 
 type ToolSelectionPrompt = (config: ToolWizardConfig) => Promise<string[]>;
+
+type TaskManagerPromptOptions = {
+  extendMode: boolean;
+  initial: TaskManagementMode;
+};
+
+type TaskManagerPrompt = (options: TaskManagerPromptOptions) => Promise<TaskManagementMode>;
 
 type RootStubStatus = 'created' | 'updated' | 'skipped';
 
@@ -371,15 +384,18 @@ const toolSelectionWizard = createPrompt<string[], ToolWizardConfig>(
 type InitCommandOptions = {
   prompt?: ToolSelectionPrompt;
   tools?: string;
+  taskManagerPrompt?: TaskManagerPrompt;
 };
 
 export class InitCommand {
   private readonly prompt: ToolSelectionPrompt;
   private readonly toolsArg?: string;
+  private readonly taskManagerPrompt: TaskManagerPrompt;
 
   constructor(options: InitCommandOptions = {}) {
     this.prompt = options.prompt ?? ((config) => toolSelectionWizard(config));
     this.toolsArg = options.tools;
+    this.taskManagerPrompt = options.taskManagerPrompt ?? ((opts) => this.promptForTaskManagement(opts));
   }
 
   async execute(targetPath: string): Promise<void> {
@@ -394,7 +410,7 @@ export class InitCommand {
     this.renderBanner(extendMode);
 
     // Get configuration (after validation to avoid prompts if validation fails)
-    const config = await this.getConfiguration(existingToolStates, extendMode);
+    const config = await this.getConfiguration(projectPath, existingToolStates, extendMode);
 
     const availableTools = AI_TOOLS.filter((tool) => tool.available);
     const selectedIds = new Set(config.aiTools);
@@ -432,6 +448,9 @@ export class InitCommand {
         )
       );
     }
+
+    const projectFilePath = path.join(openspecPath, 'project.md');
+    await this.ensureTaskManagementMarker(projectFilePath, config.taskManagement);
 
     // Step 2: Configure AI tools
     const toolSpinner = this.startSpinner('Configuring AI tools...');
@@ -471,13 +490,20 @@ export class InitCommand {
   }
 
   private async getConfiguration(
+    projectPath: string,
     existingTools: Record<string, boolean>,
     extendMode: boolean
   ): Promise<OpenSpecConfig> {
     const selectedTools = await this.getSelectedTools(existingTools, extendMode);
+    const initialTaskMode = extendMode
+      ? await detectTaskManagementMode(projectPath)
+      : DEFAULT_TASK_MANAGEMENT_MODE;
+
+    const taskManagement = await this.getTaskManagementMode(initialTaskMode, extendMode);
+
     return {
       aiTools: selectedTools,
-      taskManagement: DEFAULT_TASK_MANAGEMENT_MODE,
+      taskManagement,
     };
   }
 
@@ -492,6 +518,17 @@ export class InitCommand {
 
     // Fall back to interactive mode
     return this.promptForAITools(existingTools, extendMode);
+  }
+
+  private async getTaskManagementMode(
+    initial: TaskManagementMode,
+    extendMode: boolean
+  ): Promise<TaskManagementMode> {
+    if (typeof this.toolsArg !== 'undefined') {
+      return initial;
+    }
+
+    return this.taskManagerPrompt({ extendMode, initial });
   }
 
   private resolveToolsArg(): string[] | null {
@@ -630,6 +667,30 @@ export class InitCommand {
     });
   }
 
+  private async promptForTaskManagement({
+    extendMode,
+    initial,
+  }: TaskManagerPromptOptions): Promise<TaskManagementMode> {
+    const message = extendMode
+      ? 'How should OpenSpec track implementation going forward?'
+      : 'How do you want to track implementation tasks?';
+
+    return select<TaskManagementMode>({
+      message,
+      default: initial,
+      choices: [
+        {
+          name: 'Markdown checklist (tasks.md)',
+          value: 'markdown',
+        },
+        {
+          name: 'bd issue tracking (use bd CLI)',
+          value: 'bd',
+        },
+      ],
+    });
+  }
+
   private async getExistingToolStates(
     projectPath: string
   ): Promise<Record<string, boolean>> {
@@ -689,12 +750,29 @@ export class InitCommand {
 
     for (const template of templates) {
       const filePath = path.join(openspecPath, template.path);
-      const content =
+      let content =
         typeof template.content === 'function'
           ? template.content(context)
           : template.content;
 
+      if (template.path === 'project.md') {
+        content = applyTaskManagementMarker(content, config.taskManagement);
+      }
+
       await FileSystemUtils.writeFile(filePath, content);
+    }
+  }
+
+  private async ensureTaskManagementMarker(
+    projectFilePath: string,
+    mode: TaskManagementMode
+  ): Promise<void> {
+    try {
+      const existing = await FileSystemUtils.readFile(projectFilePath);
+      const updated = applyTaskManagementMarker(existing, mode);
+      await FileSystemUtils.writeFile(projectFilePath, updated);
+    } catch {
+      // Swallow errors if project file does not exist; generation handles creation.
     }
   }
 
