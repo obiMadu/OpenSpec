@@ -1,4 +1,84 @@
-export const agentsTemplate = `# OpenSpec Instructions
+import { TaskManagementMode } from '../config.js';
+
+export function agentsTemplate(mode: TaskManagementMode = 'markdown'): string {
+  const isBd = mode === 'bd';
+
+  const quickChecklistImplementation = isBd
+    ? '- Coordinate implementation through bd: create or claim an issue, break work into tasks, and keep statuses current.'
+    : '- Scaffold: `proposal.md`, `tasks.md`, `design.md` (only if needed), and delta specs per affected capability';
+
+  const stage1Step2 = isBd
+    ? '2. Choose a unique verb-led `change-id`, scaffold `proposal.md`, optional `design.md`, spec deltas under `openspec/changes/<id>/`, and create or update a bd issue to manage implementation tasks.'
+    : '2. Choose a unique verb-led `change-id` and scaffold `proposal.md`, `tasks.md`, optional `design.md`, and spec deltas under `openspec/changes/<id>/`.';
+
+  const stage2Block = isBd
+    ? `### Stage 2: Implementing Changes
+Track these steps as bd issue updates so progress stays transparent.
+1. **Read proposal.md** - Understand what's being built
+2. **Read design.md** (if exists) - Review technical decisions
+3. **Review bd issue** - Confirm tasks, owners, blockers, and dependencies
+4. **Work tasks sequentially** - Update bd issue status/comments as you complete each task
+5. **Confirm completion** - Ensure every bd task is closed or linked to follow-up work
+6. **Sync status** - Move the bd issue to \`completed\` (or the appropriate done state) once the change lands
+7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved`
+    : `### Stage 2: Implementing Changes
+Track these steps as TODOs and complete them one by one.
+1. **Read proposal.md** - Understand what's being built
+2. **Read design.md** (if exists) - Review technical decisions
+3. **Read tasks.md** - Get implementation checklist
+4. **Implement tasks sequentially** - Complete in order
+5. **Confirm completion** - Ensure every item in \`tasks.md\` is finished before updating statuses
+6. **Update checklist** - After all work is done, set every task to \`- [x]\` so the list reflects reality
+7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved`;
+
+  const directoryTasksLine = isBd
+    ? '│   │   ├── (implementation tracked in bd issues)'
+    : '│   │   ├── tasks.md        # Implementation checklist';
+
+  const tasksSection = isBd
+    ? `4. **Set up bd tracking:**
+   - Create (or update) a bd issue to manage implementation work.
+   - Break the change into small, verifiable bd tasks.
+   - Link related work with \`bd update <issue> --deps discovered-from:<change-id>\` or equivalent.`
+    : `4. **Create tasks.md:**
+\`\`\`markdown
+## 1. Implementation
+- [ ] 1.1 Create database schema
+- [ ] 1.2 Implement API endpoint
+- [ ] 1.3 Add frontend component
+- [ ] 1.4 Write tests
+\`\`\``;
+
+  const happyPathScaffoldBlock = isBd
+    ? `# 2) Choose change id and scaffold
+CHANGE=add-two-factor-auth
+mkdir -p openspec/changes/$CHANGE/{specs/auth}
+printf "## Why\\n...\\n\\n## What Changes\\n- ...\\n\\n## Impact\\n- ...\\n" > openspec/changes/$CHANGE/proposal.md
+
+# 3) Manage implementation in bd
+bd create "Implement $CHANGE" -t task -p 1 --deps discovered-from:$CHANGE --json
+
+# 4) Add deltas (example)`
+    : `# 2) Choose change id and scaffold
+CHANGE=add-two-factor-auth
+mkdir -p openspec/changes/$CHANGE/{specs/auth}
+printf "## Why\\n...\\n\\n## What Changes\\n- ...\\n\\n## Impact\\n- ...\\n" > openspec/changes/$CHANGE/proposal.md
+printf "## 1. Implementation\\n- [ ] 1.1 ...\\n" > openspec/changes/$CHANGE/tasks.md
+
+# 3) Add deltas (example)`;
+
+  const multiCapabilityTasksLine = isBd
+    ? '├── (implementation tracked via bd issues)'
+    : '├── tasks.md';
+
+  const quickReferenceFilePurposes = [
+    '- `proposal.md` - Why and what',
+    isBd ? '- bd issue - Implementation tracking' : '- `tasks.md` - Implementation steps',
+    '- `design.md` - Technical decisions',
+    '- `spec.md` - Requirements and behavior'
+  ].join('\n');
+
+  return `# OpenSpec Instructions
 
 Instructions for AI coding assistants using OpenSpec for spec-driven development.
 
@@ -7,7 +87,7 @@ Instructions for AI coding assistants using OpenSpec for spec-driven development
 - Search existing work: \`openspec spec list --long\`, \`openspec list\` (use \`rg\` only for full-text search)
 - Decide scope: new capability vs modify existing capability
 - Pick a unique \`change-id\`: kebab-case, verb-led (\`add-\`, \`update-\`, \`remove-\`, \`refactor-\`)
-- Scaffold: \`proposal.md\`, \`tasks.md\`, \`design.md\` (only if needed), and delta specs per affected capability
+${quickChecklistImplementation}
 - Write deltas: use \`## ADDED|MODIFIED|REMOVED|RENAMED Requirements\`; include at least one \`#### Scenario:\` per requirement
 - Validate: \`openspec validate [change-id] --strict\` and fix issues
 - Request approval: Do not start implementation until proposal is approved
@@ -42,19 +122,11 @@ Skip proposal for:
 
 **Workflow**
 1. Review \`openspec/project.md\`, \`openspec list\`, and \`openspec list --specs\` to understand current context.
-2. Choose a unique verb-led \`change-id\` and scaffold \`proposal.md\`, \`tasks.md\`, optional \`design.md\`, and spec deltas under \`openspec/changes/<id>/\`.
+${stage1Step2}
 3. Draft spec deltas using \`## ADDED|MODIFIED|REMOVED Requirements\` with at least one \`#### Scenario:\` per requirement.
 4. Run \`openspec validate <id> --strict\` and resolve any issues before sharing the proposal.
 
-### Stage 2: Implementing Changes
-Track these steps as TODOs and complete them one by one.
-1. **Read proposal.md** - Understand what's being built
-2. **Read design.md** (if exists) - Review technical decisions
-3. **Read tasks.md** - Get implementation checklist
-4. **Implement tasks sequentially** - Complete in order
-5. **Confirm completion** - Ensure every item in \`tasks.md\` is finished before updating statuses
-6. **Update checklist** - After all work is done, set every task to \`- [x]\` so the list reflects reality
-7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
+${stage2Block}
 
 ### Stage 3: Archiving Changes
 After deployment, create separate PR to:
@@ -132,7 +204,7 @@ openspec/
 ├── changes/                # Proposals - what SHOULD change
 │   ├── [change-name]/
 │   │   ├── proposal.md     # Why, what, impact
-│   │   ├── tasks.md        # Implementation checklist
+${directoryTasksLine}
 │   │   ├── design.md       # Technical decisions (optional; see criteria)
 │   │   └── specs/          # Delta changes
 │   │       └── [capability]/
@@ -193,14 +265,7 @@ The system SHALL provide...
 \`\`\`
 If multiple capabilities are affected, create multiple delta files under \`changes/[change-id]/specs/<capability>/spec.md\`—one per capability.
 
-4. **Create tasks.md:**
-\`\`\`markdown
-## 1. Implementation
-- [ ] 1.1 Create database schema
-- [ ] 1.2 Implement API endpoint
-- [ ] 1.3 Add frontend component
-- [ ] 1.4 Write tests
-\`\`\`
+${tasksSection}
 
 5. **Create design.md when needed:**
 Create \`design.md\` if any of the following apply; otherwise omit it:
@@ -323,13 +388,8 @@ openspec list
 # rg -n "Requirement:|Scenario:" openspec/specs
 # rg -n "^#|Requirement:" openspec/changes
 
-# 2) Choose change id and scaffold
-CHANGE=add-two-factor-auth
-mkdir -p openspec/changes/$CHANGE/{specs/auth}
-printf "## Why\\n...\\n\\n## What Changes\\n- ...\\n\\n## Impact\\n- ...\\n" > openspec/changes/$CHANGE/proposal.md
-printf "## 1. Implementation\\n- [ ] 1.1 ...\\n" > openspec/changes/$CHANGE/tasks.md
+${happyPathScaffoldBlock}
 
-# 3) Add deltas (example)
 cat > openspec/changes/$CHANGE/specs/auth/spec.md << 'EOF'
 ## ADDED Requirements
 ### Requirement: Two-Factor Authentication
@@ -349,7 +409,7 @@ openspec validate $CHANGE --strict
 \`\`\`
 openspec/changes/add-2fa-notify/
 ├── proposal.md
-├── tasks.md
+${multiCapabilityTasksLine}
 └── specs/
     ├── auth/
     │   └── spec.md   # ADDED: Two-Factor Authentication
@@ -438,10 +498,7 @@ Only add complexity with:
 - \`archive/\` - Completed changes
 
 ### File Purposes
-- \`proposal.md\` - Why and what
-- \`tasks.md\` - Implementation steps
-- \`design.md\` - Technical decisions
-- \`spec.md\` - Requirements and behavior
+${quickReferenceFilePurposes}
 
 ### CLI Essentials
 \`\`\`bash
@@ -453,3 +510,4 @@ openspec archive <change-id> [--yes|-y]  # Mark complete (add --yes for automati
 
 Remember: Specs are truth. Changes are proposals. Keep them in sync.
 `;
+}

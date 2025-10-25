@@ -4,6 +4,7 @@ import { OPENSPEC_DIR_NAME } from './config.js';
 import { ToolRegistry } from './configurators/registry.js';
 import { SlashCommandRegistry } from './configurators/slash/registry.js';
 import { agentsTemplate } from './templates/agents-template.js';
+import { detectTaskManagementMode } from './task-management.js';
 
 export class UpdateCommand {
   async execute(projectPath: string): Promise<void> {
@@ -16,10 +17,12 @@ export class UpdateCommand {
       throw new Error(`No OpenSpec directory found. Run 'openspec init' first.`);
     }
 
+    const taskManagementMode = await detectTaskManagementMode(resolvedProjectPath);
+
     // 2. Update AGENTS.md (full replacement)
     const agentsPath = path.join(openspecPath, 'AGENTS.md');
 
-    await FileSystemUtils.writeFile(agentsPath, agentsTemplate);
+    await FileSystemUtils.writeFile(agentsPath, agentsTemplate(taskManagementMode));
 
     // 3. Update existing AI tool configuration files only
     const configurators = ToolRegistry.getAll();
@@ -74,7 +77,8 @@ export class UpdateCommand {
       try {
         const updated = await slashConfigurator.updateExisting(
           resolvedProjectPath,
-          openspecPath
+          openspecPath,
+          taskManagementMode
         );
         updatedSlashFiles.push(...updated);
       } catch (error) {

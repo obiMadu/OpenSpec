@@ -438,7 +438,7 @@ export class InitCommand {
     const rootStubStatus = await this.configureAITools(
       projectPath,
       openspecDir,
-      config.aiTools
+      config
     );
     toolSpinner.stopAndPersist({
       symbol: PALETTE.white('▌'),
@@ -681,6 +681,7 @@ export class InitCommand {
     config: OpenSpecConfig
   ): Promise<void> {
     const context: ProjectContext = {
+      taskManagement: config.taskManagement,
       // Could be enhanced with prompts for project details
     };
 
@@ -700,14 +701,16 @@ export class InitCommand {
   private async configureAITools(
     projectPath: string,
     openspecDir: string,
-    toolIds: string[]
+    config: OpenSpecConfig
   ): Promise<RootStubStatus> {
     const rootStubStatus = await this.configureRootAgentsStub(
       projectPath,
       openspecDir
     );
 
-    for (const toolId of toolIds) {
+    const { aiTools, taskManagement } = config;
+
+    for (const toolId of aiTools) {
       const configurator = ToolRegistry.get(toolId);
       if (configurator && configurator.isAvailable) {
         await configurator.configure(projectPath, openspecDir);
@@ -715,7 +718,7 @@ export class InitCommand {
 
       const slashConfigurator = SlashCommandRegistry.get(toolId);
       if (slashConfigurator && slashConfigurator.isAvailable) {
-        await slashConfigurator.generateAll(projectPath, openspecDir);
+        await slashConfigurator.generateAll(projectPath, openspecDir, taskManagement);
       }
     }
 

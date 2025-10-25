@@ -16,7 +16,7 @@ export class TemplateManager {
     return [
       {
         path: 'AGENTS.md',
-        content: agentsTemplate
+        content: (ctx: ProjectContext) => agentsTemplate(ctx.taskManagement ?? 'markdown')
       },
       {
         path: 'project.md',
