@@ -4,7 +4,7 @@ import ora from 'ora';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { InitCommand } from '../core/init.js';
-import { AI_TOOLS } from '../core/config.js';
+import { AI_TOOLS, TaskManagementMode } from '../core/config.js';
 import { UpdateCommand } from '../core/update.js';
 import { ListCommand } from '../core/list.js';
 import { ArchiveCommand } from '../core/archive.js';
@@ -41,7 +41,8 @@ program
   .command('init [path]')
   .description('Initialize OpenSpec in your project')
   .option('--tools <tools>', toolsOptionDescription)
-  .action(async (targetPath = '.', options?: { tools?: string }) => {
+  .option('--task-manager <taskManager>', 'Override task management mode (markdown or bd)')
+  .action(async (targetPath = '.', options?: { tools?: string; taskManager?: string }) => {
     try {
       // Validate that the path is a valid directory
       const resolvedPath = path.resolve(targetPath);
@@ -62,8 +63,18 @@ program
         }
       }
       
+      let taskManager: TaskManagementMode | undefined;
+      if (options?.taskManager) {
+        const normalized = options.taskManager.trim().toLowerCase();
+        if (normalized !== 'markdown' && normalized !== 'bd') {
+          throw new Error('Invalid value for --task-manager. Use "markdown" or "bd".');
+        }
+        taskManager = normalized as TaskManagementMode;
+      }
+      
       const initCommand = new InitCommand({
         tools: options?.tools,
+        taskManager,
       });
       await initCommand.execute(targetPath);
     } catch (error) {

@@ -385,17 +385,20 @@ type InitCommandOptions = {
   prompt?: ToolSelectionPrompt;
   tools?: string;
   taskManagerPrompt?: TaskManagerPrompt;
+  taskManager?: TaskManagementMode;
 };
 
 export class InitCommand {
   private readonly prompt: ToolSelectionPrompt;
   private readonly toolsArg?: string;
   private readonly taskManagerPrompt: TaskManagerPrompt;
+  private readonly taskManagerOverride?: TaskManagementMode;
 
   constructor(options: InitCommandOptions = {}) {
     this.prompt = options.prompt ?? ((config) => toolSelectionWizard(config));
     this.toolsArg = options.tools;
     this.taskManagerPrompt = options.taskManagerPrompt ?? ((opts) => this.promptForTaskManagement(opts));
+    this.taskManagerOverride = options.taskManager;
   }
 
   async execute(targetPath: string): Promise<void> {
@@ -524,6 +527,10 @@ export class InitCommand {
     initial: TaskManagementMode,
     extendMode: boolean
   ): Promise<TaskManagementMode> {
+    if (this.taskManagerOverride) {
+      return this.taskManagerOverride;
+    }
+
     if (typeof this.toolsArg !== 'undefined') {
       return initial;
     }

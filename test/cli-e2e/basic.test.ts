@@ -132,6 +132,27 @@ describe('openspec CLI e2e basics', () => {
       expect(await fileExists(cursorProposal)).toBe(false);
     });
 
+    it('honors --task-manager override', async () => {
+      const projectDir = await prepareFixture('tmp-init');
+      const emptyProjectDir = path.join(projectDir, '..', 'empty-project');
+      await fs.mkdir(emptyProjectDir, { recursive: true });
+
+      const result = await runCLI(['init', '--tools', 'none', '--task-manager', 'bd'], {
+        cwd: emptyProjectDir,
+      });
+
+      expect(result.exitCode).toBe(0);
+
+      const agentsPath = path.join(emptyProjectDir, 'openspec/AGENTS.md');
+      const projectPath = path.join(emptyProjectDir, 'openspec/project.md');
+      const agentsContent = await fs.readFile(agentsPath, 'utf-8');
+      const projectContent = await fs.readFile(projectPath, 'utf-8');
+
+      expect(projectContent).toContain('<!-- TASK_MANAGEMENT:bd -->');
+      expect(agentsContent).toContain('bd issue - Implementation tracking');
+      expect(agentsContent).not.toContain('`tasks.md` - Implementation steps');
+    });
+
     it('returns error for invalid tool names', async () => {
       const projectDir = await prepareFixture('tmp-init');
       const emptyProjectDir = path.join(projectDir, '..', 'empty-project');
@@ -151,6 +172,19 @@ describe('openspec CLI e2e basics', () => {
       const result = await runCLI(['init', '--tools', 'all,claude'], { cwd: emptyProjectDir });
       expect(result.exitCode).toBe(1);
       expect(result.stderr).toContain('Cannot combine reserved values "all" or "none" with specific tool IDs');
+    });
+
+    it('returns error for invalid task manager override', async () => {
+      const projectDir = await prepareFixture('tmp-init');
+      const emptyProjectDir = path.join(projectDir, '..', 'empty-project');
+      await fs.mkdir(emptyProjectDir, { recursive: true });
+
+      const result = await runCLI(['init', '--tools', 'none', '--task-manager', 'jira'], {
+        cwd: emptyProjectDir,
+      });
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Invalid value for --task-manager');
     });
   });
 });

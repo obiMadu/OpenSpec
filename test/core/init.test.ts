@@ -133,6 +133,31 @@ describe('InitCommand', () => {
       expect(mockTaskPrompt).toHaveBeenCalledTimes(1);
     });
 
+    it('should honor task manager override without prompting', async () => {
+      queueSelections('claude', DONE);
+      const overriddenCommand = new InitCommand({
+        prompt: mockPrompt,
+        taskManagerPrompt: mockTaskPrompt,
+        taskManager: 'bd',
+      });
+
+      await overriddenCommand.execute(testDir);
+
+      const openspecPath = path.join(testDir, 'openspec');
+      const projectContent = await fs.readFile(
+        path.join(openspecPath, 'project.md'),
+        'utf-8'
+      );
+      expect(projectContent).toContain('<!-- TASK_MANAGEMENT:bd -->');
+
+      const agentsContent = await fs.readFile(
+        path.join(openspecPath, 'AGENTS.md'),
+        'utf-8'
+      );
+      expect(agentsContent).toContain('bd issue - Implementation tracking');
+      expect(mockTaskPrompt).not.toHaveBeenCalled();
+    });
+
     it('should create CLAUDE.md when Claude Code is selected', async () => {
       queueSelections('claude', DONE);
 
