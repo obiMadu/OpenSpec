@@ -1,8 +1,11 @@
+import { TaskManagementMode } from '../config.js';
+
 export interface ProjectContext {
   projectName?: string;
   description?: string;
   techStack?: string[];
   conventions?: string;
+  taskManagement?: TaskManagementMode;
 }
 
 export const projectTemplate = (context: ProjectContext = {}) => `# ${context.projectName || 'Project'} Context

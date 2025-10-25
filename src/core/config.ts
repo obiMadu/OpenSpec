@@ -5,8 +5,11 @@ export const OPENSPEC_MARKERS = {
   end: '<!-- OPENSPEC:END -->'
 };
 
+export type TaskManagementMode = 'markdown' | 'bd';
+
 export interface OpenSpecConfig {
   aiTools: string[];
+  taskManagement: TaskManagementMode;
 }
 
 export interface AIToolOption {

@@ -22,6 +22,7 @@ import {
   OPENSPEC_DIR_NAME,
   AIToolOption,
 } from './config.js';
+import { DEFAULT_TASK_MANAGEMENT_MODE } from './task-management.js';
 import { PALETTE } from './styles/palette.js';
 
 const PROGRESS_SPINNER = {
@@ -474,7 +475,10 @@ export class InitCommand {
     extendMode: boolean
   ): Promise<OpenSpecConfig> {
     const selectedTools = await this.getSelectedTools(existingTools, extendMode);
-    return { aiTools: selectedTools };
+    return {
+      aiTools: selectedTools,
+      taskManagement: DEFAULT_TASK_MANAGEMENT_MODE,
+    };
   }
 
   private async getSelectedTools(
