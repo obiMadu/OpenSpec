@@ -1,5 +1,6 @@
 import { SlashCommandConfigurator } from './base.js';
 import { SlashCommandId } from '../../templates/index.js';
+import { TaskManagementMode } from '../../config.js';
 
 const FILE_PATHS: Record<SlashCommandId, string> = {
   proposal: '.factory/commands/openspec-proposal.md',
@@ -34,8 +35,8 @@ export class FactorySlashCommandConfigurator extends SlashCommandConfigurator {
     return FRONTMATTER[id];
   }
 
-  protected getBody(id: SlashCommandId): string {
-    const baseBody = super.getBody(id);
+  protected getBody(id: SlashCommandId, mode: TaskManagementMode): string {
+    const baseBody = super.getBody(id, mode);
     return `${baseBody}\n\n$ARGUMENTS`;
   }
 }

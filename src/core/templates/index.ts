@@ -4,6 +4,7 @@ import { claudeTemplate } from './claude-template.js';
 import { clineTemplate } from './cline-template.js';
 import { agentsRootStubTemplate } from './agents-root-stub.js';
 import { getSlashCommandBody, SlashCommandId } from './slash-command-templates.js';
+import { TaskManagementMode } from '../config.js';
 
 export interface Template {
   path: string;
@@ -36,8 +37,8 @@ export class TemplateManager {
     return agentsRootStubTemplate;
   }
 
-  static getSlashCommandBody(id: SlashCommandId): string {
-    return getSlashCommandBody(id);
+  static getSlashCommandBody(id: SlashCommandId, mode: TaskManagementMode = 'markdown'): string {
+    return getSlashCommandBody(id, mode);
   }
 }
 

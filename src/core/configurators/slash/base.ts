@@ -1,6 +1,7 @@
 import { FileSystemUtils } from '../../../utils/file-system.js';
 import { TemplateManager, SlashCommandId } from '../../templates/index.js';
-import { OPENSPEC_MARKERS } from '../../config.js';
+import { OPENSPEC_MARKERS, TaskManagementMode } from '../../config.js';
+import { detectTaskManagementMode } from '../../task-management.js';
 
 export interface SlashCommandTarget {
   id: SlashCommandId;
@@ -22,11 +23,12 @@ export abstract class SlashCommandConfigurator {
     }));
   }
 
-  async generateAll(projectPath: string, _openspecDir: string): Promise<string[]> {
+  async generateAll(projectPath: string, _openspecDir: string, mode?: TaskManagementMode): Promise<string[]> {
+    const resolvedMode = mode ?? await detectTaskManagementMode(projectPath);
     const createdOrUpdated: string[] = [];
 
     for (const target of this.getTargets()) {
-      const body = this.getBody(target.id);
+      const body = this.getBody(target.id, resolvedMode);
       const filePath = FileSystemUtils.joinPath(projectPath, target.path);
 
       if (await FileSystemUtils.fileExists(filePath)) {
@@ -48,13 +50,14 @@ export abstract class SlashCommandConfigurator {
     return createdOrUpdated;
   }
 
-  async updateExisting(projectPath: string, _openspecDir: string): Promise<string[]> {
+  async updateExisting(projectPath: string, _openspecDir: string, mode?: TaskManagementMode): Promise<string[]> {
+    const resolvedMode = mode ?? await detectTaskManagementMode(projectPath);
     const updated: string[] = [];
 
     for (const target of this.getTargets()) {
       const filePath = FileSystemUtils.joinPath(projectPath, target.path);
       if (await FileSystemUtils.fileExists(filePath)) {
-        const body = this.getBody(target.id);
+        const body = this.getBody(target.id, resolvedMode);
         await this.updateBody(filePath, body);
         updated.push(target.path);
       }
@@ -66,8 +69,8 @@ export abstract class SlashCommandConfigurator {
   protected abstract getRelativePath(id: SlashCommandId): string;
   protected abstract getFrontmatter(id: SlashCommandId): string | undefined;
 
-  protected getBody(id: SlashCommandId): string {
-    return TemplateManager.getSlashCommandBody(id).trim();
+  protected getBody(id: SlashCommandId, mode: TaskManagementMode): string {
+    return TemplateManager.getSlashCommandBody(id, mode).trim();
   }
 
   // Resolve absolute path for a given slash command target. Subclasses may override
