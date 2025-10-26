@@ -1,1 +1,3 @@
-export { agentsRootStubTemplate as clineTemplate } from './agents-root-stub.js';
+import { agentsRootStubTemplate } from './agents-root-stub.js';
+
+export const clineTemplate = agentsRootStubTemplate();

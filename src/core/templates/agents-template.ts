@@ -31,6 +31,40 @@ Track these steps as TODOs and complete them one by one.
 6. **Update checklist** - After all work is done, set every task to \`- [x]\` so the list reflects reality
 7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved`;
 
+  const bdIntegrationBlock = !isBd
+    ? ''
+    : `
+## bd Task Management
+
+### Setup Checklist
+- Run \`bd init\` once per repository to create the issue tracker (commits \`.beads/issues.jsonl\`).
+- Optionally run \`bd quickstart\` to walk through the CLI workflow and confirm your installation.
+
+### Daily Flow
+1. Start every session with \`bd ready --json\` to find unblocked work.
+2. Claim or advance tasks with \`bd update <id> --status in_progress --json\`.
+3. Record discoveries using \`bd create "Found issue" -t task --deps discovered-from:<change-id> --json\`.
+4. Maintain dependency context via \`bd dep add <child> <parent> --type discovered-from\`.
+5. Close completed tasks promptly using \`bd close <id> --reason "Completed" --json\`.
+
+### Reference Commands
+\`\`\`bash
+bd init
+bd quickstart
+bd ready --json
+bd create "Implement <change-id>" -t task -p 1 --deps discovered-from:<change-id> --json
+bd update bd-42 --status in_progress --json
+bd dep add bd-99 bd-42 --type discovered-from
+bd close bd-42 --reason "Completed" --json
+\`\`\`
+
+### Rules
+- Track every implementation detail in bd—do not create markdown TODO lists.
+- Use \`--json\` for outputs so agents and automations can consume results.
+- Keep statuses accurate so teammates can rely on \`bd ready\` for orientation.
+- Link OpenSpec change IDs to bd issues via \`discovered-from\` relationships.
+`;
+
   const directoryTasksLine = isBd
     ? '│   │   ├── (implementation tracked in bd issues)'
     : '│   │   ├── tasks.md        # Implementation checklist';
@@ -127,7 +161,7 @@ ${stage1Step2}
 4. Run \`openspec validate <id> --strict\` and resolve any issues before sharing the proposal.
 
 ${stage2Block}
-
+${bdIntegrationBlock}
 ### Stage 3: Archiving Changes
 After deployment, create separate PR to:
 - Move \`changes/[name]/\` → \`changes/archive/YYYY-MM-DD-[name]/\`

@@ -35,6 +35,10 @@ function queueSelections(...values: string[]) {
   }
 }
 
+function stripAnsi(value: string): string {
+  return value.replace(/\[[0-9;]*m/g, '');
+}
+
 describe('InitCommand', () => {
   let testDir: string;
   let initCommand: InitCommand;
@@ -129,7 +133,15 @@ describe('InitCommand', () => {
         'utf-8'
       );
       expect(agentsContent).toContain('bd issue - Implementation tracking');
+      expect(agentsContent).toContain('bd init');
+      expect(agentsContent).toContain('bd ready --json');
       expect(agentsContent).not.toContain('tasks.md` - Implementation steps');
+
+      const rootAgents = await fs.readFile(
+        path.join(testDir, 'AGENTS.md'),
+        'utf-8'
+      );
+      expect(rootAgents).toContain('bd quickstart');
       expect(mockTaskPrompt).toHaveBeenCalledTimes(1);
     });
 
@@ -155,6 +167,14 @@ describe('InitCommand', () => {
         'utf-8'
       );
       expect(agentsContent).toContain('bd issue - Implementation tracking');
+      expect(agentsContent).toContain('bd init');
+      expect(agentsContent).toContain('bd ready --json');
+
+      const rootAgents = await fs.readFile(
+        path.join(testDir, 'AGENTS.md'),
+        'utf-8'
+      );
+      expect(rootAgents).toContain('bd quickstart');
       expect(mockTaskPrompt).not.toHaveBeenCalled();
     });
 
@@ -646,24 +666,40 @@ describe('InitCommand', () => {
 
     it('should display success message with selected tool name', async () => {
       queueSelections('claude', DONE);
-      const logSpy = vi.spyOn(console, 'log');
+      const logSpy = vi.mocked(console.log);
 
       await initCommand.execute(testDir);
 
-      const calls = logSpy.mock.calls.flat().join('\n');
-      expect(calls).toContain('Copy these prompts to Claude Code');
+      const calls = logSpy.mock.calls.map((args) =>
+        stripAnsi(args.join(' '))
+      );
+      expect(
+        calls.some((line) =>
+          line.includes('Next steps - Copy these prompts to')
+        )
+      ).toBe(true);
+      expect(calls.some((line) => line.includes('Claude Code'))).toBe(true);
     });
 
     it('should reference AGENTS compatible assistants in success message', async () => {
       queueSelections(DONE);
-      const logSpy = vi.spyOn(console, 'log');
+      const logSpy = vi.mocked(console.log);
 
       await initCommand.execute(testDir);
 
-      const calls = logSpy.mock.calls.flat().join('\n');
-      expect(calls).toContain(
-        'Copy these prompts to your AGENTS.md-compatible assistant'
+      const calls = logSpy.mock.calls.map((args) =>
+        stripAnsi(args.join(' '))
       );
+      expect(
+        calls.some((line) =>
+          line.includes('Next steps - Copy these prompts to')
+        )
+      ).toBe(true);
+      expect(
+        calls.some((line) =>
+          line.includes('your AGENTS.md-compatible assistant')
+        )
+      ).toBe(true);
     });
   });
 

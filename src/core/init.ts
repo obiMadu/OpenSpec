@@ -23,6 +23,7 @@ import {
   OPENSPEC_DIR_NAME,
   AIToolOption,
   TaskManagementMode,
+  OPENSPEC_MARKERS,
 } from './config.js';
 import {
   DEFAULT_TASK_MANAGEMENT_MODE,
@@ -475,8 +476,10 @@ export class InitCommand {
       skippedExisting,
       skipped,
       extendMode,
-      rootStubStatus
+      rootStubStatus,
+      config.taskManagement
     );
+
   }
 
   private async validate(
@@ -790,7 +793,8 @@ export class InitCommand {
   ): Promise<RootStubStatus> {
     const rootStubStatus = await this.configureRootAgentsStub(
       projectPath,
-      openspecDir
+      openspecDir,
+      config.taskManagement
     );
 
     const { aiTools, taskManagement } = config;
@@ -812,7 +816,8 @@ export class InitCommand {
 
   private async configureRootAgentsStub(
     projectPath: string,
-    openspecDir: string
+    openspecDir: string,
+    mode: TaskManagementMode
   ): Promise<RootStubStatus> {
     const configurator = ToolRegistry.get('agents');
     if (!configurator || !configurator.isAvailable) {
@@ -824,6 +829,14 @@ export class InitCommand {
 
     await configurator.configure(projectPath, openspecDir);
 
+    const rootContent = TemplateManager.getAgentsStandardTemplate(mode);
+    await FileSystemUtils.updateFileWithMarkers(
+      stubPath,
+      rootContent,
+      OPENSPEC_MARKERS.start,
+      OPENSPEC_MARKERS.end
+    );
+
     return existed ? 'updated' : 'created';
   }
 
@@ -834,7 +847,8 @@ export class InitCommand {
     skippedExisting: AIToolOption[],
     skipped: AIToolOption[],
     extendMode: boolean,
-    rootStubStatus: RootStubStatus
+    rootStubStatus: RootStubStatus,
+    taskManagement: TaskManagementMode
   ): void {
     console.log(); // Empty line for spacing
     const successHeadline = extendMode
@@ -887,11 +901,28 @@ export class InitCommand {
       )
     );
 
+    if (taskManagement === 'bd') {
+      console.log();
+      console.log(PALETTE.lightGray('bd setup checklist:'));
+      const bdLines = [
+        `${PALETTE.white('▌')} ${PALETTE.white('Run `bd init` once per repo to create `.beads/issues.jsonl`.')}`,
+        `${PALETTE.white('▌')} ${PALETTE.white('Run `bd quickstart` right away so bd can install its latest instructions.')}`,
+        `${PALETTE.white('▌')} ${PALETTE.white('Use `bd ready --json` daily to find unblocked work.')}`,
+        `${PALETTE.white('▌')} ${PALETTE.white('Track new work with `bd create ... --json` and link follow-ups via `--deps discovered-from:<change-id>`.')}`,
+        `${PALETTE.white('▌')} ${PALETTE.white('Keep statuses current with `bd update` / `bd close` instead of markdown TODOs.')}`,
+      ];
+      for (const line of bdLines) {
+        console.log(line);
+      }
+    }
+
     // Get the selected tool name(s) for display
-    const toolName = this.formatToolNames(selectedTools);
+    const toolNamePlain = this.formatToolNamesPlain(selectedTools);
 
     console.log();
-    console.log(`Next steps - Copy these prompts to ${toolName}:`);
+    console.log(
+      PALETTE.white(`Next steps - Copy these prompts to ${toolNamePlain}:`)
+    );
     console.log(
       chalk.gray('────────────────────────────────────────────────────────────')
     );
@@ -956,6 +987,23 @@ export class InitCommand {
     return `${base.join(PALETTE.midGray(', '))}${
       base.length ? PALETTE.midGray(', and ') : ''
     }${last}`;
+  }
+
+  private formatToolNamesPlain(tools: AIToolOption[]): string {
+    const names = tools
+      .map((tool) => tool.successLabel ?? tool.name)
+      .filter((name): name is string => Boolean(name));
+
+    if (names.length === 0) {
+      return 'your AGENTS.md-compatible assistant';
+    }
+    if (names.length === 1) {
+      return names[0];
+    }
+
+    const base = names.slice(0, -1).join(', ');
+    const last = names[names.length - 1];
+    return base ? `${base}, and ${last}` : last;
   }
 
   private renderBanner(_extendMode: boolean): void {

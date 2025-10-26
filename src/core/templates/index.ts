@@ -33,8 +33,8 @@ export class TemplateManager {
     return clineTemplate;
   }
 
-  static getAgentsStandardTemplate(): string {
-    return agentsRootStubTemplate;
+  static getAgentsStandardTemplate(mode: TaskManagementMode = 'markdown'): string {
+    return agentsRootStubTemplate(mode);
   }
 
   static getSlashCommandBody(id: SlashCommandId, mode: TaskManagementMode = 'markdown'): string {

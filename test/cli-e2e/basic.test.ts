@@ -145,11 +145,17 @@ describe('openspec CLI e2e basics', () => {
 
       const agentsPath = path.join(emptyProjectDir, 'openspec/AGENTS.md');
       const projectPath = path.join(emptyProjectDir, 'openspec/project.md');
+      expect(result.stdout).toContain('bd setup checklist');
+
       const agentsContent = await fs.readFile(agentsPath, 'utf-8');
       const projectContent = await fs.readFile(projectPath, 'utf-8');
+      const rootAgents = await fs.readFile(path.join(emptyProjectDir, 'AGENTS.md'), 'utf-8');
 
       expect(projectContent).toContain('<!-- TASK_MANAGEMENT:bd -->');
       expect(agentsContent).toContain('bd issue - Implementation tracking');
+      expect(agentsContent).toContain('bd init');
+      expect(agentsContent).toContain('bd ready --json');
+      expect(rootAgents).toContain('bd quickstart');
       expect(agentsContent).not.toContain('`tasks.md` - Implementation steps');
     });
 

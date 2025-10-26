@@ -4,7 +4,9 @@ import { OPENSPEC_DIR_NAME } from './config.js';
 import { ToolRegistry } from './configurators/registry.js';
 import { SlashCommandRegistry } from './configurators/slash/registry.js';
 import { agentsTemplate } from './templates/agents-template.js';
+import { TemplateManager } from './templates/index.js';
 import { detectTaskManagementMode } from './task-management.js';
+import { OPENSPEC_MARKERS } from './config.js';
 
 export class UpdateCommand {
   async execute(projectPath: string): Promise<void> {
@@ -90,6 +92,15 @@ export class UpdateCommand {
         );
       }
     }
+
+    const rootAgentsPath = path.join(resolvedProjectPath, 'AGENTS.md');
+    const rootContent = TemplateManager.getAgentsStandardTemplate(taskManagementMode);
+    await FileSystemUtils.updateFileWithMarkers(
+      rootAgentsPath,
+      rootContent,
+      OPENSPEC_MARKERS.start,
+      OPENSPEC_MARKERS.end
+    );
 
     const summaryParts: string[] = [];
     const instructionFiles: string[] = ['openspec/AGENTS.md'];
