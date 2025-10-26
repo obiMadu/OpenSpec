@@ -145,6 +145,7 @@ openspec init
 **What happens during initialization:**
 - You'll be prompted to pick any natively supported AI tools (Claude Code, CodeBuddy, Cursor, OpenCode, etc.); other assistants always rely on the shared `AGENTS.md` stub
 - OpenSpec automatically configures slash commands for the tools you choose and always writes a managed `AGENTS.md` hand-off at the project root
+- You'll choose how to manage implementation work: the default `markdown` mode scaffolds `tasks.md`, while the `bd` mode integrates with the [beads CLI](https://github.com/beads-io/beads)
 - A new `openspec/` directory structure is created in your project
 
 **After setup:**
@@ -152,6 +153,15 @@ openspec init
 - Run `openspec list` to verify the setup and view any active changes
 - If your coding assistant doesn't surface the new slash commands right away, restart it. Slash commands are loaded at startup,
   so a fresh launch ensures they appear
+
+### Task Management Modes
+
+| Mode | When to use it | What OpenSpec scaffolds | Follow-up steps |
+|------|----------------|-------------------------|-----------------|
+| `markdown` (default) | Lightweight projects or teams that prefer checklists in Git | `tasks.md` files alongside `proposal.md` and spec deltas | Mark items as you implement work inside the change folder |
+| `bd` (beads CLI) | Teams that already track work in [bd](https://github.com/beads-io/beads) or want dependency-aware issues | bd-aware instructions in `openspec/AGENTS.md` and the root `AGENTS.md`; no `tasks.md` files | Run `bd quickstart` immediately after init (bd updates the root stub with its latest guidance) and keep all implementation tracking in bd (`bd init`, `bd ready --json`, `bd update`, `bd create`, `bd close`) |
+
+Switching modes later is as simple as rerunning `openspec update` with `--task-manager markdown|bd`; OpenSpec refreshes the managed instruction blocks for you.
 
 ### Create Your First Change
 
@@ -195,8 +205,7 @@ You: The specs look good. Let's implement this change.
      (Shortcut for tools with slash commands: /openspec:apply add-profile-filters)
 
 AI:  I'll work through the tasks in the add-profile-filters change.
-     *Implements tasks from openspec/changes/add-profile-filters/tasks.md*
-     *Marks tasks complete: Task 1.1 ✓, Task 1.2 ✓, Task 2.1 ✓...*
+     *Implements tasks from openspec/changes/add-profile-filters/tasks.md (markdown mode) or updates the bd issue (bd mode).* 
 ```
 
 #### 5. Archive the Completed Change
