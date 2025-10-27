@@ -154,8 +154,10 @@ describe('openspec CLI e2e basics', () => {
       expect(projectContent).toContain('<!-- TASK_MANAGEMENT:bd -->');
       expect(agentsContent).toContain('bd issue - Implementation tracking');
       expect(agentsContent).toContain('bd init');
+      expect(agentsContent).toContain('bd onboard');
       expect(agentsContent).toContain('bd ready --json');
-      expect(rootAgents).toContain('bd quickstart');
+      expect(agentsContent).toContain('bd quickstart');
+      expect(rootAgents).toContain('bd onboard');
       expect(agentsContent).not.toContain('`tasks.md` - Implementation steps');
     });
 

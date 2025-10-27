@@ -38,7 +38,8 @@ Track these steps as TODOs and complete them one by one.
 
 ### Setup Checklist
 - Run \`bd init\` once per repository to create the issue tracker (commits \`.beads/issues.jsonl\`).
-- Optionally run \`bd quickstart\` to walk through the CLI workflow and confirm your installation.
+- Run \`bd onboard\` so bd can install its latest assistant instructions and confirm your installation.
+- Optionally run \`bd quickstart\` to walk through the CLI workflow after onboarding.
 
 ### Daily Flow
 1. Start every session with \`bd ready --json\` to find unblocked work.
@@ -50,6 +51,7 @@ Track these steps as TODOs and complete them one by one.
 ### Reference Commands
 \`\`\`bash
 bd init
+bd onboard
 bd quickstart
 bd ready --json
 bd create "Implement <change-id>" -t task -p 1 --deps discovered-from:<change-id> --json

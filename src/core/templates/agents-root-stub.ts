@@ -25,7 +25,7 @@ Keep this managed block so 'openspec update' can refresh the instructions.
   const bdBlock = `
 ## bd Issue Tracking
 
-OpenSpec manages planning with bd (Beads). Run \`bd quickstart\` right now so bd can install its latest agent instructions and update this file automatically. Let bd finish and follow whatever additional setup it prompts for (such as \`bd init\`).
+OpenSpec manages planning with bd (Beads). Run \`bd onboard\` right now so bd can install its latest agent instructions and update this file automatically. Let bd finish and follow whatever additional setup it prompts for (such as \`bd init\`).
 
 Once bd has written its instructions, follow that workflow for all task tracking (no markdown TODO lists) and coordinate work through bd.
 `;

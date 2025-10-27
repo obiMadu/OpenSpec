@@ -141,7 +141,7 @@ describe('InitCommand', () => {
         path.join(testDir, 'AGENTS.md'),
         'utf-8'
       );
-      expect(rootAgents).toContain('bd quickstart');
+      expect(rootAgents).toContain('bd onboard');
       expect(mockTaskPrompt).toHaveBeenCalledTimes(1);
     });
 
@@ -174,7 +174,7 @@ describe('InitCommand', () => {
         path.join(testDir, 'AGENTS.md'),
         'utf-8'
       );
-      expect(rootAgents).toContain('bd quickstart');
+      expect(rootAgents).toContain('bd onboard');
       expect(mockTaskPrompt).not.toHaveBeenCalled();
     });
 

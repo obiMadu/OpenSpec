@@ -906,7 +906,8 @@ export class InitCommand {
       console.log(PALETTE.lightGray('bd setup checklist:'));
       const bdLines = [
         `${PALETTE.white('▌')} ${PALETTE.white('Run `bd init` once per repo to create `.beads/issues.jsonl`.')}`,
-        `${PALETTE.white('▌')} ${PALETTE.white('Run `bd quickstart` right away so bd can install its latest instructions.')}`,
+        `${PALETTE.white('▌')} ${PALETTE.white('Run `bd onboard` right away so bd can install its latest instructions.')}`,
+        `${PALETTE.white('▌')} ${PALETTE.white('Optionally run `bd quickstart` after onboarding to explore the workflow.')}`,
         `${PALETTE.white('▌')} ${PALETTE.white('Use `bd ready --json` daily to find unblocked work.')}`,
         `${PALETTE.white('▌')} ${PALETTE.white('Track new work with `bd create ... --json` and link follow-ups via `--deps discovered-from:<change-id>`.')}`,
         `${PALETTE.white('▌')} ${PALETTE.white('Keep statuses current with `bd update` / `bd close` instead of markdown TODOs.')}`,
