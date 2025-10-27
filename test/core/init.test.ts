@@ -132,50 +132,18 @@ describe('InitCommand', () => {
         path.join(openspecPath, 'AGENTS.md'),
         'utf-8'
       );
-      expect(agentsContent).toContain('bd issue - Implementation tracking');
+      expect(agentsContent).toContain('bd issues - Implementation tracking (parent change issue + child task issues)');
       expect(agentsContent).toContain('bd init');
+
       expect(agentsContent).toContain('bd ready --json');
-      expect(agentsContent).not.toContain('tasks.md` - Implementation steps');
 
       const rootAgents = await fs.readFile(
         path.join(testDir, 'AGENTS.md'),
         'utf-8'
       );
       expect(rootAgents).toContain('bd onboard');
+      expect(rootAgents).toContain('bd issues for each actionable task');
       expect(mockTaskPrompt).toHaveBeenCalledTimes(1);
-    });
-
-    it('should honor task manager override without prompting', async () => {
-      queueSelections('claude', DONE);
-      const overriddenCommand = new InitCommand({
-        prompt: mockPrompt,
-        taskManagerPrompt: mockTaskPrompt,
-        taskManager: 'bd',
-      });
-
-      await overriddenCommand.execute(testDir);
-
-      const openspecPath = path.join(testDir, 'openspec');
-      const projectContent = await fs.readFile(
-        path.join(openspecPath, 'project.md'),
-        'utf-8'
-      );
-      expect(projectContent).toContain('<!-- TASK_MANAGEMENT:bd -->');
-
-      const agentsContent = await fs.readFile(
-        path.join(openspecPath, 'AGENTS.md'),
-        'utf-8'
-      );
-      expect(agentsContent).toContain('bd issue - Implementation tracking');
-      expect(agentsContent).toContain('bd init');
-      expect(agentsContent).toContain('bd ready --json');
-
-      const rootAgents = await fs.readFile(
-        path.join(testDir, 'AGENTS.md'),
-        'utf-8'
-      );
-      expect(rootAgents).toContain('bd onboard');
-      expect(mockTaskPrompt).not.toHaveBeenCalled();
     });
 
     it('should create CLAUDE.md when Claude Code is selected', async () => {

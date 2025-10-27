@@ -4,11 +4,11 @@ export function agentsTemplate(mode: TaskManagementMode = 'markdown'): string {
   const isBd = mode === 'bd';
 
   const quickChecklistImplementation = isBd
-    ? '- Coordinate implementation through bd: create or claim an issue, break work into tasks, and keep statuses current.'
+    ? '- Coordinate implementation through bd: create or claim a parent issue, spin up child bd issues for each task, and keep statuses current.'
     : '- Scaffold: `proposal.md`, `tasks.md`, `design.md` (only if needed), and delta specs per affected capability';
 
   const stage1Step2 = isBd
-    ? '2. Choose a unique verb-led `change-id`, scaffold `proposal.md`, optional `design.md`, spec deltas under `openspec/changes/<id>/`, and create or update a bd issue to manage implementation tasks.'
+    ? '2. Choose a unique verb-led `change-id`, scaffold `proposal.md`, optional `design.md`, spec deltas under `openspec/changes/<id>/`, and create a parent bd issue that will own the child task issues.'
     : '2. Choose a unique verb-led `change-id` and scaffold `proposal.md`, `tasks.md`, optional `design.md`, and spec deltas under `openspec/changes/<id>/`.';
 
   const stage2Block = isBd
@@ -16,10 +16,10 @@ export function agentsTemplate(mode: TaskManagementMode = 'markdown'): string {
 Track these steps as bd issue updates so progress stays transparent.
 1. **Read proposal.md** - Understand what's being built
 2. **Read design.md** (if exists) - Review technical decisions
-3. **Review bd issue** - Confirm tasks, owners, blockers, and dependencies
-4. **Work tasks sequentially** - Update bd issue status/comments as you complete each task
-5. **Confirm completion** - Ensure every bd task is closed or linked to follow-up work
-6. **Sync status** - Move the bd issue to \`completed\` (or the appropriate done state) once the change lands
+3. **Review bd issues** - Confirm the parent change issue plus child task issues, owners, blockers, and dependencies
+4. **Work child issues sequentially** - Update each bd issue's status/comments as you complete work
+5. **Confirm completion** - Ensure every child issue is closed or linked to follow-up work before finishing
+6. **Sync statuses** - Move the parent bd issue to \`completed\` (or the appropriate done state) once all child issues land
 7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved`
     : `### Stage 2: Implementing Changes
 Track these steps as TODOs and complete them one by one.
@@ -73,9 +73,9 @@ bd close bd-42 --reason "Completed" --json
 
   const tasksSection = isBd
     ? `4. **Set up bd tracking:**
-   - Create (or update) a bd issue to manage implementation work.
-   - Break the change into small, verifiable bd tasks.
-   - Link related work with \`bd update <issue> --deps discovered-from:<change-id>\` or equivalent.`
+   - Create (or update) a primary bd issue for this change.
+   - Split the work into child bd issues (type \`task\`) with \`bd create ... --deps discovered-from:<change-id>\` for each actionable chunk.
+   - Keep status and dependencies current with \`bd update <issue> --status ... --deps discovered-from:<change-id>\` or equivalent.`
     : `4. **Create tasks.md:**
 \`\`\`markdown
 ## 1. Implementation
@@ -92,7 +92,9 @@ mkdir -p openspec/changes/$CHANGE/{specs/auth}
 printf "## Why\\n...\\n\\n## What Changes\\n- ...\\n\\n## Impact\\n- ...\\n" > openspec/changes/$CHANGE/proposal.md
 
 # 3) Manage implementation in bd
-bd create "Implement $CHANGE" -t task -p 1 --deps discovered-from:$CHANGE --json
+bd create "Implement $CHANGE" -t task -p 1 --json                   # parent change issue
+bd create "Implement MFA backend" -t task -p 1 --deps discovered-from:$CHANGE --json
+bd create "Update login UI" -t task -p 1 --deps discovered-from:$CHANGE --json
 
 # 4) Add deltas (example)`
     : `# 2) Choose change id and scaffold
@@ -109,7 +111,7 @@ printf "## 1. Implementation\\n- [ ] 1.1 ...\\n" > openspec/changes/$CHANGE/task
 
   const quickReferenceFilePurposes = [
     '- `proposal.md` - Why and what',
-    isBd ? '- bd issue - Implementation tracking' : '- `tasks.md` - Implementation steps',
+    isBd ? '- bd issues - Implementation tracking (parent change issue + child task issues)' : '- `tasks.md` - Implementation steps',
     '- `design.md` - Technical decisions',
     '- `spec.md` - Requirements and behavior'
   ].join('\n');

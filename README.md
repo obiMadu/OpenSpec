@@ -159,7 +159,7 @@ openspec init
 | Mode | When to use it | What OpenSpec scaffolds | Follow-up steps |
 |------|----------------|-------------------------|-----------------|
 | `markdown` (default) | Lightweight projects or teams that prefer checklists in Git | `tasks.md` files alongside `proposal.md` and spec deltas | Mark items as you implement work inside the change folder |
-| `bd` (beads CLI) | Teams that already track work in [bd](https://github.com/steveyegge/beads) or want dependency-aware issues | bd-aware instructions in `openspec/AGENTS.md` and the root `AGENTS.md`; no `tasks.md` files | Run `bd onboard` immediately after init (bd updates the root stub with its latest guidance), optionally follow with `bd quickstart`, and keep all implementation tracking in bd (`bd init`, `bd ready --json`, `bd update`, `bd create`, `bd close`) |
+| `bd` (beads CLI) | Teams that already track work in [bd](https://github.com/steveyegge/beads) or want dependency-aware issues | bd-aware instructions in `openspec/AGENTS.md` and the root `AGENTS.md`; no `tasks.md` files | Run `bd onboard` immediately after init (bd updates the root stub with its latest guidance), optionally follow with `bd quickstart`, create one parent bd issue plus child bd issues (type `task`) for each actionable item, and keep all implementation tracking in bd (`bd init`, `bd ready --json`, `bd update`, `bd create`, `bd close`) |
 
 Switching modes later is as simple as rerunning `openspec update` with `--task-manager markdown|bd`; OpenSpec refreshes the managed instruction blocks for you.
 
@@ -205,7 +205,7 @@ You: The specs look good. Let's implement this change.
      (Shortcut for tools with slash commands: /openspec:apply add-profile-filters)
 
 AI:  I'll work through the tasks in the add-profile-filters change.
-     *Implements tasks from openspec/changes/add-profile-filters/tasks.md (markdown mode) or updates the bd issue (bd mode).* 
+     *Implements tasks from openspec/changes/add-profile-filters/tasks.md (markdown mode) or updates the parent + child bd issues (bd mode).* 
 ```
 
 #### 5. Archive the Completed Change

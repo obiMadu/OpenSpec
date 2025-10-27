@@ -152,12 +152,13 @@ describe('openspec CLI e2e basics', () => {
       const rootAgents = await fs.readFile(path.join(emptyProjectDir, 'AGENTS.md'), 'utf-8');
 
       expect(projectContent).toContain('<!-- TASK_MANAGEMENT:bd -->');
-      expect(agentsContent).toContain('bd issue - Implementation tracking');
+      expect(agentsContent).toContain('bd issues - Implementation tracking (parent change issue + child task issues)');
       expect(agentsContent).toContain('bd init');
       expect(agentsContent).toContain('bd onboard');
       expect(agentsContent).toContain('bd ready --json');
       expect(agentsContent).toContain('bd quickstart');
       expect(rootAgents).toContain('bd onboard');
+      expect(rootAgents).toContain('bd issues for each actionable task');
       expect(agentsContent).not.toContain('`tasks.md` - Implementation steps');
     });
 
