@@ -4,11 +4,11 @@ export function agentsTemplate(mode: TaskManagementMode = 'markdown'): string {
   const isBd = mode === 'bd';
 
   const quickChecklistImplementation = isBd
-    ? '- Coordinate implementation through bd: create or claim a parent issue, spin up child bd issues for each task, and keep statuses current.'
+    ? '- Coordinate implementation through bd: create a parent epic issue (titled "Implement <change-id>"), break spec deltas into child bd issues (type `task`) with detailed descriptions, link via `discovered-from:<epic-bd-id>`, and keep statuses current.'
     : '- Scaffold: `proposal.md`, `tasks.md`, `design.md` (only if needed), and delta specs per affected capability';
 
   const stage1Step2 = isBd
-    ? '2. Choose a unique verb-led `change-id`, scaffold `proposal.md`, optional `design.md`, spec deltas under `openspec/changes/<id>/`, and create a parent bd issue that will own the child task issues.'
+    ? '2. Choose a unique verb-led `change-id`, scaffold `proposal.md`, optional `design.md`, spec deltas under `openspec/changes/<id>/`, and create a parent bd epic issue (with the change-id in the title) that will own the child task issues.'
     : '2. Choose a unique verb-led `change-id` and scaffold `proposal.md`, `tasks.md`, optional `design.md`, and spec deltas under `openspec/changes/<id>/`.';
 
   const stage2Block = isBd
@@ -16,10 +16,10 @@ export function agentsTemplate(mode: TaskManagementMode = 'markdown'): string {
 Track these steps as bd issue updates so progress stays transparent.
 1. **Read proposal.md** - Understand what's being built
 2. **Read design.md** (if exists) - Review technical decisions
-3. **Review bd issues** - Confirm the parent change issue plus child task issues, owners, blockers, and dependencies
+3. **Confirm bd issues exist** - Find the parent epic (titled "Implement <change-id>") and verify child task issues are created. If missing, create them now using the epic's bd-XXX ID for \`discovered-from\` links. Review owners, blockers, and dependencies
 4. **Work child issues sequentially** - Update each bd issue's status/comments as you complete work
 5. **Confirm completion** - Ensure every child issue is closed or linked to follow-up work before finishing
-6. **Sync statuses** - Move the parent bd issue to \`completed\` (or the appropriate done state) once all child issues land
+6. **Sync statuses** - Move the parent bd epic to \`completed\` (or the appropriate done state) once all child issues land
 7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved`
     : `### Stage 2: Implementing Changes
 Track these steps as TODOs and complete them one by one.
@@ -44,8 +44,8 @@ Track these steps as TODOs and complete them one by one.
 ### Daily Flow
 1. Start every session with \`bd ready --json\` to find unblocked work.
 2. Claim or advance tasks with \`bd update <id> --status in_progress --json\`.
-3. Record discoveries using \`bd create "Found issue" -t task --deps discovered-from:<change-id> --json\`.
-4. Maintain dependency context via \`bd dep add <child> <parent> --type discovered-from\`.
+3. Record discoveries using \`bd create "Found issue" -t task -p 1 --deps discovered-from:<epic-bd-id> --json\` where \`<epic-bd-id>\` is the parent epic tracking your OpenSpec change.
+4. Add task-to-task blocking relationships when needed: \`bd dep add <blocked-task-id> <blocking-task-id> --type blocks\`
 5. Close completed tasks promptly using \`bd close <id> --reason "Completed" --json\`.
 
 ### Reference Commands
@@ -54,17 +54,30 @@ bd init
 bd onboard
 bd quickstart
 bd ready --json
-bd create "Implement <change-id>" -t task -p 1 --deps discovered-from:<change-id> --json
-bd update bd-42 --status in_progress --json
-bd dep add bd-99 bd-42 --type discovered-from
-bd close bd-42 --reason "Completed" --json
+
+# Create parent epic for the OpenSpec change
+bd create "Implement add-two-factor-auth" -t epic -p 1 --json  # returns bd-42
+
+# Create child tasks linked to the epic (use actual bd-XXX id from above)
+bd create "Implement MFA backend" -t task -p 1 --deps discovered-from:bd-42 --json
+bd create "Update login UI" -t task -p 1 --deps discovered-from:bd-42 --json
+
+# Claim and work on task
+bd update bd-43 --status in_progress --json
+
+# Add blocking relationship between tasks if needed
+bd dep add bd-44 bd-43 --type blocks  # bd-44 blocked by bd-43
+
+# Close when done
+bd close bd-43 --reason "Completed" --json
 \`\`\`
 
 ### Rules
 - Track every implementation detail in bd—do not create markdown TODO lists.
 - Use \`--json\` for outputs so agents and automations can consume results.
 - Keep statuses accurate so teammates can rely on \`bd ready\` for orientation.
-- Link OpenSpec change IDs to bd issues via \`discovered-from\` relationships.
+- Link OpenSpec changes to bd via a parent epic issue with the change-id in the title (e.g., "Implement add-two-factor-auth").
+- Use the epic's bd issue ID for \`discovered-from\` when creating child tasks.
 `;
 
   const directoryTasksLine = isBd
@@ -73,9 +86,12 @@ bd close bd-42 --reason "Completed" --json
 
   const tasksSection = isBd
     ? `4. **Set up bd tracking:**
-   - Create (or update) a primary bd issue for this change.
-   - Split the work into child bd issues (type \`task\`) with \`bd create ... --deps discovered-from:<change-id>\` for each actionable chunk.
-   - Keep status and dependencies current with \`bd update <issue> --status ... --deps discovered-from:<change-id>\` or equivalent.`
+   - Create a parent bd epic representing this OpenSpec change: \`bd create "Implement <change-id>" -t epic -p 1 --json\`
+   - Save the returned bd issue ID (e.g., bd-42) for linking child tasks
+   - Break spec deltas into concrete implementation tasks, creating child bd issues with detailed descriptions of what needs to be implemented
+   - Link child tasks to parent epic: \`bd create "Task name" -t task -p 1 --deps discovered-from:<epic-bd-id> --json\`
+   - Add \`blocks\` dependencies between child tasks if execution order matters
+   - Keep statuses current and close the parent epic when all child tasks complete`
     : `4. **Create tasks.md:**
 \`\`\`markdown
 ## 1. Implementation
@@ -91,10 +107,12 @@ CHANGE=add-two-factor-auth
 mkdir -p openspec/changes/$CHANGE/{specs/auth}
 printf "## Why\\n...\\n\\n## What Changes\\n- ...\\n\\n## Impact\\n- ...\\n" > openspec/changes/$CHANGE/proposal.md
 
-# 3) Manage implementation in bd
-bd create "Implement $CHANGE" -t task -p 1 --json                   # parent change issue
-bd create "Implement MFA backend" -t task -p 1 --deps discovered-from:$CHANGE --json
-bd create "Update login UI" -t task -p 1 --deps discovered-from:$CHANGE --json
+# 3) Manage implementation in bd - create parent epic first
+PARENT_ID=$(bd create "Implement $CHANGE" -t epic -p 1 --json | jq -r '.id')
+
+# Then create child tasks linked to the epic
+bd create "Implement MFA backend" -t task -p 1 --deps discovered-from:$PARENT_ID --json
+bd create "Update login UI" -t task -p 1 --deps discovered-from:$PARENT_ID --json
 
 # 4) Add deltas (example)`
     : `# 2) Choose change id and scaffold
@@ -111,7 +129,9 @@ printf "## 1. Implementation\\n- [ ] 1.1 ...\\n" > openspec/changes/$CHANGE/task
 
   const quickReferenceFilePurposes = [
     '- `proposal.md` - Why and what',
-    isBd ? '- bd issues - Implementation tracking (parent change issue + child task issues)' : '- `tasks.md` - Implementation steps',
+    isBd 
+      ? '- bd epic issue - Parent issue for change (title: "Implement <change-id>")\n- bd task issues - Child implementation tasks (linked via discovered-from:<epic-bd-id>)' 
+      : '- `tasks.md` - Implementation steps',
     '- `design.md` - Technical decisions',
     '- `spec.md` - Requirements and behavior'
   ].join('\n');
@@ -163,7 +183,13 @@ Skip proposal for:
 ${stage1Step2}
 3. Draft spec deltas using \`## ADDED|MODIFIED|REMOVED Requirements\` with at least one \`#### Scenario:\` per requirement.
 4. Run \`openspec validate <id> --strict\` and resolve any issues before sharing the proposal.
-
+${isBd ? `5. **Break down into bd issues:** After validation passes, create the bd issue structure:
+   - Create parent epic: \`bd create "Implement <change-id>" -t epic -p 1 --json\` and capture the returned bd-XXX ID
+   - Review each spec delta and break into concrete, actionable tasks
+   - Create child issues with detailed descriptions: \`bd create "Task description" -t task -p 1 --deps discovered-from:<epic-bd-id> --json\`
+   - Add \`blocks\` dependencies between child tasks if execution order matters
+   - Keep the parent epic and child tasks in sync as work progresses
+` : ''}
 ${stage2Block}
 ${bdIntegrationBlock}
 ### Stage 3: Archiving Changes

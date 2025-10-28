@@ -132,7 +132,8 @@ describe('InitCommand', () => {
         path.join(openspecPath, 'AGENTS.md'),
         'utf-8'
       );
-      expect(agentsContent).toContain('bd issues - Implementation tracking (parent change issue + child task issues)');
+      expect(agentsContent).toContain('bd epic issue - Parent issue for change (title: "Implement <change-id>")');
+      expect(agentsContent).toContain('bd task issues - Child implementation tasks (linked via discovered-from:<epic-bd-id>)');
       expect(agentsContent).toContain('bd init');
 
       expect(agentsContent).toContain('bd ready --json');

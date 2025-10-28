@@ -13,13 +13,13 @@ function getProposalSteps(mode: TaskManagementMode): string {
   const steps = [
     '1. Review `openspec/project.md`, run `openspec list` and `openspec list --specs`, and inspect related code or docs (e.g., via `rg`/`ls`) to ground the proposal in current behaviour; note any gaps that require clarification.',
     mode === 'bd'
-      ? '2. Choose a unique verb-led `change-id`, scaffold `proposal.md`, optional `design.md`, spec deltas under `openspec/changes/<id>/`, and create or update a bd issue to manage implementation tasks.'
+      ? '2. Choose a unique verb-led `change-id`, scaffold `proposal.md`, optional `design.md`, spec deltas under `openspec/changes/<id>/`, and create a parent bd epic issue with the change-id in the title (e.g., "Implement add-two-factor-auth") to track this OpenSpec change.'
       : '2. Choose a unique verb-led `change-id` and scaffold `proposal.md`, `tasks.md`, and `design.md` (when needed) under `openspec/changes/<id>/`.',
     '3. Map the change into concrete capabilities or requirements, breaking multi-scope efforts into distinct spec deltas with clear relationships and sequencing.',
     '4. Capture architectural reasoning in `design.md` when the solution spans multiple systems, introduces new patterns, or demands trade-off discussion before committing to specs.',
     '5. Draft spec deltas in `changes/<id>/specs/<capability>/spec.md` (one folder per capability) using `## ADDED|MODIFIED|REMOVED Requirements` with at least one `#### Scenario:` per requirement and cross-reference related capabilities when relevant.',
     mode === 'bd'
-      ? '6. Break implementation into bd tasks: capture granular work items, dependencies, validation steps, and owners so progress stays visible.'
+      ? '6. Break implementation into bd tasks: first create a parent epic (`bd create "Implement <change-id>" -t epic -p 1 --json`), capture its bd-XXX ID, then create child tasks with detailed descriptions linking to the epic via `--deps discovered-from:<epic-bd-id> --json`. Use `blocks` dependencies between child tasks when execution order matters.'
       : '6. Draft `tasks.md` as an ordered list of small, verifiable work items that deliver user-visible progress, include validation (tests, tooling), and highlight dependencies or parallelizable work.',
     '7. Validate with `openspec validate <id> --strict` and resolve every issue before sharing the proposal.',
   ];
@@ -35,11 +35,12 @@ function getApplySteps(mode: TaskManagementMode): string {
   if (mode === 'bd') {
     const steps = [
       'Track these steps through bd so status, owners, and blockers stay accurate.',
-      '1. Read `changes/<id>/proposal.md`, `design.md` (if present), and the linked bd issue to confirm scope and acceptance criteria.',
-      '2. Review the bd task list, clarify dependencies, and ensure each item has a concrete outcome before starting execution.',
-      '3. Complete tasks sequentially, updating the bd issue with notes, links, and status changes as work progresses.',
-      '4. Surface blockers or questions in bd comments so stakeholders see them immediately.',
-      '5. Close or hand off every bd task before marking the issue complete, and summarize validation or follow-up actions.',
+      '1. Read `changes/<id>/proposal.md` and `design.md` (if present) to understand scope and acceptance criteria.',
+      '2. Find the parent bd epic for this change (search for title "Implement <change-id>"). If it doesn\'t exist yet, create it now: `bd create "Implement <change-id>" -t epic -p 1 --json`, then break spec deltas into child tasks with `--deps discovered-from:<epic-bd-id>`.',
+      '3. Review the bd task list (child issues of the parent epic), clarify dependencies and blockers, and ensure each item has a concrete outcome before starting execution.',
+      '4. Complete tasks sequentially, updating bd issue statuses with notes, links, and progress as work advances.',
+      '5. Surface blockers or questions in bd comments so stakeholders see them immediately.',
+      '6. Close or hand off every bd task before marking the parent epic complete, and summarize validation or follow-up actions.',
     ];
     return `**Steps**\n${steps.join('\n')}`;
   }
@@ -58,7 +59,9 @@ function getApplySteps(mode: TaskManagementMode): string {
 function getApplyReferences(mode: TaskManagementMode): string {
   if (mode === 'bd') {
     return `**Reference**
-- Use \`bd update <issue> --status in_progress\` (or your workflow’s equivalent) to reflect ownership and timing.
+- Find parent epic: \`bd list --json | jq '.[] | select(.title | contains("Implement"))'\` or search bd issues for "Implement <change-id>".
+- Claim work: \`bd update <issue-id> --status in_progress --json\` to reflect ownership and timing.
+- Create new tasks during implementation: \`bd create "Task name" -t task -p 1 --deps discovered-from:<epic-bd-id> --json\`.
 - Cross-check \`openspec show <id> --json --deltas-only\` when you need additional proposal context while implementing.`;
   }
 
